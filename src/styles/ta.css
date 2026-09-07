@@ -725,6 +725,19 @@
 .cx-upload__title { font-size: 13px; font-weight: 600; }
 .cx-upload__sub { font-size: 11.5px; color: var(--ta-text-soft); }
 
+/* demo-only: preview the tracker at any stage */
+.cx-preview {
+  display: inline-flex; align-items: center; gap: 8px; margin-bottom: 14px;
+  padding: 6px 10px 6px 12px; border-radius: 999px;
+  background: var(--ta-surface); border: 1px solid var(--ta-line);
+  font-size: 12px; font-weight: 600; color: var(--ta-text-soft);
+}
+.cx-preview svg { color: var(--ta-text-mute); }
+.cx-preview select {
+  font: inherit; color: var(--ta-text); border: 0; background: none; cursor: pointer;
+  padding: 2px 4px; border-radius: 6px;
+}
+
 /* steps strip — lives inside the Recruitment progress card */
 .cx-steps-scroll { overflow-x: auto; margin-bottom: 16px; padding-bottom: 2px; }
 .cx-steps { display: flex; align-items: center; margin: 0; padding: 0; list-style: none; width: 100%; min-width: 360px; }

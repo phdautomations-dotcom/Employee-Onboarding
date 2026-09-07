@@ -28,6 +28,18 @@ const DOC_STAGES = [
 ];
 const toneMap = { info: 'blue', success: 'green', error: 'red', warning: 'amber', neutral: 'grey' };
 
+/* Demo helper: preview the tracker at any stage without changing the data. */
+const PREVIEW_OPTIONS = [
+  { label: 'Live status', value: '' },
+  { label: 'Under review', value: APP_STATUS.TA_REVIEW },
+  { label: 'Interview stage', value: APP_STATUS.INTERVIEW_IN_PROGRESS },
+  { label: 'Document verification', value: APP_STATUS.DOC_VERIFICATION },
+  { label: 'Offer stage', value: APP_STATUS.OFFER_ISSUED },
+  { label: 'Hired', value: APP_STATUS.EMPLOYEE },
+  { label: 'Not selected — screening', value: APP_STATUS.REJECTED },
+  { label: 'Not selected — after interview', value: APP_STATUS.INTERVIEW_FAILED },
+];
+
 /* Short pipeline steps for the header strip. */
 /* The candidate's own journey. "In review" stands in for the TA screening phase
    so the wait reads as active progress, not a stalled step. */
@@ -118,6 +130,7 @@ export default function MyApplicationPage() {
     resubmitApplication, uploadDocument, acceptOffer, declineOffer,
   } = useApp();
   const [declineOpen, setDeclineOpen] = useState(false);
+  const [preview, setPreview] = useState('');
 
   const app = data.myApplicationId ? getApplication(data.myApplicationId) : null;
 
@@ -140,11 +153,14 @@ export default function MyApplicationPage() {
   const employee = employeeFor(app.id);
   const activities = activitiesFor(app.id);
   const name = `${app.personal.firstName} ${app.personal.lastName}`;
-  const badge = stageBadgeForStatus(app.status);
 
-  const stageIdx = stageIndexForStatus(app.status);
-  const rejected = app.status === APP_STATUS.REJECTED;
-  const interviewFailed = app.status === APP_STATUS.INTERVIEW_FAILED;
+  /* `status` follows the real application unless a preview stage is picked. */
+  const status = preview || app.status;
+  const badge = stageBadgeForStatus(status);
+
+  const stageIdx = stageIndexForStatus(status);
+  const rejected = status === APP_STATUS.REJECTED;
+  const interviewFailed = status === APP_STATUS.INTERVIEW_FAILED;
   const notSelected = rejected || interviewFailed;
 
   /* Where the candidate is in their own journey, and how many steps to show
@@ -154,10 +170,10 @@ export default function MyApplicationPage() {
   const shownCount = candIdx + 1;
   const progress = notSelected ? 0 : Math.round(((candIdx + 1) / CANDIDATE_STEPS.length) * 100);
 
-  const showDocuments = DOC_STAGES.includes(app.status);
+  const showDocuments = DOC_STAGES.includes(status);
   const verifiedCount = documents.filter((d) => d.status === DOC_STATUS.VERIFIED).length;
   const pendingDocs = documents.filter((d) => [DOC_STATUS.PENDING, DOC_STATUS.REJECTED].includes(d.status)).length;
-  const hint = nextStep(app.status, pendingDocs);
+  const hint = nextStep(status, pendingDocs);
 
   const steps = CANDIDATE_STEPS.slice(0, shownCount).map((label, i) => ({
     label,
@@ -166,6 +182,23 @@ export default function MyApplicationPage() {
 
   return (
     <div className="cx-page">
+      <label className="cx-preview">
+        <Icon name="Eye" size={14} />
+        <span>Preview stage</span>
+        <select value={preview} onChange={(e) => setPreview(e.target.value)}>
+          {PREVIEW_OPTIONS.map((o) => (
+            <option key={o.value} value={o.value}>{o.label}</option>
+          ))}
+        </select>
+      </label>
+
+      {preview && (
+        <div className="ta-note ta-note--warn" style={{ marginBottom: 14 }}>
+          <Icon name="Eye" size={15} />
+          Previewing the “{PREVIEW_OPTIONS.find((o) => o.value === preview)?.label}” stage — the tracker shows sample content for this step.
+        </div>
+      )}
+
       <div className={`cx-idcard${employee ? ' cx-idcard--done' : ''}`}>
         <div className="cx-idcard__id">
           <span className="cx-idcard__avatar">{initialsOf(name)}</span>
@@ -187,10 +220,12 @@ export default function MyApplicationPage() {
           <div className="cx-idcard__donut" role="img" aria-label={`Progress ${progress} percent`}>
             <svg viewBox="0 0 42 42">
               <circle className="cx-donut-track" cx="21" cy="21" r="15.9" pathLength="100" />
-              <circle
-                className="cx-donut-arc" cx="21" cy="21" r="15.9" pathLength="100"
-                strokeDasharray={`${notSelected ? 0 : progress} 100`}
-              />
+              {!notSelected && (
+                <circle
+                  className="cx-donut-arc" cx="21" cy="21" r="15.9" pathLength="100"
+                  strokeDasharray={`${progress} 100`}
+                />
+              )}
               <defs>
                 <linearGradient id="cxDonut" x1="0%" y1="0%" x2="100%" y2="100%">
                   <stop offset="0%" stopColor="#4ade80" />
@@ -207,7 +242,7 @@ export default function MyApplicationPage() {
         </div>
       </div>
 
-      {app.status === APP_STATUS.RETURNED && (
+      {status === APP_STATUS.RETURNED && (
         <div className="ta-note ta-note--warn" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 6 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <Icon name="RotateCcw" size={15} /> <strong>Action needed:</strong> {app.returnReason}
@@ -248,7 +283,7 @@ export default function MyApplicationPage() {
                   {' '}We appreciate your interest and encourage you to apply for future roles.
                 </span>
               </div>
-            ) : hint && app.status !== APP_STATUS.RETURNED && (
+            ) : hint && status !== APP_STATUS.RETURNED && (
               <div className="cx-nextline">
                 <Icon name={hint.icon} size={15} />
                 <span><strong>What's next:</strong> {hint.text}</span>
