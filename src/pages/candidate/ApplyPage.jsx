@@ -1,8 +1,9 @@
 import { useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import Icon from '../../components/common/Icon.jsx';
-import Button from '../../components/common/Button.jsx';
-import { Field, Input, Select, Textarea } from '../../components/common/Field.jsx';
+import Button from '../../components/ta/Button.jsx';
+import Card from '../../components/ta/Card.jsx';
+import { Field, FieldGrid, Input, Select, Textarea } from '../../components/ta/Field.jsx';
 import { useApp } from '../../context/AppContext.jsx';
 import { useToast } from '../../context/ToastContext.jsx';
 import { simulateResumeParse, ANALYZE_STEPS } from '../../utils/resumeParser.js';
@@ -68,7 +69,7 @@ export default function ApplyPage() {
   const parsed = form.autofilled.length > 0;
 
   const set = (patch) => setForm((f) => ({ ...f, ...patch }));
-  const isAuto = (k) => (parsed && form.autofilled.includes(k) ? 'extracted' : undefined);
+  const isAuto = (k) => parsed && form.autofilled.includes(k);
 
   const validateField = (k, v) => {
     let msg = '';
@@ -184,166 +185,168 @@ export default function ApplyPage() {
   const pct = Math.round((filledRequired / totalRequired) * 100);
 
   return (
-    <div className="cand apply-wrap">
-      <Button variant="ghost" icon="ArrowLeft" onClick={() => navigate(job ? `/candidate/jobs/${job.id}` : '/candidate/jobs')}>
-        {job ? 'Back to Job' : 'Back to Jobs'}
-      </Button>
+    <div className="cx-page">
+      <button className="ta-link" onClick={() => navigate(job ? `/candidate/jobs/${job.id}` : '/candidate/jobs')} style={{ marginBottom: 14 }}>
+        <Icon name="ArrowLeft" size={14} /> {job ? 'Back to job' : 'Back to jobs'}
+      </button>
 
-      <h1 className="page-title mt-3" style={{ fontSize: 26 }}>Apply for this opportunity</h1>
-      {job ? (
-        <p className="text-secondary mb-5">
-          <strong>{job.title}</strong> · {job.department} · {job.location} · {job.employmentType}
+      <div className="cx-page__head">
+        <h1 className="cx-page__title">Apply for this opportunity</h1>
+        <p className="cx-page__sub">
+          {job
+            ? <><strong>{job.title}</strong> · {job.department} · {job.location} · {job.employmentType}</>
+            : <><strong>General application</strong> — submit your profile and we'll consider you for future roles.</>}
         </p>
-      ) : (
-        <p className="text-secondary mb-5">
-          <strong>General Application</strong> — submit your profile and we'll consider you for future roles.
-        </p>
-      )}
+      </div>
 
-      <div className="apply-grid">
+      <div className="cx-apply-grid">
         <div>
-          {/* Compact resume upload at the top */}
-          <div className="resume-strip" style={{ marginBottom: 'var(--space-4)' }}>
-            <span className="resume-strip__icon"><Icon name="UploadCloud" size={18} /></span>
+          {/* Resume upload */}
+          <div className="cx-upload" style={{ marginBottom: 14 }}>
+            <span className="cx-upload__icon"><Icon name="UploadCloud" size={17} /></span>
             {!form.resume ? (
               <>
-                <div className="grow">
-                  <div className="resume-strip__title">Upload Your Resume</div>
-                  <div className="resume-strip__sub">We'll use your resume to pre-fill your application details.</div>
+                <div className="ta-cell-mute" style={{ flex: 1 }}>
+                  <div className="cx-upload__title">Upload your resume</div>
+                  <div className="cx-upload__sub">We'll use it to pre-fill your application.</div>
                 </div>
-                <Button variant="secondary" size="sm" icon="Upload" onClick={() => fileRef.current?.click()}>
-                  Upload Resume
-                </Button>
+                <Button variant="ghost" icon="Upload" onClick={() => fileRef.current?.click()}>Upload resume</Button>
               </>
             ) : parsing ? (
               <>
-                <div className="grow">
-                  <div className="resume-strip__title">Analyzing resume…</div>
-                  <div className="resume-strip__sub">{ANALYZE_STEPS[Math.min(analyzeIdx, ANALYZE_STEPS.length - 1)]}</div>
+                <div style={{ flex: 1 }}>
+                  <div className="cx-upload__title">Analyzing resume…</div>
+                  <div className="cx-upload__sub">{ANALYZE_STEPS[Math.min(analyzeIdx, ANALYZE_STEPS.length - 1)]}</div>
                 </div>
-                <span className="spinner" />
+                <span className="ta-spinner" />
               </>
             ) : (
               <>
-                <div className="grow">
-                  <div className="resume-strip__title">{form.resume.name}</div>
-                  <div className="resume-strip__sub" style={{ color: 'var(--cand-teal)', fontWeight: 600 }}>
-                    <Icon name="CheckCircle2" size={12} /> Resume details extracted · {Math.round((form.resume.size || 0) / 1024)} KB
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div className="cx-upload__title" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{form.resume.name}</div>
+                  <div className="cx-upload__sub" style={{ color: 'var(--tag-green-fg)', fontWeight: 600 }}>
+                    <Icon name="CheckCircle2" size={11} /> Details extracted · {Math.round((form.resume.size || 0) / 1024)} KB
                   </div>
                 </div>
-                <button className="btn btn--secondary btn--sm" onClick={() => fileRef.current?.click()}>Replace</button>
-                <button className="icon-btn" onClick={removeResume} aria-label="Remove resume"><Icon name="X" size={16} /></button>
+                <Button variant="ghost" onClick={() => fileRef.current?.click()}>Replace</Button>
+                <button className="ta-iconbtn" onClick={removeResume} aria-label="Remove resume"><Icon name="X" size={15} /></button>
               </>
             )}
             <input ref={fileRef} type="file" accept=".pdf,.doc,.docx" hidden onChange={(e) => handleFile(e.target.files)} />
           </div>
           {errors.resume && (
-            <span className="field__error" style={{ marginBottom: 'var(--space-4)', display: 'flex' }}>
+            <div className="ta-field__error" style={{ marginBottom: 14 }}>
               <Icon name="AlertCircle" size={12} /> {errors.resume}
-            </span>
+            </div>
           )}
 
-          <section className="apply-section">
-            <div className="apply-section__head">
-              <span className="apply-section__num">1</span>
-              <h3 className="section-title">Personal Information</h3>
+          <div className="cx-section">
+            <div className="cx-section__head">
+              <span className="cx-section__num">1</span>
+              <h3 className="cx-section__title">Candidate information</h3>
             </div>
-            <div className="form-grid">
-              <Field label="First Name" required error={errors.firstName} state={isAuto('firstName')}>
-                <Input value={form.firstName} onChange={(e) => setAndValidate('firstName', e.target.value)} onBlur={(e) => validateField('firstName', e.target.value)} error={errors.firstName} />
-              </Field>
-              <Field label="Last Name" required error={errors.lastName} state={isAuto('lastName')}>
-                <Input value={form.lastName} onChange={(e) => setAndValidate('lastName', e.target.value)} onBlur={(e) => validateField('lastName', e.target.value)} error={errors.lastName} />
-              </Field>
-              <Field label="Email" required error={errors.email} state={isAuto('email')}>
-                <Input type="email" value={form.email} onChange={(e) => setAndValidate('email', e.target.value)} onBlur={(e) => validateField('email', e.target.value)} error={errors.email} />
-              </Field>
-              <Field label="Phone Number" required error={errors.phone} state={isAuto('phone')}>
-                <Input value={form.phone} onChange={(e) => setAndValidate('phone', e.target.value)} onBlur={(e) => validateField('phone', e.target.value)} error={errors.phone} />
-              </Field>
-              <Field label="Current Location" required error={errors.currentLocation} state={isAuto('currentLocation')}>
-                <Input value={form.currentLocation} onChange={(e) => setAndValidate('currentLocation', e.target.value)} onBlur={(e) => validateField('currentLocation', e.target.value)} error={errors.currentLocation} />
-              </Field>
-              <Field label="Total Experience" required error={errors.experience} state={isAuto('experience')}>
-                <Select value={form.experience} onChange={(e) => setAndValidate('experience', e.target.value)} placeholder="Select" options={EXP_OPTIONS} error={errors.experience} />
-              </Field>
-            </div>
-          </section>
+            <Card>
+              <FieldGrid>
+                <Field label="First name" required error={errors.firstName} extracted={isAuto('firstName')}>
+                  <Input value={form.firstName} error={errors.firstName} onChange={(e) => setAndValidate('firstName', e.target.value)} onBlur={(e) => validateField('firstName', e.target.value)} />
+                </Field>
+                <Field label="Last name" required error={errors.lastName} extracted={isAuto('lastName')}>
+                  <Input value={form.lastName} error={errors.lastName} onChange={(e) => setAndValidate('lastName', e.target.value)} onBlur={(e) => validateField('lastName', e.target.value)} />
+                </Field>
+                <Field label="Email" required error={errors.email} extracted={isAuto('email')}>
+                  <Input type="email" value={form.email} error={errors.email} onChange={(e) => setAndValidate('email', e.target.value)} onBlur={(e) => validateField('email', e.target.value)} />
+                </Field>
+                <Field label="Phone number" required error={errors.phone} extracted={isAuto('phone')}>
+                  <Input value={form.phone} error={errors.phone} onChange={(e) => setAndValidate('phone', e.target.value)} onBlur={(e) => validateField('phone', e.target.value)} />
+                </Field>
+                <Field label="Current location" required error={errors.currentLocation} extracted={isAuto('currentLocation')}>
+                  <Input value={form.currentLocation} error={errors.currentLocation} onChange={(e) => setAndValidate('currentLocation', e.target.value)} onBlur={(e) => validateField('currentLocation', e.target.value)} />
+                </Field>
+                <Field label="Total experience" required error={errors.experience} extracted={isAuto('experience')}>
+                  <Select value={form.experience} error={errors.experience} placeholder="Select" options={EXP_OPTIONS} onChange={(e) => setAndValidate('experience', e.target.value)} />
+                </Field>
+              </FieldGrid>
+            </Card>
+          </div>
 
-          <section className="apply-section">
-            <div className="apply-section__head">
-              <span className="apply-section__num">2</span>
-              <h3 className="section-title">Professional Information</h3>
+          <div className="cx-section">
+            <div className="cx-section__head">
+              <span className="cx-section__num">2</span>
+              <h3 className="cx-section__title">Professional information</h3>
             </div>
-            <div className="form-grid">
-              <Field label="Current Company" state={isAuto('currentCompany')}>
-                <Input value={form.currentCompany} onChange={(e) => set({ currentCompany: e.target.value })} />
-              </Field>
-              <Field label="Current Job Title" state={isAuto('currentJobTitle')}>
-                <Input value={form.currentJobTitle} onChange={(e) => set({ currentJobTitle: e.target.value })} />
-              </Field>
-              <Field label="Highest Qualification" state={isAuto('highestQualification')}>
-                <Input value={form.highestQualification} onChange={(e) => set({ highestQualification: e.target.value })} />
-              </Field>
-              <Field label="Notice Period">
-                <Select value={form.noticePeriod} onChange={(e) => set({ noticePeriod: e.target.value })} placeholder="Select" options={NOTICE_OPTIONS} />
-              </Field>
-              <Field label="Expected Salary (₹ / year)" hint="Optional" full>
-                <Input type="number" value={form.expectedSalary} onChange={(e) => set({ expectedSalary: e.target.value })} />
-              </Field>
-            </div>
-          </section>
+            <Card>
+              <FieldGrid>
+                <Field label="Current company" extracted={isAuto('currentCompany')}>
+                  <Input value={form.currentCompany} onChange={(e) => set({ currentCompany: e.target.value })} />
+                </Field>
+                <Field label="Current job title" extracted={isAuto('currentJobTitle')}>
+                  <Input value={form.currentJobTitle} onChange={(e) => set({ currentJobTitle: e.target.value })} />
+                </Field>
+                <Field label="Highest qualification" extracted={isAuto('highestQualification')}>
+                  <Input value={form.highestQualification} onChange={(e) => set({ highestQualification: e.target.value })} />
+                </Field>
+                <Field label="Notice period">
+                  <Select value={form.noticePeriod} placeholder="Select" options={NOTICE_OPTIONS} onChange={(e) => set({ noticePeriod: e.target.value })} />
+                </Field>
+                <Field label="Expected salary (₹ / year)" hint="Optional" full>
+                  <Input type="number" value={form.expectedSalary} onChange={(e) => set({ expectedSalary: e.target.value })} />
+                </Field>
+              </FieldGrid>
+            </Card>
+          </div>
 
-          <section className="apply-section">
-            <div className="apply-section__head">
-              <span className="apply-section__num">3</span>
-              <h3 className="section-title">Additional Information</h3>
+          <div className="cx-section">
+            <div className="cx-section__head">
+              <span className="cx-section__num">3</span>
+              <h3 className="cx-section__title">Application details</h3>
             </div>
-            <Field label="Cover Note" hint="Optional">
-              <Textarea rows={3} value={form.coverNote} onChange={(e) => set({ coverNote: e.target.value })} placeholder="Anything you'd like the hiring team to know" />
-            </Field>
-            <Field label="Portfolio / LinkedIn URL" hint="Optional">
-              <Input value={form.portfolio} onChange={(e) => set({ portfolio: e.target.value })} placeholder="https://" />
-            </Field>
-            <Field label="How did you hear about us?" hint="Optional">
-              <Select value={form.source} onChange={(e) => set({ source: e.target.value })} placeholder="Select" options={SOURCE_OPTIONS} />
-            </Field>
-          </section>
+            <Card>
+              <Field label="Cover note" hint="Optional">
+                <Textarea rows={3} value={form.coverNote} onChange={(e) => set({ coverNote: e.target.value })} placeholder="Anything you'd like the hiring team to know" />
+              </Field>
+              <FieldGrid>
+                <Field label="Portfolio / LinkedIn URL" hint="Optional">
+                  <Input value={form.portfolio} onChange={(e) => set({ portfolio: e.target.value })} placeholder="https://" />
+                </Field>
+                <Field label="How did you hear about us?" hint="Optional">
+                  <Select value={form.source} placeholder="Select" options={SOURCE_OPTIONS} onChange={(e) => set({ source: e.target.value })} />
+                </Field>
+              </FieldGrid>
+            </Card>
+          </div>
 
-          <div className="apply-section" style={{ marginBottom: 0 }}>
-            <div className="row between wrap gap-3">
-              <Button variant="secondary" icon="Save" onClick={saveDraft}>Save Draft</Button>
-              <Button icon="ArrowRight" onClick={submit} disabled={submitting || parsing}>
-                {submitting ? 'Submitting application…' : 'Submit Application'}
+          <Card bodyStyle={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+              <Button variant="ghost" icon="Save" onClick={saveDraft}>Save draft</Button>
+              <Button iconRight="ArrowRight" onClick={submit} disabled={submitting || parsing}>
+                {submitting ? 'Submitting…' : 'Submit application'}
               </Button>
             </div>
-            <p className="text-xs text-secondary mt-3">By submitting, you confirm that the information provided is accurate.</p>
-          </div>
+            <p className="ta-cell-sub">By submitting, you confirm that the information provided is accurate.</p>
+          </Card>
         </div>
 
-        <aside className="apply-summary">
-          <div className="apply-summary__head">
-            <div className="strong">Application Summary</div>
-            <div className="text-xs text-secondary">Estimated time: 2–3 minutes</div>
-          </div>
-          <div className="apply-summary__body">
-            <div className="apply-summary__row"><span className="k">Position</span><span className="v">{job ? job.title : 'General Application'}</span></div>
-            <div className="apply-summary__row"><span className="k">Department</span><span className="v">{job ? job.department : '—'}</span></div>
-            <div className="apply-summary__row"><span className="k">Location</span><span className="v">{job ? job.location : '—'}</span></div>
-            <div className="apply-summary__row"><span className="k">Employment</span><span className="v">{job ? job.employmentType : '—'}</span></div>
-            <div className="apply-summary__row"><span className="k">Experience</span><span className="v">{job ? job.experience : '—'}</span></div>
-
-            <div className="mt-4">
-              <div className="row between text-xs text-secondary mb-2"><span>Completion</span><span>{filledRequired} / {totalRequired}</span></div>
-              <div className="progress"><div className="progress__bar" style={{ width: `${pct}%` }} /></div>
+        <aside className="cx-summary">
+          <Card title="Application summary">
+            <div className="cx-summary__body">
+              <div className="cx-summary__row"><span className="k">Position</span><span className="v">{job ? job.title : 'General application'}</span></div>
+              <div className="cx-summary__row"><span className="k">Department</span><span className="v">{job ? job.department : '—'}</span></div>
+              <div className="cx-summary__row"><span className="k">Location</span><span className="v">{job ? job.location : '—'}</span></div>
+              <div className="cx-summary__row"><span className="k">Employment</span><span className="v">{job ? job.employmentType : '—'}</span></div>
+              <div className="cx-summary__row"><span className="k">Experience</span><span className="v">{job ? job.experience : '—'}</span></div>
+              <div style={{ marginTop: 14 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11.5, color: 'var(--ta-text-soft)', marginBottom: 4 }}>
+                  <span>Completion</span><span>{filledRequired} / {totalRequired}</span>
+                </div>
+                <div className="cx-progress"><div style={{ width: `${pct}%` }} /></div>
+              </div>
+              {job && (
+                <Button variant="ghost" icon="ArrowLeft" onClick={() => navigate(`/candidate/jobs/${job.id}`)} style={{ width: '100%', marginTop: 12 }}>
+                  View full job description
+                </Button>
+              )}
             </div>
-
-            {job && (
-              <Button block variant="ghost" className="mt-3" icon="ArrowLeft" onClick={() => navigate(`/candidate/jobs/${job.id}`)}>
-                View full job description
-              </Button>
-            )}
-          </div>
+          </Card>
         </aside>
       </div>
     </div>
