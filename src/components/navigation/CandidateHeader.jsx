@@ -4,6 +4,7 @@ import Icon from '../common/Icon.jsx';
 import { useApp } from '../../context/AppContext.jsx';
 import { ROLES, ROLE_META } from '../../constants/roles.js';
 import { initialsOf } from '../../utils/format.js';
+import logo from '../../assets/ccentrik-logo.png';
 
 const navClass = ({ isActive }) => (isActive ? 'active' : undefined);
 
@@ -24,17 +25,8 @@ export default function CandidateHeader() {
     <header className="cx-header">
       <div className="cx-header__inner">
         <NavLink to="/candidate" className="cx-brand">
-          <span className="cx-brand__mark">
-            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="#fff" strokeWidth="1.8">
-              <circle cx="9" cy="9" r="5" />
-              <circle cx="15" cy="9" r="5" />
-              <circle cx="12" cy="15" r="5" />
-            </svg>
-          </span>
-          <span className="cx-brand__text">
-            <span className="cx-brand__name">Ccentrik</span>
-            <span className="cx-brand__sub">Careers</span>
-          </span>
+          <img className="cx-brand__logo" src={logo} alt="Ccentrik" />
+          <span className="cx-brand__sub">Careers</span>
         </NavLink>
 
         <nav className="cx-nav">

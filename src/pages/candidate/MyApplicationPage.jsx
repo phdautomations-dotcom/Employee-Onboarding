@@ -204,10 +204,10 @@ export default function MyApplicationPage() {
       <div className="ta-detail-grid">
         <div className="ta-stack">
           <Card title="Recruitment progress">
-            <ol className="ta-timeline">
+            <ol className="cx-proglist">
               {stages.map((s) => (
                 <li key={s.label}>
-                  <span className="ta-timeline__dot" style={{
+                  <span className="cx-proglist__dot" style={{
                     background: s.state === 'pending' ? 'var(--ta-line)' : s.state === 'current' ? 'var(--ta-blue)' : 'var(--tag-green-fg)',
                   }} />
                   <div>

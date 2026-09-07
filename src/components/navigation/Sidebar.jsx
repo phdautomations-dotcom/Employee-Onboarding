@@ -1,14 +1,12 @@
 import { NavLink } from 'react-router-dom';
 import Icon from '../common/Icon.jsx';
+import logo from '../../assets/ccentrik-logo.png';
 
 export default function Sidebar({ title, badge, items, footerItems, open, onNavigate }) {
   return (
     <aside className={`sidebar${open ? ' sidebar--open' : ''}`}>
       <div className="sidebar__brand">
-        <div className="brand">
-          <span className="brand__mark">Cc</span>
-          <span>Ccentrik</span>
-        </div>
+        <span className="brand-chip"><img src={logo} alt="Ccentrik" /></span>
       </div>
       <div className="sidebar__section-label">{title}</div>
       <nav className="sidebar__nav">

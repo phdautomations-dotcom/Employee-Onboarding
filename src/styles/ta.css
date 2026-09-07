@@ -74,6 +74,14 @@
 .ta-brand__text { display: flex; flex-direction: column; min-width: 0; }
 .ta-brand__name { font-size: 14px; font-weight: 700; line-height: 1.2; }
 .ta-brand__sub { font-size: 11px; color: var(--ta-text-mute); }
+.ta-brand__logo { height: 21px; width: auto; display: block; flex-shrink: 0; }
+.ta-brand__badge {
+  display: none; width: 30px; height: 30px; border-radius: 999px; flex-shrink: 0;
+  background: linear-gradient(150deg, #4b7bf7, #2a53c8); color: #fff;
+  align-items: center; justify-content: center; font-weight: 700; font-size: 14px;
+}
+.ta-shell--collapsed .ta-brand__logo { display: none; }
+.ta-shell--collapsed .ta-brand__badge { display: flex; }
 
 .ta-collapse-btn {
   position: absolute; top: 16px; right: -12px; z-index: 41;
@@ -521,6 +529,11 @@
 .ta-timeline li:not(:last-child)::before { content: ''; position: absolute; left: 4px; top: 13px; bottom: -14px; width: 2px; background: var(--ta-line); }
 .ta-timeline__dot { width: 9px; height: 9px; border-radius: 999px; background: var(--ta-blue); flex-shrink: 0; margin-top: 3px; z-index: 1; }
 
+/* Recruitment-progress stages — flow into columns so the card fills its width. */
+.cx-proglist { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px 24px; }
+.cx-proglist li { display: flex; gap: 10px; align-items: flex-start; }
+.cx-proglist__dot { width: 9px; height: 9px; border-radius: 999px; flex-shrink: 0; margin-top: 4px; }
+
 .ta-bullets { margin: 0; padding-left: 18px; color: var(--ta-text-soft); font-size: 12.5px; line-height: 1.8; }
 .ta-skills { display: flex; flex-wrap: wrap; gap: 6px; }
 .ta-skill {
@@ -572,15 +585,13 @@
   max-width: var(--cx-max); margin: 0 auto; padding: 10px var(--cx-pad);
   display: flex; align-items: center; gap: clamp(10px, 2vw, 20px);
 }
-.cx-brand { display: flex; align-items: center; gap: 10px; }
-.cx-brand__mark {
-  width: 30px; height: 30px; border-radius: 999px; flex-shrink: 0;
-  background: linear-gradient(150deg, #4b7bf7, #2a53c8);
-  display: flex; align-items: center; justify-content: center;
+.cx-brand { display: flex; align-items: center; gap: 11px; }
+.cx-brand__logo { height: 26px; width: auto; display: block; flex-shrink: 0; }
+.cx-brand__sub {
+  font-size: 11px; font-weight: 600; color: var(--ta-text-mute);
+  text-transform: uppercase; letter-spacing: 0.06em;
+  padding-left: 11px; border-left: 1px solid var(--ta-line);
 }
-.cx-brand__text { display: flex; flex-direction: column; }
-.cx-brand__name { font-size: 14px; font-weight: 700; line-height: 1.2; }
-.cx-brand__sub { font-size: 11px; color: var(--ta-text-mute); }
 .cx-nav { display: flex; align-items: center; gap: 2px; margin-left: 8px; }
 .cx-nav a {
   padding: 7px 12px; border-radius: 9px; font-size: 13px; font-weight: 500;
@@ -777,7 +788,8 @@
   .cx-job__actions .ta-btn { flex: 1; justify-content: center; }
 }
 @media (max-width: 480px) {
-  .cx-brand__text { display: none; }
+  .cx-brand__sub { display: none; }
+  .cx-brand__logo { height: 23px; }
   .cx-nav { margin-left: 0; }
   .cx-nav a { padding: 7px 9px; }
 }
@@ -800,6 +812,8 @@
   .ta-shell--collapsed .ta-help__text,
   .ta-shell--collapsed .ta-usercard__text,
   .ta-shell--collapsed .ta-nav__label { display: revert; }
+  .ta-shell--collapsed .ta-brand__logo { display: block; }
+  .ta-shell--collapsed .ta-brand__badge { display: none; }
   .ta-shell--collapsed .ta-nav__link,
   .ta-shell--collapsed .ta-help,
   .ta-shell--collapsed .ta-usercard { justify-content: flex-start; gap: 10px; }

@@ -36,7 +36,7 @@ await build({
   outfile: out,
   jsx: 'automatic',
   external: ['react', 'react-dom', 'react-router-dom', 'lucide-react'],
-  loader: { '.js': 'jsx' },
+  loader: { '.js': 'jsx', '.png': 'dataurl', '.jpg': 'dataurl', '.jpeg': 'dataurl', '.svg': 'dataurl', '.css': 'empty' },
   logLevel: 'silent',
 });
 
