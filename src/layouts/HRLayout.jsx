@@ -1,48 +1,91 @@
 import { useMemo, useState } from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
-import Sidebar from '../components/navigation/Sidebar.jsx';
-import Topbar from '../components/navigation/Topbar.jsx';
-import { ROLES } from '../constants/roles.js';
+import { NavLink, Outlet, useLocation } from 'react-router-dom';
+import HRSidebar from '../components/navigation/HRSidebar.jsx';
+import HRTopbar from '../components/navigation/HRTopbar.jsx';
+import Icon from '../components/common/Icon.jsx';
 import { useApp } from '../context/AppContext.jsx';
-import { APP_STATUS, OFFER_STATUS } from '../constants/statuses.js';
+import { APP_STATUS } from '../constants/statuses.js';
+
+const BOTTOM_NAV = [
+  { to: '/hr', label: 'Dashboard', icon: 'Home', end: true },
+  { to: '/hr/candidates', label: 'Candidates', icon: 'Users' },
+  { to: '/hr/offers', label: 'Offers', icon: 'FileCheck' },
+];
+
+const COLLAPSE_KEY = 'talentflow.hr.sidebar.collapsed';
+
+function readCollapsed() {
+  try { return localStorage.getItem(COLLAPSE_KEY) === '1'; } catch { return false; }
+}
 
 export default function HRLayout() {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(false); // mobile drawer
+  const [collapsed, setCollapsed] = useState(readCollapsed);
+  const [head, setHead] = useState(null);
   const { pathname } = useLocation();
   const { data } = useApp();
 
-  const counts = useMemo(() => {
-    const offers = data.offers || [];
+  const ctx = useMemo(() => ({ setHead }), []);
+
+  // Small nav badges: candidates waiting on HR's onboarding verification, and
+  // candidates waiting to join.
+  const navCounts = useMemo(() => {
     const apps = data.applications || [];
     return {
-      offers: offers.filter((o) => o.status === OFFER_STATUS.PENDING_APPROVAL).length,
+      verification: apps.filter((a) => a.status === APP_STATUS.HR_VERIFICATION).length,
       joining: apps.filter((a) => a.status === APP_STATUS.JOINING_PENDING).length,
     };
   }, [data]);
 
-  const items = [
+  // Document verification happens inside each candidate's detail page now,
+  // not as its own list — the Candidates table shows a verified/total status instead.
+  const navItems = [
     { to: '/hr', label: 'Dashboard', icon: 'LayoutDashboard', end: true },
-    { to: '/hr/candidates', label: 'Candidates', icon: 'Users' },
-    { to: '/hr/offers', label: 'Offers', icon: 'FileCheck', count: counts.offers },
-    { to: '/hr/documents', label: 'Document Verification', icon: 'Files' },
-    { to: '/hr/employees', label: 'Employees', icon: 'UserRoundCheck', count: counts.joining },
+    { to: '/hr/candidates', label: 'Candidates', icon: 'Users', count: navCounts.verification },
+    { to: '/hr/offers', label: 'Offers', icon: 'FileCheck' },
+    { to: '/hr/employees', label: 'Employees', icon: 'UserRoundCheck', count: navCounts.joining },
     { to: '/hr/activity', label: 'Activity', icon: 'History' },
   ];
-  const footerItems = [
-    { to: '/hr/settings', label: 'Settings', icon: 'Settings' },
-    { to: '/hr/profile', label: 'Profile', icon: 'CircleUserRound' },
-  ];
+
+  const toggleCollapse = () => {
+    setCollapsed((c) => {
+      const next = !c;
+      try { localStorage.setItem(COLLAPSE_KEY, next ? '1' : '0'); } catch { /* ignore */ }
+      return next;
+    });
+  };
 
   return (
-    <div className="app-shell">
-      <Sidebar title="Human Resources" items={items} footerItems={footerItems} open={open} onNavigate={() => setOpen(false)} />
+    <div className={`ta-shell${collapsed ? ' ta-shell--collapsed' : ''}`}>
+      <HRSidebar
+        open={open}
+        collapsed={collapsed}
+        onToggleCollapse={toggleCollapse}
+        onNavigate={() => setOpen(false)}
+        navItems={navItems}
+      />
       {open && <div className="overlay" style={{ zIndex: 39 }} onClick={() => setOpen(false)} />}
-      <div className="app-main">
-        <Topbar role={ROLES.HR} base="/hr" greeting="Human Resources" onToggleSidebar={() => setOpen((o) => !o)} />
-        <div className="grow route-view" key={pathname}>
-          <Outlet />
+
+      <div className="ta-main">
+        <HRTopbar head={head} onMenu={() => setOpen(true)} />
+        <div className="ta-page" key={pathname}>
+          <Outlet context={ctx} />
         </div>
       </div>
+
+      <nav className="ta-bottomnav">
+        {BOTTOM_NAV.map((item) => (
+          <NavLink
+            key={item.to}
+            to={item.to}
+            end={item.end}
+            className={({ isActive }) => `ta-bottomnav__link${isActive ? ' active' : ''}`}
+          >
+            <Icon name={item.icon} size={19} />
+            {item.label}
+          </NavLink>
+        ))}
+      </nav>
     </div>
   );
 }

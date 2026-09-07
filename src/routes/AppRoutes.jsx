@@ -34,7 +34,6 @@ import HRDashboard from '../pages/hr/HRDashboard.jsx';
 import HRCandidatesPage from '../pages/hr/HRCandidatesPage.jsx';
 import HRCandidateDetailPage from '../pages/hr/HRCandidateDetailPage.jsx';
 import HROffersPage from '../pages/hr/HROffersPage.jsx';
-import HRDocumentsPage from '../pages/hr/HRDocumentsPage.jsx';
 import HREmployeesPage from '../pages/hr/HREmployeesPage.jsx';
 import HRActivityPage from '../pages/hr/HRActivityPage.jsx';
 
@@ -101,7 +100,6 @@ export default function AppRoutes() {
         <Route path="/hr/candidates" element={<HRCandidatesPage />} />
         <Route path="/hr/candidates/:candidateId" element={<HRCandidateDetailPage />} />
         <Route path="/hr/offers" element={<HROffersPage />} />
-        <Route path="/hr/documents" element={<HRDocumentsPage />} />
         <Route path="/hr/employees" element={<HREmployeesPage />} />
         <Route path="/hr/activity" element={<HRActivityPage />} />
         <Route path="/hr/settings" element={<SettingsPage />} />

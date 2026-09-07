@@ -57,7 +57,7 @@ const routes = [
   '/ta/interviews', '/ta/documents', '/ta/offers', '/ta/jobs', '/ta/activity',
   '/ta/settings', '/ta/profile',
   '/hr', '/hr/candidates', '/hr/candidates/CAN-2026-000122', '/hr/offers',
-  '/hr/documents', '/hr/employees', '/hr/activity',
+  '/hr/employees', '/hr/activity',
 ];
 
 // seed role so guarded routes render

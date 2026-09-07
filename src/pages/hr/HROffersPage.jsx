@@ -1,165 +1,115 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { DataTable } from '../../components/common/Table.jsx';
-import { Badge } from '../../components/common/Badge.jsx';
-import Button from '../../components/common/Button.jsx';
-import SearchBar from '../../components/common/SearchBar.jsx';
-import FilterSelect from '../../components/common/FilterSelect.jsx';
-import { Modal, ConfirmDialog } from '../../components/common/Modal.jsx';
-import { InfoList } from '../../components/common/Card.jsx';
-import ReasonModal from '../../components/workflow/ReasonModal.jsx';
+import Icon from '../../components/common/Icon.jsx';
+import TAHeader from '../../components/ta/TAHeader.jsx';
+import DataGrid from '../../components/ta/DataGrid.jsx';
+import Toolbar from '../../components/ta/Toolbar.jsx';
+import Avatar from '../../components/ta/Avatar.jsx';
+import Tag from '../../components/ta/Tag.jsx';
 import { useApp } from '../../context/AppContext.jsx';
-import { useToast } from '../../context/ToastContext.jsx';
-import { OFFER_STATUS, OFFER_STATUS_META } from '../../constants/statuses.js';
+import { useCollectionView } from '../../hooks/useCollectionView.js';
+import { OFFER_STATUS_META } from '../../constants/statuses.js';
 import { formatDate, formatCurrencyINR } from '../../utils/format.js';
 
+// The old offer-status tones don't match Tag's tone names — map them once.
+const OFFER_TONE = { neutral: 'grey', warning: 'amber', info: 'blue', success: 'green', error: 'red' };
+
 const COLUMNS = [
-  { key: 'candidate', label: 'Candidate' },
-  { key: 'job', label: 'Position' },
-  { key: 'joiningDate', label: 'Joining Date' },
-  { key: 'compensation', label: 'Compensation' },
-  { key: 'status', label: 'Status' },
-  { key: 'action', label: 'Action' },
+  { key: 'candidate', label: 'Candidate', sortable: true },
+  { key: 'job', label: 'Position', sortable: true },
+  { key: 'joiningDate', label: 'Joining Date', sortable: true },
+  { key: 'compensation', label: 'Compensation', sortable: true },
+  { key: 'status', label: 'Status', sortable: true },
+  { key: 'actions', label: 'Actions' },
 ];
 
 export default function HROffersPage() {
-  const { data, getApplication, approveOffer, returnOffer } = useApp();
-  const toast = useToast();
   const navigate = useNavigate();
+  const { data, getApplication } = useApp();
   const [sp] = useSearchParams();
-  const statusParam = sp.get('status');
-  const [q, setQ] = useState('');
-  const [status, setStatus] = useState(statusParam || 'all');
-  const [view, setView] = useState(null);
-
-  useEffect(() => {
-    if (statusParam) setStatus(statusParam);
-  }, [statusParam]);
-  const [approving, setApproving] = useState(null);
-  const [returning, setReturning] = useState(null);
 
   const rows = useMemo(
     () =>
       (data.offers || [])
         .map((o) => {
           const app = getApplication(o.applicationId);
-          return app ? { ...o, candidate: o.candidateName, candidateId: app.candidateId, job: o.jobTitle } : null;
+          if (!app) return null;
+          return { ...o, candidate: o.candidateName, candidateId: app.candidateId, job: o.jobTitle };
         })
-        .filter(Boolean)
-        .filter((r) => {
-          const t = q.trim().toLowerCase();
-          return (!t || r.candidate.toLowerCase().includes(t) || r.job.toLowerCase().includes(t)) && (status === 'all' || r.status === status);
-        }),
-    [data.offers, q, status, getApplication]
+        .filter(Boolean),
+    [data.offers, getApplication]
   );
 
+  const statusParam = OFFER_STATUS_META[sp.get('status')] ? sp.get('status') : 'all';
+  const view = useCollectionView(rows, {
+    searchFields: ['candidate', 'job'],
+    pageSize: 12,
+    initialSort: { key: 'candidate', dir: 'asc' },
+    initialFilters: statusParam !== 'all' ? { status: statusParam } : undefined,
+  });
+
+  const activeStatus = typeof view.filters.status === 'string' ? view.filters.status : 'all';
+
+  const clearAll = () => {
+    view.setQuery('');
+    view.setFilter('status', 'all');
+  };
+
+  const chips = [
+    activeStatus !== 'all' && { key: 'status', label: OFFER_STATUS_META[activeStatus].label, onRemove: () => view.setFilter('status', 'all') },
+    view.query && { key: 'q', label: `“${view.query}”`, onRemove: () => view.setQuery('') },
+  ].filter(Boolean);
+
   return (
-    <div className="page-body">
-      <h1 className="page-title mb-4">Offers</h1>
-      <div className="toolbar">
-        <SearchBar value={q} onChange={setQ} placeholder="Search candidate or position" />
-        <FilterSelect
-          label="Status"
-          value={status}
-          onChange={setStatus}
-          options={Object.entries(OFFER_STATUS_META).map(([value, m]) => ({ value, label: m.label }))}
-        />
-      </div>
-      <DataTable
+    <>
+      <TAHeader title="Offers" subtitle="Every offer prepared by Talent Acquisition, at any stage." />
+
+      <Toolbar
+        search={{ value: view.query, onChange: view.setQuery, placeholder: 'Search candidate or position…' }}
+        filters={[
+          {
+            label: 'Status',
+            value: activeStatus,
+            onChange: (v) => view.setFilter('status', v),
+            options: Object.entries(OFFER_STATUS_META).map(([value, m]) => ({ value, label: m.label })),
+          },
+        ]}
+        chips={chips}
+        onClearAll={chips.length > 1 ? clearAll : undefined}
+      />
+
+      <DataGrid
         columns={COLUMNS}
-        rows={rows}
-        emptyProps={{ icon: 'FileCheck', title: 'No offers found' }}
+        rows={view.rows}
+        sort={view.sort}
+        onSort={view.onSort}
+        pager={{ page: view.page, pageSize: view.pageSize, total: view.total, onPage: view.setPage }}
+        empty={{ icon: 'FileCheck', title: 'No offers found', message: 'Try changing the filters or search.' }}
         renderRow={(r) => {
-          const m = OFFER_STATUS_META[r.status];
+          const meta = OFFER_STATUS_META[r.status];
           return (
-            <tr key={r.id}>
-              <td className="strong">{r.candidate}</td>
-              <td>{r.job}</td>
-              <td>{formatDate(r.joiningDate)}</td>
-              <td>{formatCurrencyINR(r.compensation)}</td>
-              <td><Badge tone={m.tone} icon={m.icon}>{m.label}</Badge></td>
+            <tr key={r.id} onClick={() => navigate(`/hr/candidates/${r.candidateId}`)} style={{ cursor: 'pointer' }}>
               <td>
-                <div className="row gap-1">
-                  <Button size="sm" variant="secondary" icon="Eye" onClick={() => setView(r)}>
-                    View
-                  </Button>
-                  {r.status === OFFER_STATUS.PENDING_APPROVAL && (
-                    <>
-                      <Button size="sm" variant="success" icon="CheckCircle2" onClick={() => setApproving(r)}>
-                        Approve
-                      </Button>
-                      <Button size="sm" variant="secondary" icon="RotateCcw" onClick={() => setReturning(r)}>
-                        Return
-                      </Button>
-                    </>
-                  )}
-                </div>
+                <span className="ta-cell-cand">
+                  <Avatar name={r.candidate} />
+                  <span className="ta-cell-cand__name">{r.candidate}</span>
+                </span>
+              </td>
+              <td className="ta-cell-strong">{r.job}</td>
+              <td className="ta-cell-mute">{formatDate(r.joiningDate)}</td>
+              <td className="ta-cell-mute">{formatCurrencyINR(r.compensation)}</td>
+              <td><Tag tone={OFFER_TONE[meta.tone] || 'grey'}>{meta.label}</Tag></td>
+              <td>
+                <span className="ta-rowactions" onClick={(e) => e.stopPropagation()}>
+                  <button className="ta-iconbtn" onClick={() => navigate(`/hr/candidates/${r.candidateId}`)} aria-label="Open offer">
+                    <Icon name="ArrowRight" size={15} />
+                  </button>
+                </span>
               </td>
             </tr>
           );
         }}
       />
-
-      <Modal
-        open={!!view}
-        onClose={() => setView(null)}
-        title="Offer details"
-        size="lg"
-        footer={
-          view?.status === OFFER_STATUS.PENDING_APPROVAL ? (
-            <>
-              <Button variant="secondary" icon="RotateCcw" onClick={() => { setReturning(view); setView(null); }}>
-                Return for Correction
-              </Button>
-              <Button variant="success" icon="CheckCircle2" onClick={() => { setApproving(view); setView(null); }}>
-                Approve Offer
-              </Button>
-            </>
-          ) : (
-            <Button variant="secondary" onClick={() => { navigate(`/hr/candidates/${view.candidateId}`); }}>
-              Open candidate
-            </Button>
-          )
-        }
-      >
-        {view && (
-          <div className="offer-letter">
-            <h2>Offer of Employment</h2>
-            <p>Dear {view.candidateName},</p>
-            <p>Position of <strong>{view.jobTitle}</strong>, {view.department} team, {view.location}.</p>
-            <InfoList
-              items={[
-                { label: 'Joining Date', value: formatDate(view.joiningDate) },
-                { label: 'Employment Type', value: view.employmentType },
-                { label: 'Annual Compensation', value: formatCurrencyINR(view.compensation) },
-                { label: 'Reporting Manager', value: view.reportingManager },
-                { label: 'Probation Period', value: view.probationPeriod },
-                { label: 'Benefits', value: view.benefits },
-                { label: 'Status', value: OFFER_STATUS_META[view.status].label },
-              ]}
-            />
-          </div>
-        )}
-      </Modal>
-
-      <ConfirmDialog
-        open={!!approving}
-        onClose={() => setApproving(null)}
-        title="Approve this offer?"
-        message={`The offer for ${approving?.candidateName} will be issued to the candidate immediately.`}
-        confirmLabel="Approve & Issue"
-        tone="success"
-        onConfirm={() => { approveOffer(approving.id); setApproving(null); toast.success('Offer approved and issued.'); }}
-      />
-      <ReasonModal
-        open={!!returning}
-        onClose={() => setReturning(null)}
-        title="Return Offer for Correction"
-        label="What needs to change?"
-        confirmLabel="Return Offer"
-        tone="secondary"
-        onSubmit={(reason) => { returnOffer(returning.id, reason); setReturning(null); toast.success('Offer returned to Talent Acquisition.'); }}
-      />
-    </div>
+    </>
   );
 }

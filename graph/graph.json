@@ -1,21 +1,21 @@
 {
   "app": "recruitment-onboarding-frontend",
-  "generatedAt": "2026-09-07T08:55:34.087Z",
+  "generatedAt": "2026-09-07T11:24:43.541Z",
   "stats": {
-    "files": 103,
-    "edges": 385,
+    "files": 105,
+    "edges": 374,
     "layers": {
       "entry": 2,
       "component": 46,
-      "navigation": 8,
+      "navigation": 10,
       "route": 2,
       "constant": 2,
       "context": 2,
       "data": 2,
-      "hook": 2,
+      "hook": 3,
       "style": 2,
       "layout": 3,
-      "page": 28,
+      "page": 27,
       "util": 4
     }
   },
@@ -149,10 +149,6 @@
       "component": "HROffersPage"
     },
     {
-      "path": "/hr/documents",
-      "component": "HRDocumentsPage"
-    },
-    {
       "path": "/hr/employees",
       "component": "HREmployeesPage"
     },
@@ -176,58 +172,68 @@
   "hubs": [
     {
       "id": "src/components/common/Icon.jsx",
-      "importers": 48
+      "importers": 54
     },
     {
       "id": "src/context/AppContext.jsx",
       "importers": 32
     },
     {
-      "id": "src/components/common/Button.jsx",
-      "importers": 28
-    },
-    {
       "id": "src/utils/format.js",
-      "importers": 25
+      "importers": 26
     },
     {
       "id": "src/constants/statuses.js",
-      "importers": 23
+      "importers": 22
     },
     {
-      "id": "src/context/ToastContext.jsx",
-      "importers": 14
-    },
-    {
-      "id": "src/components/common/States.jsx",
+      "id": "src/components/common/Button.jsx",
       "importers": 13
     },
     {
-      "id": "src/components/common/Badge.jsx",
-      "importers": 10
-    },
-    {
-      "id": "src/components/common/Card.jsx",
-      "importers": 10
+      "id": "src/components/ta/Button.jsx",
+      "importers": 13
     },
     {
       "id": "src/constants/roles.js",
+      "importers": 13
+    },
+    {
+      "id": "src/context/ToastContext.jsx",
+      "importers": 12
+    },
+    {
+      "id": "src/components/ta/Card.jsx",
+      "importers": 11
+    },
+    {
+      "id": "src/components/ta/TAHeader.jsx",
       "importers": 10
     },
     {
-      "id": "src/components/common/Modal.jsx",
+      "id": "src/components/ta/EmptyState.jsx",
       "importers": 9
     },
     {
-      "id": "src/components/common/SearchBar.jsx",
+      "id": "src/components/ta/Tag.jsx",
       "importers": 9
     }
   ],
   "orphans": [
     "src/components/common/ActiveFilters.jsx",
+    "src/components/common/Avatar.jsx",
     "src/components/common/DocumentCard.jsx",
+    "src/components/common/FileUpload.jsx",
+    "src/components/common/Metric.jsx",
+    "src/components/common/PipelineFunnel.jsx",
+    "src/components/common/ProgressRing.jsx",
+    "src/components/common/StatTiles.jsx",
     "src/components/common/Stepper.jsx",
-    "src/components/common/Tooltip.jsx"
+    "src/components/common/Tooltip.jsx",
+    "src/components/navigation/Sidebar.jsx",
+    "src/components/navigation/Topbar.jsx",
+    "src/components/workflow/DocumentTable.jsx",
+    "src/components/workflow/RecruitmentTimeline.jsx"
   ],
   "nodes": [
     {
@@ -259,7 +265,7 @@
       "name": "JobCard.jsx",
       "dir": "src/components",
       "layer": "component",
-      "loc": 51,
+      "loc": 44,
       "summary": "",
       "exports": [
         "default (JobCard)"
@@ -269,7 +275,27 @@
       ],
       "imports": [
         "src/components/common/Icon.jsx",
-        "src/components/common/Button.jsx"
+        "src/components/ta/Button.jsx"
+      ],
+      "importedBy": [
+        "src/pages/candidate/JobsPage.jsx",
+        "src/pages/candidate/LandingPage.jsx"
+      ]
+    },
+    {
+      "id": "src/components/JobFilters.jsx",
+      "name": "JobFilters.jsx",
+      "dir": "src/components",
+      "layer": "component",
+      "loc": 29,
+      "summary": "",
+      "exports": [
+        "default (JobFilters)"
+      ],
+      "externals": [],
+      "imports": [
+        "src/components/common/Icon.jsx",
+        "src/hooks/useJobFilters.js"
       ],
       "importedBy": [
         "src/pages/candidate/JobsPage.jsx",
@@ -307,12 +333,7 @@
       "imports": [
         "src/utils/format.js"
       ],
-      "importedBy": [
-        "src/components/workflow/CandidateProfile.jsx",
-        "src/pages/hr/HRCandidatesPage.jsx",
-        "src/pages/hr/HRDashboard.jsx",
-        "src/pages/hr/HREmployeesPage.jsx"
-      ]
+      "importedBy": []
     },
     {
       "id": "src/components/common/Badge.jsx",
@@ -332,12 +353,7 @@
       ],
       "importedBy": [
         "src/components/common/DocumentCard.jsx",
-        "src/components/workflow/CandidateProfile.jsx",
         "src/components/workflow/DocumentTable.jsx",
-        "src/pages/candidate/MyApplicationPage.jsx",
-        "src/pages/hr/HRCandidatesPage.jsx",
-        "src/pages/hr/HREmployeesPage.jsx",
-        "src/pages/hr/HROffersPage.jsx",
         "src/pages/shared/DocumentsReview.jsx",
         "src/pages/talentAcquisition/TAInterviewsPage.jsx",
         "src/pages/talentAcquisition/TAOffersPage.jsx"
@@ -358,11 +374,8 @@
         "src/components/common/Icon.jsx"
       ],
       "importedBy": [
-        "src/components/JobCard.jsx",
         "src/components/common/FileUpload.jsx",
         "src/components/common/Modal.jsx",
-        "src/components/navigation/CandidateHeader.jsx",
-        "src/components/workflow/CandidateProfile.jsx",
         "src/components/workflow/CreateJobDrawer.jsx",
         "src/components/workflow/DocumentTable.jsx",
         "src/components/workflow/InterviewResultModal.jsx",
@@ -370,18 +383,6 @@
         "src/components/workflow/ReasonModal.jsx",
         "src/components/workflow/ScheduleInterviewModal.jsx",
         "src/pages/LoginPage.jsx",
-        "src/pages/candidate/ApplicationSuccessPage.jsx",
-        "src/pages/candidate/ApplyPage.jsx",
-        "src/pages/candidate/CandidateProfilePage.jsx",
-        "src/pages/candidate/JobDetailsPage.jsx",
-        "src/pages/candidate/JobsPage.jsx",
-        "src/pages/candidate/LandingPage.jsx",
-        "src/pages/candidate/MyApplicationPage.jsx",
-        "src/pages/hr/HRCandidateDetailPage.jsx",
-        "src/pages/hr/HRCandidatesPage.jsx",
-        "src/pages/hr/HRDashboard.jsx",
-        "src/pages/hr/HREmployeesPage.jsx",
-        "src/pages/hr/HROffersPage.jsx",
         "src/pages/shared/DocumentsReview.jsx",
         "src/pages/shared/SettingsPage.jsx",
         "src/pages/talentAcquisition/TAInterviewsPage.jsx",
@@ -405,13 +406,7 @@
         "src/components/common/Icon.jsx"
       ],
       "importedBy": [
-        "src/components/workflow/CandidateProfile.jsx",
         "src/components/workflow/OfferDrawer.jsx",
-        "src/pages/candidate/CandidateProfilePage.jsx",
-        "src/pages/candidate/MyApplicationPage.jsx",
-        "src/pages/hr/HRDashboard.jsx",
-        "src/pages/hr/HREmployeesPage.jsx",
-        "src/pages/hr/HROffersPage.jsx",
         "src/pages/shared/ActivityFeed.jsx",
         "src/pages/shared/ProfilePage.jsx",
         "src/pages/shared/SettingsPage.jsx"
@@ -479,7 +474,7 @@
         "src/components/workflow/OfferDrawer.jsx",
         "src/components/workflow/ReasonModal.jsx",
         "src/components/workflow/ScheduleInterviewModal.jsx",
-        "src/pages/candidate/ApplyPage.jsx"
+        "src/pages/candidate/MyApplicationPage.jsx"
       ]
     },
     {
@@ -499,9 +494,7 @@
         "src/components/common/Icon.jsx",
         "src/components/common/Button.jsx"
       ],
-      "importedBy": [
-        "src/pages/candidate/MyApplicationPage.jsx"
-      ]
+      "importedBy": []
     },
     {
       "id": "src/components/common/FilterSelect.jsx",
@@ -518,10 +511,6 @@
         "src/components/common/Icon.jsx"
       ],
       "importedBy": [
-        "src/pages/candidate/JobsPage.jsx",
-        "src/pages/candidate/LandingPage.jsx",
-        "src/pages/hr/HRCandidatesPage.jsx",
-        "src/pages/hr/HROffersPage.jsx",
         "src/pages/shared/ActivityFeed.jsx",
         "src/pages/shared/DocumentsReview.jsx",
         "src/pages/talentAcquisition/TAInterviewsPage.jsx",
@@ -544,6 +533,7 @@
       "imports": [],
       "importedBy": [
         "src/components/JobCard.jsx",
+        "src/components/JobFilters.jsx",
         "src/components/common/ActiveFilters.jsx",
         "src/components/common/Badge.jsx",
         "src/components/common/Button.jsx",
@@ -562,6 +552,8 @@
         "src/components/common/ToastContainer.jsx",
         "src/components/navigation/CandidateHeader.jsx",
         "src/components/navigation/GlobalSearch.jsx",
+        "src/components/navigation/HRSidebar.jsx",
+        "src/components/navigation/HRTopbar.jsx",
         "src/components/navigation/NotificationBell.jsx",
         "src/components/navigation/RoleSwitcher.jsx",
         "src/components/navigation/Sidebar.jsx",
@@ -571,21 +563,24 @@
         "src/components/ta/Button.jsx",
         "src/components/ta/DataGrid.jsx",
         "src/components/ta/EmptyState.jsx",
+        "src/components/ta/Field.jsx",
         "src/components/ta/KpiCard.jsx",
         "src/components/ta/Pager.jsx",
         "src/components/ta/Tag.jsx",
         "src/components/ta/Toolbar.jsx",
-        "src/components/workflow/CandidateProfile.jsx",
-        "src/components/workflow/OnboardingJourney.jsx",
         "src/components/workflow/RecruitmentTimeline.jsx",
+        "src/layouts/HRLayout.jsx",
         "src/layouts/TALayout.jsx",
         "src/pages/LoginPage.jsx",
         "src/pages/candidate/ApplicationSuccessPage.jsx",
         "src/pages/candidate/ApplyPage.jsx",
-        "src/pages/candidate/CandidateProfilePage.jsx",
         "src/pages/candidate/JobDetailsPage.jsx",
         "src/pages/candidate/MyApplicationPage.jsx",
+        "src/pages/hr/HRCandidateDetailPage.jsx",
+        "src/pages/hr/HRCandidatesPage.jsx",
         "src/pages/hr/HRDashboard.jsx",
+        "src/pages/hr/HREmployeesPage.jsx",
+        "src/pages/hr/HROffersPage.jsx",
         "src/pages/talentAcquisition/TACandidateDetailPage.jsx",
         "src/pages/talentAcquisition/TACandidatesPage.jsx",
         "src/pages/talentAcquisition/TADashboard.jsx",
@@ -605,10 +600,7 @@
       ],
       "externals": [],
       "imports": [],
-      "importedBy": [
-        "src/pages/hr/HRDashboard.jsx",
-        "src/pages/hr/HREmployeesPage.jsx"
-      ]
+      "importedBy": []
     },
     {
       "id": "src/components/common/Modal.jsx",
@@ -636,8 +628,6 @@
         "src/components/workflow/ReasonModal.jsx",
         "src/components/workflow/ScheduleInterviewModal.jsx",
         "src/pages/candidate/MyApplicationPage.jsx",
-        "src/pages/hr/HREmployeesPage.jsx",
-        "src/pages/hr/HROffersPage.jsx",
         "src/pages/shared/SettingsPage.jsx"
       ]
     },
@@ -653,9 +643,7 @@
       ],
       "externals": [],
       "imports": [],
-      "importedBy": [
-        "src/pages/hr/HRDashboard.jsx"
-      ]
+      "importedBy": []
     },
     {
       "id": "src/components/common/ProgressRing.jsx",
@@ -669,9 +657,7 @@
       ],
       "externals": [],
       "imports": [],
-      "importedBy": [
-        "src/components/workflow/OnboardingJourney.jsx"
-      ]
+      "importedBy": []
     },
     {
       "id": "src/components/common/SearchBar.jsx",
@@ -688,11 +674,6 @@
         "src/components/common/Icon.jsx"
       ],
       "importedBy": [
-        "src/pages/candidate/JobsPage.jsx",
-        "src/pages/candidate/LandingPage.jsx",
-        "src/pages/hr/HRCandidatesPage.jsx",
-        "src/pages/hr/HREmployeesPage.jsx",
-        "src/pages/hr/HROffersPage.jsx",
         "src/pages/shared/ActivityFeed.jsx",
         "src/pages/shared/DocumentsReview.jsx",
         "src/pages/talentAcquisition/TAInterviewsPage.jsx",
@@ -727,9 +708,7 @@
       ],
       "externals": [],
       "imports": [],
-      "importedBy": [
-        "src/pages/hr/HRCandidatesPage.jsx"
-      ]
+      "importedBy": []
     },
     {
       "id": "src/components/common/States.jsx",
@@ -750,16 +729,6 @@
       ],
       "importedBy": [
         "src/components/common/Table.jsx",
-        "src/components/workflow/CandidateProfile.jsx",
-        "src/pages/candidate/CandidateProfilePage.jsx",
-        "src/pages/candidate/JobDetailsPage.jsx",
-        "src/pages/candidate/JobsPage.jsx",
-        "src/pages/candidate/LandingPage.jsx",
-        "src/pages/candidate/MyApplicationPage.jsx",
-        "src/pages/hr/HRCandidateDetailPage.jsx",
-        "src/pages/hr/HRCandidatesPage.jsx",
-        "src/pages/hr/HRDashboard.jsx",
-        "src/pages/hr/HREmployeesPage.jsx",
         "src/pages/shared/ActivityFeed.jsx",
         "src/pages/talentAcquisition/TAOffersPage.jsx"
       ]
@@ -798,9 +767,6 @@
       ],
       "importedBy": [
         "src/components/workflow/DocumentTable.jsx",
-        "src/pages/hr/HRCandidatesPage.jsx",
-        "src/pages/hr/HREmployeesPage.jsx",
-        "src/pages/hr/HROffersPage.jsx",
         "src/pages/shared/DocumentsReview.jsx",
         "src/pages/talentAcquisition/TAInterviewsPage.jsx",
         "src/pages/talentAcquisition/TAOffersPage.jsx"
@@ -823,8 +789,6 @@
         "src/utils/format.js"
       ],
       "importedBy": [
-        "src/components/workflow/CandidateProfile.jsx",
-        "src/pages/candidate/MyApplicationPage.jsx",
         "src/pages/hr/HRDashboard.jsx",
         "src/pages/shared/ActivityFeed.jsx"
       ]
@@ -867,7 +831,7 @@
       "name": "CandidateHeader.jsx",
       "dir": "src/components/navigation",
       "layer": "navigation",
-      "loc": 71,
+      "loc": 78,
       "summary": "",
       "exports": [
         "default (CandidateHeader)"
@@ -878,9 +842,10 @@
       ],
       "imports": [
         "src/components/common/Icon.jsx",
-        "src/components/common/Button.jsx",
-        "src/components/navigation/RoleSwitcher.jsx",
-        "src/context/AppContext.jsx"
+        "src/components/ta/Button.jsx",
+        "src/context/AppContext.jsx",
+        "src/constants/roles.js",
+        "src/utils/format.js"
       ],
       "importedBy": [
         "src/layouts/CandidateLayout.jsx"
@@ -905,8 +870,53 @@
         "src/context/AppContext.jsx"
       ],
       "importedBy": [
+        "src/components/navigation/HRTopbar.jsx",
         "src/components/navigation/TATopbar.jsx",
         "src/components/navigation/Topbar.jsx"
+      ]
+    },
+    {
+      "id": "src/components/navigation/HRSidebar.jsx",
+      "name": "HRSidebar.jsx",
+      "dir": "src/components/navigation",
+      "layer": "navigation",
+      "loc": 103,
+      "summary": "",
+      "exports": [
+        "default (HRSidebar)"
+      ],
+      "externals": [
+        "react",
+        "react-router-dom"
+      ],
+      "imports": [
+        "src/components/common/Icon.jsx",
+        "src/context/AppContext.jsx",
+        "src/constants/roles.js"
+      ],
+      "importedBy": [
+        "src/layouts/HRLayout.jsx"
+      ]
+    },
+    {
+      "id": "src/components/navigation/HRTopbar.jsx",
+      "name": "HRTopbar.jsx",
+      "dir": "src/components/navigation",
+      "layer": "navigation",
+      "loc": 32,
+      "summary": "",
+      "exports": [
+        "default (HRTopbar)"
+      ],
+      "externals": [],
+      "imports": [
+        "src/components/common/Icon.jsx",
+        "src/components/navigation/GlobalSearch.jsx",
+        "src/components/navigation/NotificationBell.jsx",
+        "src/constants/roles.js"
+      ],
+      "importedBy": [
+        "src/layouts/HRLayout.jsx"
       ]
     },
     {
@@ -928,6 +938,7 @@
         "src/utils/format.js"
       ],
       "importedBy": [
+        "src/components/navigation/HRTopbar.jsx",
         "src/components/navigation/TATopbar.jsx",
         "src/components/navigation/Topbar.jsx"
       ]
@@ -952,7 +963,6 @@
         "src/constants/roles.js"
       ],
       "importedBy": [
-        "src/components/navigation/CandidateHeader.jsx",
         "src/components/navigation/Topbar.jsx"
       ]
     },
@@ -972,9 +982,7 @@
       "imports": [
         "src/components/common/Icon.jsx"
       ],
-      "importedBy": [
-        "src/layouts/HRLayout.jsx"
-      ]
+      "importedBy": []
     },
     {
       "id": "src/components/navigation/TASidebar.jsx",
@@ -1038,9 +1046,7 @@
         "src/components/navigation/RoleSwitcher.jsx",
         "src/constants/roles.js"
       ],
-      "importedBy": [
-        "src/layouts/HRLayout.jsx"
-      ]
+      "importedBy": []
     },
     {
       "id": "src/components/routing/RoleRoute.jsx",
@@ -1077,6 +1083,11 @@
         "src/utils/format.js"
       ],
       "importedBy": [
+        "src/pages/hr/HRCandidateDetailPage.jsx",
+        "src/pages/hr/HRCandidatesPage.jsx",
+        "src/pages/hr/HRDashboard.jsx",
+        "src/pages/hr/HREmployeesPage.jsx",
+        "src/pages/hr/HROffersPage.jsx",
         "src/pages/talentAcquisition/TACandidateDetailPage.jsx",
         "src/pages/talentAcquisition/TACandidatesPage.jsx"
       ]
@@ -1096,6 +1107,16 @@
         "src/components/common/Icon.jsx"
       ],
       "importedBy": [
+        "src/components/JobCard.jsx",
+        "src/components/navigation/CandidateHeader.jsx",
+        "src/pages/candidate/ApplicationSuccessPage.jsx",
+        "src/pages/candidate/ApplyPage.jsx",
+        "src/pages/candidate/CandidateProfilePage.jsx",
+        "src/pages/candidate/JobDetailsPage.jsx",
+        "src/pages/candidate/JobsPage.jsx",
+        "src/pages/candidate/LandingPage.jsx",
+        "src/pages/candidate/MyApplicationPage.jsx",
+        "src/pages/hr/HRCandidateDetailPage.jsx",
         "src/pages/talentAcquisition/TACandidateDetailPage.jsx",
         "src/pages/talentAcquisition/TAJobDetailPage.jsx",
         "src/pages/talentAcquisition/TAJobsPage.jsx"
@@ -1114,6 +1135,14 @@
       "externals": [],
       "imports": [],
       "importedBy": [
+        "src/pages/candidate/ApplicationSuccessPage.jsx",
+        "src/pages/candidate/ApplyPage.jsx",
+        "src/pages/candidate/CandidateProfilePage.jsx",
+        "src/pages/candidate/JobDetailsPage.jsx",
+        "src/pages/candidate/MyApplicationPage.jsx",
+        "src/pages/hr/HRCandidateDetailPage.jsx",
+        "src/pages/hr/HRDashboard.jsx",
+        "src/pages/hr/HREmployeesPage.jsx",
         "src/pages/talentAcquisition/TACandidateDetailPage.jsx",
         "src/pages/talentAcquisition/TADashboard.jsx",
         "src/pages/talentAcquisition/TAJobDetailPage.jsx"
@@ -1136,6 +1165,9 @@
         "src/components/ta/Pager.jsx"
       ],
       "importedBy": [
+        "src/pages/hr/HRCandidatesPage.jsx",
+        "src/pages/hr/HREmployeesPage.jsx",
+        "src/pages/hr/HROffersPage.jsx",
         "src/pages/talentAcquisition/TACandidatesPage.jsx",
         "src/pages/talentAcquisition/TAJobsPage.jsx"
       ]
@@ -1174,8 +1206,37 @@
       ],
       "importedBy": [
         "src/components/ta/DataGrid.jsx",
+        "src/pages/candidate/CandidateProfilePage.jsx",
+        "src/pages/candidate/JobDetailsPage.jsx",
+        "src/pages/candidate/JobsPage.jsx",
+        "src/pages/candidate/LandingPage.jsx",
+        "src/pages/candidate/MyApplicationPage.jsx",
+        "src/pages/hr/HRCandidateDetailPage.jsx",
         "src/pages/talentAcquisition/TACandidateDetailPage.jsx",
         "src/pages/talentAcquisition/TAJobDetailPage.jsx"
+      ]
+    },
+    {
+      "id": "src/components/ta/Field.jsx",
+      "name": "Field.jsx",
+      "dir": "src/components/ta",
+      "layer": "component",
+      "loc": 64,
+      "summary": "",
+      "exports": [
+        "Field",
+        "Input",
+        "Textarea",
+        "Select",
+        "Checkbox",
+        "FieldGrid"
+      ],
+      "externals": [],
+      "imports": [
+        "src/components/common/Icon.jsx"
+      ],
+      "importedBy": [
+        "src/pages/candidate/ApplyPage.jsx"
       ]
     },
     {
@@ -1193,6 +1254,7 @@
       ],
       "imports": [],
       "importedBy": [
+        "src/pages/hr/HRDashboard.jsx",
         "src/pages/talentAcquisition/TADashboard.jsx"
       ]
     },
@@ -1212,6 +1274,7 @@
         "src/components/common/Sparkline.jsx"
       ],
       "importedBy": [
+        "src/pages/hr/HRDashboard.jsx",
         "src/pages/talentAcquisition/TADashboard.jsx"
       ]
     },
@@ -1249,6 +1312,11 @@
       ],
       "imports": [],
       "importedBy": [
+        "src/pages/hr/HRCandidateDetailPage.jsx",
+        "src/pages/hr/HRCandidatesPage.jsx",
+        "src/pages/hr/HRDashboard.jsx",
+        "src/pages/hr/HREmployeesPage.jsx",
+        "src/pages/hr/HROffersPage.jsx",
         "src/pages/talentAcquisition/TACandidateDetailPage.jsx",
         "src/pages/talentAcquisition/TACandidatesPage.jsx",
         "src/pages/talentAcquisition/TADashboard.jsx",
@@ -1271,6 +1339,11 @@
         "src/components/common/Icon.jsx"
       ],
       "importedBy": [
+        "src/pages/candidate/MyApplicationPage.jsx",
+        "src/pages/hr/HRCandidateDetailPage.jsx",
+        "src/pages/hr/HRCandidatesPage.jsx",
+        "src/pages/hr/HRDashboard.jsx",
+        "src/pages/hr/HROffersPage.jsx",
         "src/pages/talentAcquisition/TACandidateDetailPage.jsx",
         "src/pages/talentAcquisition/TACandidatesPage.jsx",
         "src/pages/talentAcquisition/TAJobDetailPage.jsx",
@@ -1292,47 +1365,11 @@
         "src/components/common/Icon.jsx"
       ],
       "importedBy": [
+        "src/pages/hr/HRCandidatesPage.jsx",
+        "src/pages/hr/HREmployeesPage.jsx",
+        "src/pages/hr/HROffersPage.jsx",
         "src/pages/talentAcquisition/TACandidatesPage.jsx",
         "src/pages/talentAcquisition/TAJobsPage.jsx"
-      ]
-    },
-    {
-      "id": "src/components/workflow/CandidateProfile.jsx",
-      "name": "CandidateProfile.jsx",
-      "dir": "src/components/workflow",
-      "layer": "component",
-      "loc": 526,
-      "summary": "",
-      "exports": [
-        "default (CandidateProfile)"
-      ],
-      "externals": [
-        "react",
-        "react-router-dom"
-      ],
-      "imports": [
-        "src/components/common/Icon.jsx",
-        "src/components/common/Button.jsx",
-        "src/components/common/Card.jsx",
-        "src/components/common/Badge.jsx",
-        "src/components/common/Avatar.jsx",
-        "src/components/common/Timeline.jsx",
-        "src/components/common/States.jsx",
-        "src/components/workflow/ReasonModal.jsx",
-        "src/components/workflow/ScheduleInterviewModal.jsx",
-        "src/components/workflow/InterviewResultModal.jsx",
-        "src/components/workflow/OfferDrawer.jsx",
-        "src/components/workflow/DocumentTable.jsx",
-        "src/components/workflow/RecruitmentTimeline.jsx",
-        "src/components/workflow/OnboardingJourney.jsx",
-        "src/context/AppContext.jsx",
-        "src/context/ToastContext.jsx",
-        "src/data/jobs.js",
-        "src/constants/statuses.js",
-        "src/utils/format.js"
-      ],
-      "importedBy": [
-        "src/pages/hr/HRCandidateDetailPage.jsx"
       ]
     },
     {
@@ -1381,9 +1418,7 @@
         "src/utils/format.js",
         "src/context/ToastContext.jsx"
       ],
-      "importedBy": [
-        "src/components/workflow/CandidateProfile.jsx"
-      ]
+      "importedBy": []
     },
     {
       "id": "src/components/workflow/InterviewResultModal.jsx",
@@ -1405,7 +1440,6 @@
         "src/constants/statuses.js"
       ],
       "importedBy": [
-        "src/components/workflow/CandidateProfile.jsx",
         "src/pages/talentAcquisition/TACandidateDetailPage.jsx",
         "src/pages/talentAcquisition/TAInterviewsPage.jsx"
       ]
@@ -1415,7 +1449,7 @@
       "name": "OfferDrawer.jsx",
       "dir": "src/components/workflow",
       "layer": "component",
-      "loc": 128,
+      "loc": 118,
       "summary": "",
       "exports": [
         "default (OfferDrawer)"
@@ -1431,31 +1465,8 @@
         "src/utils/format.js"
       ],
       "importedBy": [
-        "src/components/workflow/CandidateProfile.jsx",
         "src/pages/talentAcquisition/TACandidateDetailPage.jsx",
         "src/pages/talentAcquisition/TAOffersPage.jsx"
-      ]
-    },
-    {
-      "id": "src/components/workflow/OnboardingJourney.jsx",
-      "name": "OnboardingJourney.jsx",
-      "dir": "src/components/workflow",
-      "layer": "component",
-      "loc": 52,
-      "summary": "",
-      "exports": [
-        "default (OnboardingJourney)"
-      ],
-      "externals": [],
-      "imports": [
-        "src/components/common/Icon.jsx",
-        "src/components/common/ProgressRing.jsx",
-        "src/constants/statuses.js"
-      ],
-      "importedBy": [
-        "src/components/workflow/CandidateProfile.jsx",
-        "src/pages/candidate/MyApplicationPage.jsx",
-        "src/pages/hr/HREmployeesPage.jsx"
       ]
     },
     {
@@ -1477,9 +1488,8 @@
         "src/components/common/Field.jsx"
       ],
       "importedBy": [
-        "src/components/workflow/CandidateProfile.jsx",
         "src/components/workflow/DocumentTable.jsx",
-        "src/pages/hr/HROffersPage.jsx",
+        "src/pages/hr/HRCandidateDetailPage.jsx",
         "src/pages/shared/DocumentsReview.jsx",
         "src/pages/talentAcquisition/TACandidateDetailPage.jsx"
       ]
@@ -1500,10 +1510,7 @@
         "src/constants/statuses.js",
         "src/utils/format.js"
       ],
-      "importedBy": [
-        "src/components/workflow/CandidateProfile.jsx",
-        "src/pages/candidate/MyApplicationPage.jsx"
-      ]
+      "importedBy": []
     },
     {
       "id": "src/components/workflow/ScheduleInterviewModal.jsx",
@@ -1526,7 +1533,6 @@
         "src/utils/format.js"
       ],
       "importedBy": [
-        "src/components/workflow/CandidateProfile.jsx",
         "src/pages/talentAcquisition/TACandidateDetailPage.jsx"
       ]
     },
@@ -1546,13 +1552,16 @@
       "imports": [],
       "importedBy": [
         "src/App.jsx",
+        "src/components/navigation/CandidateHeader.jsx",
+        "src/components/navigation/HRSidebar.jsx",
+        "src/components/navigation/HRTopbar.jsx",
         "src/components/navigation/RoleSwitcher.jsx",
         "src/components/navigation/TASidebar.jsx",
         "src/components/navigation/TATopbar.jsx",
         "src/components/navigation/Topbar.jsx",
         "src/context/AppContext.jsx",
-        "src/layouts/HRLayout.jsx",
         "src/pages/LoginPage.jsx",
+        "src/pages/hr/HRDashboard.jsx",
         "src/pages/shared/ProfilePage.jsx",
         "src/pages/talentAcquisition/TADashboard.jsx"
       ]
@@ -1562,7 +1571,7 @@
       "name": "statuses.js",
       "dir": "src/constants",
       "layer": "constant",
-      "loc": 178,
+      "loc": 218,
       "summary": "============================================================ Centralized status system. Every status has: label, tone (badge variant), icon (lucide name). ============================================================",
       "exports": [
         "APP_STATUS",
@@ -1571,6 +1580,8 @@
         "PIPELINE_STAGES",
         "stageIndexForStatus",
         "stageBadgeForStatus",
+        "HR_FUNNEL_STAGES",
+        "hrStageRank",
         "ROUND_STATUS",
         "ROUND_STATUS_META",
         "DOC_STATUS",
@@ -1587,16 +1598,15 @@
       "importedBy": [
         "src/components/common/Badge.jsx",
         "src/components/common/DocumentCard.jsx",
-        "src/components/workflow/CandidateProfile.jsx",
         "src/components/workflow/DocumentTable.jsx",
         "src/components/workflow/InterviewResultModal.jsx",
-        "src/components/workflow/OnboardingJourney.jsx",
         "src/components/workflow/RecruitmentTimeline.jsx",
         "src/components/workflow/ScheduleInterviewModal.jsx",
         "src/context/AppContext.jsx",
         "src/data/seed.js",
         "src/layouts/HRLayout.jsx",
         "src/pages/candidate/MyApplicationPage.jsx",
+        "src/pages/hr/HRCandidateDetailPage.jsx",
         "src/pages/hr/HRCandidatesPage.jsx",
         "src/pages/hr/HRDashboard.jsx",
         "src/pages/hr/HREmployeesPage.jsx",
@@ -1615,7 +1625,7 @@
       "name": "AppContext.jsx",
       "dir": "src/context",
       "layer": "context",
-      "loc": 629,
+      "loc": 641,
       "summary": "",
       "exports": [
         "AppProvider",
@@ -1636,11 +1646,11 @@
         "src/App.jsx",
         "src/components/navigation/CandidateHeader.jsx",
         "src/components/navigation/GlobalSearch.jsx",
+        "src/components/navigation/HRSidebar.jsx",
         "src/components/navigation/NotificationBell.jsx",
         "src/components/navigation/RoleSwitcher.jsx",
         "src/components/navigation/TASidebar.jsx",
         "src/components/routing/RoleRoute.jsx",
-        "src/components/workflow/CandidateProfile.jsx",
         "src/layouts/HRLayout.jsx",
         "src/main.jsx",
         "src/pages/LoginPage.jsx",
@@ -1687,13 +1697,11 @@
       ],
       "importedBy": [
         "src/components/common/ToastContainer.jsx",
-        "src/components/workflow/CandidateProfile.jsx",
         "src/components/workflow/DocumentTable.jsx",
         "src/main.jsx",
         "src/pages/candidate/ApplyPage.jsx",
         "src/pages/candidate/MyApplicationPage.jsx",
-        "src/pages/hr/HREmployeesPage.jsx",
-        "src/pages/hr/HROffersPage.jsx",
+        "src/pages/hr/HRCandidateDetailPage.jsx",
         "src/pages/shared/DocumentsReview.jsx",
         "src/pages/shared/SettingsPage.jsx",
         "src/pages/talentAcquisition/TACandidateDetailPage.jsx",
@@ -1716,7 +1724,6 @@
       "externals": [],
       "imports": [],
       "importedBy": [
-        "src/components/workflow/CandidateProfile.jsx",
         "src/context/AppContext.jsx",
         "src/data/seed.js",
         "src/pages/talentAcquisition/TACandidateDetailPage.jsx",
@@ -1728,7 +1735,7 @@
       "name": "seed.js",
       "dir": "src/data",
       "layer": "data",
-      "loc": 650,
+      "loc": 703,
       "summary": "",
       "exports": [
         "buildSeed"
@@ -1758,8 +1765,32 @@
       ],
       "imports": [],
       "importedBy": [
+        "src/pages/hr/HRCandidatesPage.jsx",
+        "src/pages/hr/HREmployeesPage.jsx",
+        "src/pages/hr/HROffersPage.jsx",
         "src/pages/talentAcquisition/TACandidatesPage.jsx",
         "src/pages/talentAcquisition/TAJobsPage.jsx"
+      ]
+    },
+    {
+      "id": "src/hooks/useJobFilters.js",
+      "name": "useJobFilters.js",
+      "dir": "src/hooks",
+      "layer": "hook",
+      "loc": 56,
+      "summary": "",
+      "exports": [
+        "useJobFilters",
+        "EXPERIENCE_OPTIONS"
+      ],
+      "externals": [
+        "react"
+      ],
+      "imports": [],
+      "importedBy": [
+        "src/components/JobFilters.jsx",
+        "src/pages/candidate/JobsPage.jsx",
+        "src/pages/candidate/LandingPage.jsx"
       ]
     },
     {
@@ -1788,7 +1819,7 @@
       "name": "index.css",
       "dir": "src",
       "layer": "style",
-      "loc": 963,
+      "loc": 840,
       "summary": "",
       "exports": [],
       "externals": [],
@@ -1802,7 +1833,7 @@
       "name": "CandidateLayout.jsx",
       "dir": "src/layouts",
       "layer": "layout",
-      "loc": 20,
+      "loc": 18,
       "summary": "",
       "exports": [
         "default (CandidateLayout)"
@@ -1822,7 +1853,7 @@
       "name": "HRLayout.jsx",
       "dir": "src/layouts",
       "layer": "layout",
-      "loc": 49,
+      "loc": 92,
       "summary": "",
       "exports": [
         "default (HRLayout)"
@@ -1832,9 +1863,9 @@
         "react-router-dom"
       ],
       "imports": [
-        "src/components/navigation/Sidebar.jsx",
-        "src/components/navigation/Topbar.jsx",
-        "src/constants/roles.js",
+        "src/components/navigation/HRSidebar.jsx",
+        "src/components/navigation/HRTopbar.jsx",
+        "src/components/common/Icon.jsx",
         "src/context/AppContext.jsx",
         "src/constants/statuses.js"
       ],
@@ -1916,7 +1947,7 @@
       "name": "ApplicationSuccessPage.jsx",
       "dir": "src/pages/candidate",
       "layer": "page",
-      "loc": 76,
+      "loc": 61,
       "summary": "",
       "exports": [
         "default (ApplicationSuccessPage)"
@@ -1926,7 +1957,8 @@
       ],
       "imports": [
         "src/components/common/Icon.jsx",
-        "src/components/common/Button.jsx"
+        "src/components/ta/Button.jsx",
+        "src/components/ta/Card.jsx"
       ],
       "importedBy": [
         "src/routes/AppRoutes.jsx"
@@ -1937,7 +1969,7 @@
       "name": "ApplyPage.jsx",
       "dir": "src/pages/candidate",
       "layer": "page",
-      "loc": 352,
+      "loc": 355,
       "summary": "",
       "exports": [
         "default (ApplyPage)"
@@ -1948,8 +1980,9 @@
       ],
       "imports": [
         "src/components/common/Icon.jsx",
-        "src/components/common/Button.jsx",
-        "src/components/common/Field.jsx",
+        "src/components/ta/Button.jsx",
+        "src/components/ta/Card.jsx",
+        "src/components/ta/Field.jsx",
         "src/context/AppContext.jsx",
         "src/context/ToastContext.jsx",
         "src/utils/resumeParser.js",
@@ -1965,7 +1998,7 @@
       "name": "CandidateProfilePage.jsx",
       "dir": "src/pages/candidate",
       "layer": "page",
-      "loc": 77,
+      "loc": 87,
       "summary": "",
       "exports": [
         "default (CandidateProfilePage)"
@@ -1974,10 +2007,9 @@
         "react-router-dom"
       ],
       "imports": [
-        "src/components/common/Icon.jsx",
-        "src/components/common/Button.jsx",
-        "src/components/common/Card.jsx",
-        "src/components/common/States.jsx",
+        "src/components/ta/Button.jsx",
+        "src/components/ta/Card.jsx",
+        "src/components/ta/EmptyState.jsx",
         "src/context/AppContext.jsx",
         "src/utils/format.js"
       ],
@@ -1990,7 +2022,7 @@
       "name": "JobDetailsPage.jsx",
       "dir": "src/pages/candidate",
       "layer": "page",
-      "loc": 101,
+      "loc": 95,
       "summary": "",
       "exports": [
         "default (JobDetailsPage)"
@@ -2000,8 +2032,9 @@
       ],
       "imports": [
         "src/components/common/Icon.jsx",
-        "src/components/common/Button.jsx",
-        "src/components/common/States.jsx",
+        "src/components/ta/Button.jsx",
+        "src/components/ta/Card.jsx",
+        "src/components/ta/EmptyState.jsx",
         "src/context/AppContext.jsx",
         "src/utils/format.js"
       ],
@@ -2014,22 +2047,21 @@
       "name": "JobsPage.jsx",
       "dir": "src/pages/candidate",
       "layer": "page",
-      "loc": 91,
+      "loc": 41,
       "summary": "",
       "exports": [
         "default (JobsPage)"
       ],
       "externals": [
-        "react",
         "react-router-dom"
       ],
       "imports": [
+        "src/components/ta/Button.jsx",
+        "src/components/ta/EmptyState.jsx",
         "src/components/JobCard.jsx",
-        "src/components/common/Button.jsx",
-        "src/components/common/SearchBar.jsx",
-        "src/components/common/FilterSelect.jsx",
-        "src/components/common/States.jsx",
-        "src/context/AppContext.jsx"
+        "src/components/JobFilters.jsx",
+        "src/context/AppContext.jsx",
+        "src/hooks/useJobFilters.js"
       ],
       "importedBy": [
         "src/routes/AppRoutes.jsx"
@@ -2040,22 +2072,21 @@
       "name": "LandingPage.jsx",
       "dir": "src/pages/candidate",
       "layer": "page",
-      "loc": 114,
+      "loc": 45,
       "summary": "",
       "exports": [
         "default (LandingPage)"
       ],
       "externals": [
-        "react",
         "react-router-dom"
       ],
       "imports": [
-        "src/components/common/Button.jsx",
+        "src/components/ta/Button.jsx",
+        "src/components/ta/EmptyState.jsx",
         "src/components/JobCard.jsx",
-        "src/components/common/SearchBar.jsx",
-        "src/components/common/FilterSelect.jsx",
-        "src/components/common/States.jsx",
-        "src/context/AppContext.jsx"
+        "src/components/JobFilters.jsx",
+        "src/context/AppContext.jsx",
+        "src/hooks/useJobFilters.js"
       ],
       "importedBy": [
         "src/routes/AppRoutes.jsx"
@@ -2066,7 +2097,7 @@
       "name": "MyApplicationPage.jsx",
       "dir": "src/pages/candidate",
       "layer": "page",
-      "loc": 372,
+      "loc": 383,
       "summary": "",
       "exports": [
         "default (MyApplicationPage)"
@@ -2077,19 +2108,16 @@
       ],
       "imports": [
         "src/components/common/Icon.jsx",
-        "src/components/common/Button.jsx",
-        "src/components/common/Card.jsx",
-        "src/components/common/Badge.jsx",
-        "src/components/common/States.jsx",
-        "src/components/common/Timeline.jsx",
-        "src/components/workflow/RecruitmentTimeline.jsx",
-        "src/components/workflow/OnboardingJourney.jsx",
+        "src/components/ta/Button.jsx",
+        "src/components/ta/Card.jsx",
+        "src/components/ta/Tag.jsx",
+        "src/components/ta/EmptyState.jsx",
         "src/components/common/Modal.jsx",
-        "src/components/common/FileUpload.jsx",
+        "src/components/common/Field.jsx",
         "src/context/AppContext.jsx",
         "src/context/ToastContext.jsx",
-        "src/constants/statuses.js",
-        "src/utils/format.js"
+        "src/utils/format.js",
+        "src/constants/statuses.js"
       ],
       "importedBy": [
         "src/routes/AppRoutes.jsx"
@@ -2118,19 +2146,28 @@
       "name": "HRCandidateDetailPage.jsx",
       "dir": "src/pages/hr",
       "layer": "page",
-      "loc": 32,
+      "loc": 242,
       "summary": "",
       "exports": [
         "default (HRCandidateDetailPage)"
       ],
       "externals": [
+        "react",
         "react-router-dom"
       ],
       "imports": [
-        "src/components/common/Button.jsx",
-        "src/components/common/States.jsx",
-        "src/components/workflow/CandidateProfile.jsx",
-        "src/context/AppContext.jsx"
+        "src/components/common/Icon.jsx",
+        "src/components/ta/TAHeader.jsx",
+        "src/components/ta/Card.jsx",
+        "src/components/ta/Button.jsx",
+        "src/components/ta/Tag.jsx",
+        "src/components/ta/EmptyState.jsx",
+        "src/components/ta/Avatar.jsx",
+        "src/components/workflow/ReasonModal.jsx",
+        "src/context/AppContext.jsx",
+        "src/context/ToastContext.jsx",
+        "src/constants/statuses.js",
+        "src/utils/format.js"
       ],
       "importedBy": [
         "src/routes/AppRoutes.jsx"
@@ -2141,7 +2178,7 @@
       "name": "HRCandidatesPage.jsx",
       "dir": "src/pages/hr",
       "layer": "page",
-      "loc": 145,
+      "loc": 158,
       "summary": "",
       "exports": [
         "default (HRCandidatesPage)"
@@ -2151,15 +2188,14 @@
         "react-router-dom"
       ],
       "imports": [
-        "src/components/common/Table.jsx",
-        "src/components/common/Badge.jsx",
-        "src/components/common/Avatar.jsx",
-        "src/components/common/Button.jsx",
-        "src/components/common/SearchBar.jsx",
-        "src/components/common/FilterSelect.jsx",
-        "src/components/common/StatTiles.jsx",
-        "src/components/common/States.jsx",
+        "src/components/common/Icon.jsx",
+        "src/components/ta/TAHeader.jsx",
+        "src/components/ta/DataGrid.jsx",
+        "src/components/ta/Toolbar.jsx",
+        "src/components/ta/Avatar.jsx",
+        "src/components/ta/Tag.jsx",
         "src/context/AppContext.jsx",
+        "src/hooks/useCollectionView.js",
         "src/constants/statuses.js",
         "src/utils/format.js"
       ],
@@ -2172,45 +2208,28 @@
       "name": "HRDashboard.jsx",
       "dir": "src/pages/hr",
       "layer": "page",
-      "loc": 102,
+      "loc": 150,
       "summary": "",
       "exports": [
         "default (HRDashboard)"
       ],
       "externals": [
-        "react",
         "react-router-dom"
       ],
       "imports": [
-        "src/components/common/Card.jsx",
-        "src/components/common/Metric.jsx",
-        "src/components/common/PipelineFunnel.jsx",
-        "src/components/common/Avatar.jsx",
-        "src/components/common/Button.jsx",
+        "src/components/ta/TAHeader.jsx",
+        "src/components/ta/Card.jsx",
+        "src/components/ta/KpiCard.jsx",
+        "src/components/ta/FunnelChart.jsx",
+        "src/components/ta/Avatar.jsx",
+        "src/components/ta/Tag.jsx",
         "src/components/common/Icon.jsx",
         "src/components/common/Timeline.jsx",
-        "src/components/common/States.jsx",
         "src/context/AppContext.jsx",
+        "src/constants/roles.js",
         "src/constants/statuses.js",
+        "src/utils/metrics.js",
         "src/utils/format.js"
-      ],
-      "importedBy": [
-        "src/routes/AppRoutes.jsx"
-      ]
-    },
-    {
-      "id": "src/pages/hr/HRDocumentsPage.jsx",
-      "name": "HRDocumentsPage.jsx",
-      "dir": "src/pages/hr",
-      "layer": "page",
-      "loc": 6,
-      "summary": "",
-      "exports": [
-        "default (HRDocumentsPage)"
-      ],
-      "externals": [],
-      "imports": [
-        "src/pages/shared/DocumentsReview.jsx"
       ],
       "importedBy": [
         "src/routes/AppRoutes.jsx"
@@ -2221,7 +2240,7 @@
       "name": "HREmployeesPage.jsx",
       "dir": "src/pages/hr",
       "layer": "page",
-      "loc": 164,
+      "loc": 113,
       "summary": "",
       "exports": [
         "default (HREmployeesPage)"
@@ -2231,18 +2250,14 @@
         "react-router-dom"
       ],
       "imports": [
-        "src/components/common/Table.jsx",
-        "src/components/common/Badge.jsx",
-        "src/components/common/Avatar.jsx",
-        "src/components/common/Metric.jsx",
-        "src/components/common/Button.jsx",
-        "src/components/common/SearchBar.jsx",
-        "src/components/common/Card.jsx",
-        "src/components/common/States.jsx",
-        "src/components/common/Modal.jsx",
-        "src/components/workflow/OnboardingJourney.jsx",
+        "src/components/common/Icon.jsx",
+        "src/components/ta/TAHeader.jsx",
+        "src/components/ta/Card.jsx",
+        "src/components/ta/DataGrid.jsx",
+        "src/components/ta/Toolbar.jsx",
+        "src/components/ta/Avatar.jsx",
         "src/context/AppContext.jsx",
-        "src/context/ToastContext.jsx",
+        "src/hooks/useCollectionView.js",
         "src/constants/statuses.js",
         "src/utils/format.js"
       ],
@@ -2255,7 +2270,7 @@
       "name": "HROffersPage.jsx",
       "dir": "src/pages/hr",
       "layer": "page",
-      "loc": 166,
+      "loc": 116,
       "summary": "",
       "exports": [
         "default (HROffersPage)"
@@ -2265,16 +2280,14 @@
         "react-router-dom"
       ],
       "imports": [
-        "src/components/common/Table.jsx",
-        "src/components/common/Badge.jsx",
-        "src/components/common/Button.jsx",
-        "src/components/common/SearchBar.jsx",
-        "src/components/common/FilterSelect.jsx",
-        "src/components/common/Modal.jsx",
-        "src/components/common/Card.jsx",
-        "src/components/workflow/ReasonModal.jsx",
+        "src/components/common/Icon.jsx",
+        "src/components/ta/TAHeader.jsx",
+        "src/components/ta/DataGrid.jsx",
+        "src/components/ta/Toolbar.jsx",
+        "src/components/ta/Avatar.jsx",
+        "src/components/ta/Tag.jsx",
         "src/context/AppContext.jsx",
-        "src/context/ToastContext.jsx",
+        "src/hooks/useCollectionView.js",
         "src/constants/statuses.js",
         "src/utils/format.js"
       ],
@@ -2335,7 +2348,6 @@
         "src/utils/format.js"
       ],
       "importedBy": [
-        "src/pages/hr/HRDocumentsPage.jsx",
         "src/pages/talentAcquisition/TADocumentsPage.jsx"
       ]
     },
@@ -2405,7 +2417,7 @@
       "name": "TACandidateDetailPage.jsx",
       "dir": "src/pages/talentAcquisition",
       "layer": "page",
-      "loc": 325,
+      "loc": 322,
       "summary": "",
       "exports": [
         "default (TACandidateDetailPage)"
@@ -2441,7 +2453,7 @@
       "name": "TACandidatesPage.jsx",
       "dir": "src/pages/talentAcquisition",
       "layer": "page",
-      "loc": 198,
+      "loc": 201,
       "summary": "",
       "exports": [
         "default (TACandidatesPage)"
@@ -2471,7 +2483,7 @@
       "name": "TADashboard.jsx",
       "dir": "src/pages/talentAcquisition",
       "layer": "page",
-      "loc": 226,
+      "loc": 218,
       "summary": "",
       "exports": [
         "default (TADashboard)"
@@ -2641,7 +2653,7 @@
       "name": "AppRoutes.jsx",
       "dir": "src/routes",
       "layer": "route",
-      "loc": 115,
+      "loc": 113,
       "summary": "",
       "exports": [
         "default (AppRoutes)"
@@ -2675,7 +2687,6 @@
         "src/pages/hr/HRCandidatesPage.jsx",
         "src/pages/hr/HRCandidateDetailPage.jsx",
         "src/pages/hr/HROffersPage.jsx",
-        "src/pages/hr/HRDocumentsPage.jsx",
         "src/pages/hr/HREmployeesPage.jsx",
         "src/pages/hr/HRActivityPage.jsx",
         "src/pages/shared/SettingsPage.jsx",
@@ -2690,7 +2701,7 @@
       "name": "ta.css",
       "dir": "src/styles",
       "layer": "style",
-      "loc": 572,
+      "loc": 803,
       "summary": "",
       "exports": [],
       "externals": [],
@@ -2720,9 +2731,9 @@
         "src/components/common/Avatar.jsx",
         "src/components/common/DocumentCard.jsx",
         "src/components/common/Timeline.jsx",
+        "src/components/navigation/CandidateHeader.jsx",
         "src/components/navigation/NotificationBell.jsx",
         "src/components/ta/Avatar.jsx",
-        "src/components/workflow/CandidateProfile.jsx",
         "src/components/workflow/CreateJobDrawer.jsx",
         "src/components/workflow/DocumentTable.jsx",
         "src/components/workflow/OfferDrawer.jsx",
@@ -2731,6 +2742,7 @@
         "src/pages/candidate/CandidateProfilePage.jsx",
         "src/pages/candidate/JobDetailsPage.jsx",
         "src/pages/candidate/MyApplicationPage.jsx",
+        "src/pages/hr/HRCandidateDetailPage.jsx",
         "src/pages/hr/HRCandidatesPage.jsx",
         "src/pages/hr/HRDashboard.jsx",
         "src/pages/hr/HREmployeesPage.jsx",
@@ -2784,6 +2796,7 @@
       "externals": [],
       "imports": [],
       "importedBy": [
+        "src/pages/hr/HRDashboard.jsx",
         "src/pages/talentAcquisition/TADashboard.jsx"
       ]
     },
@@ -2830,7 +2843,15 @@
     },
     {
       "source": "src/components/JobCard.jsx",
-      "target": "src/components/common/Button.jsx"
+      "target": "src/components/ta/Button.jsx"
+    },
+    {
+      "source": "src/components/JobFilters.jsx",
+      "target": "src/components/common/Icon.jsx"
+    },
+    {
+      "source": "src/components/JobFilters.jsx",
+      "target": "src/hooks/useJobFilters.js"
     },
     {
       "source": "src/components/common/ActiveFilters.jsx",
@@ -2942,15 +2963,19 @@
     },
     {
       "source": "src/components/navigation/CandidateHeader.jsx",
-      "target": "src/components/common/Button.jsx"
-    },
-    {
-      "source": "src/components/navigation/CandidateHeader.jsx",
-      "target": "src/components/navigation/RoleSwitcher.jsx"
+      "target": "src/components/ta/Button.jsx"
     },
     {
       "source": "src/components/navigation/CandidateHeader.jsx",
       "target": "src/context/AppContext.jsx"
+    },
+    {
+      "source": "src/components/navigation/CandidateHeader.jsx",
+      "target": "src/constants/roles.js"
+    },
+    {
+      "source": "src/components/navigation/CandidateHeader.jsx",
+      "target": "src/utils/format.js"
     },
     {
       "source": "src/components/navigation/GlobalSearch.jsx",
@@ -2959,6 +2984,34 @@
     {
       "source": "src/components/navigation/GlobalSearch.jsx",
       "target": "src/context/AppContext.jsx"
+    },
+    {
+      "source": "src/components/navigation/HRSidebar.jsx",
+      "target": "src/components/common/Icon.jsx"
+    },
+    {
+      "source": "src/components/navigation/HRSidebar.jsx",
+      "target": "src/context/AppContext.jsx"
+    },
+    {
+      "source": "src/components/navigation/HRSidebar.jsx",
+      "target": "src/constants/roles.js"
+    },
+    {
+      "source": "src/components/navigation/HRTopbar.jsx",
+      "target": "src/components/common/Icon.jsx"
+    },
+    {
+      "source": "src/components/navigation/HRTopbar.jsx",
+      "target": "src/components/navigation/GlobalSearch.jsx"
+    },
+    {
+      "source": "src/components/navigation/HRTopbar.jsx",
+      "target": "src/components/navigation/NotificationBell.jsx"
+    },
+    {
+      "source": "src/components/navigation/HRTopbar.jsx",
+      "target": "src/constants/roles.js"
     },
     {
       "source": "src/components/navigation/NotificationBell.jsx",
@@ -3065,6 +3118,10 @@
       "target": "src/components/common/Icon.jsx"
     },
     {
+      "source": "src/components/ta/Field.jsx",
+      "target": "src/components/common/Icon.jsx"
+    },
+    {
       "source": "src/components/ta/KpiCard.jsx",
       "target": "src/components/common/Icon.jsx"
     },
@@ -3083,82 +3140,6 @@
     {
       "source": "src/components/ta/Toolbar.jsx",
       "target": "src/components/common/Icon.jsx"
-    },
-    {
-      "source": "src/components/workflow/CandidateProfile.jsx",
-      "target": "src/components/common/Icon.jsx"
-    },
-    {
-      "source": "src/components/workflow/CandidateProfile.jsx",
-      "target": "src/components/common/Button.jsx"
-    },
-    {
-      "source": "src/components/workflow/CandidateProfile.jsx",
-      "target": "src/components/common/Card.jsx"
-    },
-    {
-      "source": "src/components/workflow/CandidateProfile.jsx",
-      "target": "src/components/common/Badge.jsx"
-    },
-    {
-      "source": "src/components/workflow/CandidateProfile.jsx",
-      "target": "src/components/common/Avatar.jsx"
-    },
-    {
-      "source": "src/components/workflow/CandidateProfile.jsx",
-      "target": "src/components/common/Timeline.jsx"
-    },
-    {
-      "source": "src/components/workflow/CandidateProfile.jsx",
-      "target": "src/components/common/States.jsx"
-    },
-    {
-      "source": "src/components/workflow/CandidateProfile.jsx",
-      "target": "src/components/workflow/ReasonModal.jsx"
-    },
-    {
-      "source": "src/components/workflow/CandidateProfile.jsx",
-      "target": "src/components/workflow/ScheduleInterviewModal.jsx"
-    },
-    {
-      "source": "src/components/workflow/CandidateProfile.jsx",
-      "target": "src/components/workflow/InterviewResultModal.jsx"
-    },
-    {
-      "source": "src/components/workflow/CandidateProfile.jsx",
-      "target": "src/components/workflow/OfferDrawer.jsx"
-    },
-    {
-      "source": "src/components/workflow/CandidateProfile.jsx",
-      "target": "src/components/workflow/DocumentTable.jsx"
-    },
-    {
-      "source": "src/components/workflow/CandidateProfile.jsx",
-      "target": "src/components/workflow/RecruitmentTimeline.jsx"
-    },
-    {
-      "source": "src/components/workflow/CandidateProfile.jsx",
-      "target": "src/components/workflow/OnboardingJourney.jsx"
-    },
-    {
-      "source": "src/components/workflow/CandidateProfile.jsx",
-      "target": "src/context/AppContext.jsx"
-    },
-    {
-      "source": "src/components/workflow/CandidateProfile.jsx",
-      "target": "src/context/ToastContext.jsx"
-    },
-    {
-      "source": "src/components/workflow/CandidateProfile.jsx",
-      "target": "src/data/jobs.js"
-    },
-    {
-      "source": "src/components/workflow/CandidateProfile.jsx",
-      "target": "src/constants/statuses.js"
-    },
-    {
-      "source": "src/components/workflow/CandidateProfile.jsx",
-      "target": "src/utils/format.js"
     },
     {
       "source": "src/components/workflow/CreateJobDrawer.jsx",
@@ -3243,18 +3224,6 @@
     {
       "source": "src/components/workflow/OfferDrawer.jsx",
       "target": "src/utils/format.js"
-    },
-    {
-      "source": "src/components/workflow/OnboardingJourney.jsx",
-      "target": "src/components/common/Icon.jsx"
-    },
-    {
-      "source": "src/components/workflow/OnboardingJourney.jsx",
-      "target": "src/components/common/ProgressRing.jsx"
-    },
-    {
-      "source": "src/components/workflow/OnboardingJourney.jsx",
-      "target": "src/constants/statuses.js"
     },
     {
       "source": "src/components/workflow/ReasonModal.jsx",
@@ -3346,15 +3315,15 @@
     },
     {
       "source": "src/layouts/HRLayout.jsx",
-      "target": "src/components/navigation/Sidebar.jsx"
+      "target": "src/components/navigation/HRSidebar.jsx"
     },
     {
       "source": "src/layouts/HRLayout.jsx",
-      "target": "src/components/navigation/Topbar.jsx"
+      "target": "src/components/navigation/HRTopbar.jsx"
     },
     {
       "source": "src/layouts/HRLayout.jsx",
-      "target": "src/constants/roles.js"
+      "target": "src/components/common/Icon.jsx"
     },
     {
       "source": "src/layouts/HRLayout.jsx",
@@ -3418,7 +3387,11 @@
     },
     {
       "source": "src/pages/candidate/ApplicationSuccessPage.jsx",
-      "target": "src/components/common/Button.jsx"
+      "target": "src/components/ta/Button.jsx"
+    },
+    {
+      "source": "src/pages/candidate/ApplicationSuccessPage.jsx",
+      "target": "src/components/ta/Card.jsx"
     },
     {
       "source": "src/pages/candidate/ApplyPage.jsx",
@@ -3426,11 +3399,15 @@
     },
     {
       "source": "src/pages/candidate/ApplyPage.jsx",
-      "target": "src/components/common/Button.jsx"
+      "target": "src/components/ta/Button.jsx"
     },
     {
       "source": "src/pages/candidate/ApplyPage.jsx",
-      "target": "src/components/common/Field.jsx"
+      "target": "src/components/ta/Card.jsx"
+    },
+    {
+      "source": "src/pages/candidate/ApplyPage.jsx",
+      "target": "src/components/ta/Field.jsx"
     },
     {
       "source": "src/pages/candidate/ApplyPage.jsx",
@@ -3454,19 +3431,15 @@
     },
     {
       "source": "src/pages/candidate/CandidateProfilePage.jsx",
-      "target": "src/components/common/Icon.jsx"
+      "target": "src/components/ta/Button.jsx"
     },
     {
       "source": "src/pages/candidate/CandidateProfilePage.jsx",
-      "target": "src/components/common/Button.jsx"
+      "target": "src/components/ta/Card.jsx"
     },
     {
       "source": "src/pages/candidate/CandidateProfilePage.jsx",
-      "target": "src/components/common/Card.jsx"
-    },
-    {
-      "source": "src/pages/candidate/CandidateProfilePage.jsx",
-      "target": "src/components/common/States.jsx"
+      "target": "src/components/ta/EmptyState.jsx"
     },
     {
       "source": "src/pages/candidate/CandidateProfilePage.jsx",
@@ -3482,11 +3455,15 @@
     },
     {
       "source": "src/pages/candidate/JobDetailsPage.jsx",
-      "target": "src/components/common/Button.jsx"
+      "target": "src/components/ta/Button.jsx"
     },
     {
       "source": "src/pages/candidate/JobDetailsPage.jsx",
-      "target": "src/components/common/States.jsx"
+      "target": "src/components/ta/Card.jsx"
+    },
+    {
+      "source": "src/pages/candidate/JobDetailsPage.jsx",
+      "target": "src/components/ta/EmptyState.jsx"
     },
     {
       "source": "src/pages/candidate/JobDetailsPage.jsx",
@@ -3498,31 +3475,35 @@
     },
     {
       "source": "src/pages/candidate/JobsPage.jsx",
+      "target": "src/components/ta/Button.jsx"
+    },
+    {
+      "source": "src/pages/candidate/JobsPage.jsx",
+      "target": "src/components/ta/EmptyState.jsx"
+    },
+    {
+      "source": "src/pages/candidate/JobsPage.jsx",
       "target": "src/components/JobCard.jsx"
     },
     {
       "source": "src/pages/candidate/JobsPage.jsx",
-      "target": "src/components/common/Button.jsx"
-    },
-    {
-      "source": "src/pages/candidate/JobsPage.jsx",
-      "target": "src/components/common/SearchBar.jsx"
-    },
-    {
-      "source": "src/pages/candidate/JobsPage.jsx",
-      "target": "src/components/common/FilterSelect.jsx"
-    },
-    {
-      "source": "src/pages/candidate/JobsPage.jsx",
-      "target": "src/components/common/States.jsx"
+      "target": "src/components/JobFilters.jsx"
     },
     {
       "source": "src/pages/candidate/JobsPage.jsx",
       "target": "src/context/AppContext.jsx"
     },
     {
+      "source": "src/pages/candidate/JobsPage.jsx",
+      "target": "src/hooks/useJobFilters.js"
+    },
+    {
       "source": "src/pages/candidate/LandingPage.jsx",
-      "target": "src/components/common/Button.jsx"
+      "target": "src/components/ta/Button.jsx"
+    },
+    {
+      "source": "src/pages/candidate/LandingPage.jsx",
+      "target": "src/components/ta/EmptyState.jsx"
     },
     {
       "source": "src/pages/candidate/LandingPage.jsx",
@@ -3530,19 +3511,15 @@
     },
     {
       "source": "src/pages/candidate/LandingPage.jsx",
-      "target": "src/components/common/SearchBar.jsx"
-    },
-    {
-      "source": "src/pages/candidate/LandingPage.jsx",
-      "target": "src/components/common/FilterSelect.jsx"
-    },
-    {
-      "source": "src/pages/candidate/LandingPage.jsx",
-      "target": "src/components/common/States.jsx"
+      "target": "src/components/JobFilters.jsx"
     },
     {
       "source": "src/pages/candidate/LandingPage.jsx",
       "target": "src/context/AppContext.jsx"
+    },
+    {
+      "source": "src/pages/candidate/LandingPage.jsx",
+      "target": "src/hooks/useJobFilters.js"
     },
     {
       "source": "src/pages/candidate/MyApplicationPage.jsx",
@@ -3550,31 +3527,19 @@
     },
     {
       "source": "src/pages/candidate/MyApplicationPage.jsx",
-      "target": "src/components/common/Button.jsx"
+      "target": "src/components/ta/Button.jsx"
     },
     {
       "source": "src/pages/candidate/MyApplicationPage.jsx",
-      "target": "src/components/common/Card.jsx"
+      "target": "src/components/ta/Card.jsx"
     },
     {
       "source": "src/pages/candidate/MyApplicationPage.jsx",
-      "target": "src/components/common/Badge.jsx"
+      "target": "src/components/ta/Tag.jsx"
     },
     {
       "source": "src/pages/candidate/MyApplicationPage.jsx",
-      "target": "src/components/common/States.jsx"
-    },
-    {
-      "source": "src/pages/candidate/MyApplicationPage.jsx",
-      "target": "src/components/common/Timeline.jsx"
-    },
-    {
-      "source": "src/pages/candidate/MyApplicationPage.jsx",
-      "target": "src/components/workflow/RecruitmentTimeline.jsx"
-    },
-    {
-      "source": "src/pages/candidate/MyApplicationPage.jsx",
-      "target": "src/components/workflow/OnboardingJourney.jsx"
+      "target": "src/components/ta/EmptyState.jsx"
     },
     {
       "source": "src/pages/candidate/MyApplicationPage.jsx",
@@ -3582,7 +3547,7 @@
     },
     {
       "source": "src/pages/candidate/MyApplicationPage.jsx",
-      "target": "src/components/common/FileUpload.jsx"
+      "target": "src/components/common/Field.jsx"
     },
     {
       "source": "src/pages/candidate/MyApplicationPage.jsx",
@@ -3594,11 +3559,11 @@
     },
     {
       "source": "src/pages/candidate/MyApplicationPage.jsx",
-      "target": "src/constants/statuses.js"
+      "target": "src/utils/format.js"
     },
     {
       "source": "src/pages/candidate/MyApplicationPage.jsx",
-      "target": "src/utils/format.js"
+      "target": "src/constants/statuses.js"
     },
     {
       "source": "src/pages/hr/HRActivityPage.jsx",
@@ -3606,55 +3571,83 @@
     },
     {
       "source": "src/pages/hr/HRCandidateDetailPage.jsx",
-      "target": "src/components/common/Button.jsx"
+      "target": "src/components/common/Icon.jsx"
     },
     {
       "source": "src/pages/hr/HRCandidateDetailPage.jsx",
-      "target": "src/components/common/States.jsx"
+      "target": "src/components/ta/TAHeader.jsx"
     },
     {
       "source": "src/pages/hr/HRCandidateDetailPage.jsx",
-      "target": "src/components/workflow/CandidateProfile.jsx"
+      "target": "src/components/ta/Card.jsx"
+    },
+    {
+      "source": "src/pages/hr/HRCandidateDetailPage.jsx",
+      "target": "src/components/ta/Button.jsx"
+    },
+    {
+      "source": "src/pages/hr/HRCandidateDetailPage.jsx",
+      "target": "src/components/ta/Tag.jsx"
+    },
+    {
+      "source": "src/pages/hr/HRCandidateDetailPage.jsx",
+      "target": "src/components/ta/EmptyState.jsx"
+    },
+    {
+      "source": "src/pages/hr/HRCandidateDetailPage.jsx",
+      "target": "src/components/ta/Avatar.jsx"
+    },
+    {
+      "source": "src/pages/hr/HRCandidateDetailPage.jsx",
+      "target": "src/components/workflow/ReasonModal.jsx"
     },
     {
       "source": "src/pages/hr/HRCandidateDetailPage.jsx",
       "target": "src/context/AppContext.jsx"
     },
     {
-      "source": "src/pages/hr/HRCandidatesPage.jsx",
-      "target": "src/components/common/Table.jsx"
+      "source": "src/pages/hr/HRCandidateDetailPage.jsx",
+      "target": "src/context/ToastContext.jsx"
+    },
+    {
+      "source": "src/pages/hr/HRCandidateDetailPage.jsx",
+      "target": "src/constants/statuses.js"
+    },
+    {
+      "source": "src/pages/hr/HRCandidateDetailPage.jsx",
+      "target": "src/utils/format.js"
     },
     {
       "source": "src/pages/hr/HRCandidatesPage.jsx",
-      "target": "src/components/common/Badge.jsx"
+      "target": "src/components/common/Icon.jsx"
     },
     {
       "source": "src/pages/hr/HRCandidatesPage.jsx",
-      "target": "src/components/common/Avatar.jsx"
+      "target": "src/components/ta/TAHeader.jsx"
     },
     {
       "source": "src/pages/hr/HRCandidatesPage.jsx",
-      "target": "src/components/common/Button.jsx"
+      "target": "src/components/ta/DataGrid.jsx"
     },
     {
       "source": "src/pages/hr/HRCandidatesPage.jsx",
-      "target": "src/components/common/SearchBar.jsx"
+      "target": "src/components/ta/Toolbar.jsx"
     },
     {
       "source": "src/pages/hr/HRCandidatesPage.jsx",
-      "target": "src/components/common/FilterSelect.jsx"
+      "target": "src/components/ta/Avatar.jsx"
     },
     {
       "source": "src/pages/hr/HRCandidatesPage.jsx",
-      "target": "src/components/common/StatTiles.jsx"
-    },
-    {
-      "source": "src/pages/hr/HRCandidatesPage.jsx",
-      "target": "src/components/common/States.jsx"
+      "target": "src/components/ta/Tag.jsx"
     },
     {
       "source": "src/pages/hr/HRCandidatesPage.jsx",
       "target": "src/context/AppContext.jsx"
+    },
+    {
+      "source": "src/pages/hr/HRCandidatesPage.jsx",
+      "target": "src/hooks/useCollectionView.js"
     },
     {
       "source": "src/pages/hr/HRCandidatesPage.jsx",
@@ -3666,23 +3659,27 @@
     },
     {
       "source": "src/pages/hr/HRDashboard.jsx",
-      "target": "src/components/common/Card.jsx"
+      "target": "src/components/ta/TAHeader.jsx"
     },
     {
       "source": "src/pages/hr/HRDashboard.jsx",
-      "target": "src/components/common/Metric.jsx"
+      "target": "src/components/ta/Card.jsx"
     },
     {
       "source": "src/pages/hr/HRDashboard.jsx",
-      "target": "src/components/common/PipelineFunnel.jsx"
+      "target": "src/components/ta/KpiCard.jsx"
     },
     {
       "source": "src/pages/hr/HRDashboard.jsx",
-      "target": "src/components/common/Avatar.jsx"
+      "target": "src/components/ta/FunnelChart.jsx"
     },
     {
       "source": "src/pages/hr/HRDashboard.jsx",
-      "target": "src/components/common/Button.jsx"
+      "target": "src/components/ta/Avatar.jsx"
+    },
+    {
+      "source": "src/pages/hr/HRDashboard.jsx",
+      "target": "src/components/ta/Tag.jsx"
     },
     {
       "source": "src/pages/hr/HRDashboard.jsx",
@@ -3694,11 +3691,11 @@
     },
     {
       "source": "src/pages/hr/HRDashboard.jsx",
-      "target": "src/components/common/States.jsx"
+      "target": "src/context/AppContext.jsx"
     },
     {
       "source": "src/pages/hr/HRDashboard.jsx",
-      "target": "src/context/AppContext.jsx"
+      "target": "src/constants/roles.js"
     },
     {
       "source": "src/pages/hr/HRDashboard.jsx",
@@ -3706,51 +3703,35 @@
     },
     {
       "source": "src/pages/hr/HRDashboard.jsx",
+      "target": "src/utils/metrics.js"
+    },
+    {
+      "source": "src/pages/hr/HRDashboard.jsx",
       "target": "src/utils/format.js"
     },
     {
-      "source": "src/pages/hr/HRDocumentsPage.jsx",
-      "target": "src/pages/shared/DocumentsReview.jsx"
+      "source": "src/pages/hr/HREmployeesPage.jsx",
+      "target": "src/components/common/Icon.jsx"
     },
     {
       "source": "src/pages/hr/HREmployeesPage.jsx",
-      "target": "src/components/common/Table.jsx"
+      "target": "src/components/ta/TAHeader.jsx"
     },
     {
       "source": "src/pages/hr/HREmployeesPage.jsx",
-      "target": "src/components/common/Badge.jsx"
+      "target": "src/components/ta/Card.jsx"
     },
     {
       "source": "src/pages/hr/HREmployeesPage.jsx",
-      "target": "src/components/common/Avatar.jsx"
+      "target": "src/components/ta/DataGrid.jsx"
     },
     {
       "source": "src/pages/hr/HREmployeesPage.jsx",
-      "target": "src/components/common/Metric.jsx"
+      "target": "src/components/ta/Toolbar.jsx"
     },
     {
       "source": "src/pages/hr/HREmployeesPage.jsx",
-      "target": "src/components/common/Button.jsx"
-    },
-    {
-      "source": "src/pages/hr/HREmployeesPage.jsx",
-      "target": "src/components/common/SearchBar.jsx"
-    },
-    {
-      "source": "src/pages/hr/HREmployeesPage.jsx",
-      "target": "src/components/common/Card.jsx"
-    },
-    {
-      "source": "src/pages/hr/HREmployeesPage.jsx",
-      "target": "src/components/common/States.jsx"
-    },
-    {
-      "source": "src/pages/hr/HREmployeesPage.jsx",
-      "target": "src/components/common/Modal.jsx"
-    },
-    {
-      "source": "src/pages/hr/HREmployeesPage.jsx",
-      "target": "src/components/workflow/OnboardingJourney.jsx"
+      "target": "src/components/ta/Avatar.jsx"
     },
     {
       "source": "src/pages/hr/HREmployeesPage.jsx",
@@ -3758,7 +3739,7 @@
     },
     {
       "source": "src/pages/hr/HREmployeesPage.jsx",
-      "target": "src/context/ToastContext.jsx"
+      "target": "src/hooks/useCollectionView.js"
     },
     {
       "source": "src/pages/hr/HREmployeesPage.jsx",
@@ -3770,35 +3751,27 @@
     },
     {
       "source": "src/pages/hr/HROffersPage.jsx",
-      "target": "src/components/common/Table.jsx"
+      "target": "src/components/common/Icon.jsx"
     },
     {
       "source": "src/pages/hr/HROffersPage.jsx",
-      "target": "src/components/common/Badge.jsx"
+      "target": "src/components/ta/TAHeader.jsx"
     },
     {
       "source": "src/pages/hr/HROffersPage.jsx",
-      "target": "src/components/common/Button.jsx"
+      "target": "src/components/ta/DataGrid.jsx"
     },
     {
       "source": "src/pages/hr/HROffersPage.jsx",
-      "target": "src/components/common/SearchBar.jsx"
+      "target": "src/components/ta/Toolbar.jsx"
     },
     {
       "source": "src/pages/hr/HROffersPage.jsx",
-      "target": "src/components/common/FilterSelect.jsx"
+      "target": "src/components/ta/Avatar.jsx"
     },
     {
       "source": "src/pages/hr/HROffersPage.jsx",
-      "target": "src/components/common/Modal.jsx"
-    },
-    {
-      "source": "src/pages/hr/HROffersPage.jsx",
-      "target": "src/components/common/Card.jsx"
-    },
-    {
-      "source": "src/pages/hr/HROffersPage.jsx",
-      "target": "src/components/workflow/ReasonModal.jsx"
+      "target": "src/components/ta/Tag.jsx"
     },
     {
       "source": "src/pages/hr/HROffersPage.jsx",
@@ -3806,7 +3779,7 @@
     },
     {
       "source": "src/pages/hr/HROffersPage.jsx",
-      "target": "src/context/ToastContext.jsx"
+      "target": "src/hooks/useCollectionView.js"
     },
     {
       "source": "src/pages/hr/HROffersPage.jsx",
@@ -4327,10 +4300,6 @@
     {
       "source": "src/routes/AppRoutes.jsx",
       "target": "src/pages/hr/HROffersPage.jsx"
-    },
-    {
-      "source": "src/routes/AppRoutes.jsx",
-      "target": "src/pages/hr/HRDocumentsPage.jsx"
     },
     {
       "source": "src/routes/AppRoutes.jsx",

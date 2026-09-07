@@ -1,144 +1,157 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { DataTable } from '../../components/common/Table.jsx';
-import { StatusBadge, Badge } from '../../components/common/Badge.jsx';
-import Avatar from '../../components/common/Avatar.jsx';
-import Button from '../../components/common/Button.jsx';
-import SearchBar from '../../components/common/SearchBar.jsx';
-import FilterSelect from '../../components/common/FilterSelect.jsx';
-import StatTiles from '../../components/common/StatTiles.jsx';
-import { EmptyState } from '../../components/common/States.jsx';
+import Icon from '../../components/common/Icon.jsx';
+import TAHeader from '../../components/ta/TAHeader.jsx';
+import DataGrid from '../../components/ta/DataGrid.jsx';
+import Toolbar from '../../components/ta/Toolbar.jsx';
+import Avatar from '../../components/ta/Avatar.jsx';
+import Tag from '../../components/ta/Tag.jsx';
 import { useApp } from '../../context/AppContext.jsx';
-import { APP_STATUS, OFFER_STATUS_META } from '../../constants/statuses.js';
+import { useCollectionView } from '../../hooks/useCollectionView.js';
+import { APP_STATUS, DOC_STATUS, OFFER_STATUS_META, HR_FUNNEL_STAGES, hrStageRank, stageBadgeForStatus } from '../../constants/statuses.js';
 import { formatDate } from '../../utils/format.js';
 
-const HR_STATUSES = [
-  APP_STATUS.DOCS_VERIFIED,
-  APP_STATUS.OFFER_DRAFT,
-  APP_STATUS.OFFER_PENDING_HR,
-  APP_STATUS.OFFER_ISSUED,
-  APP_STATUS.OFFER_ACCEPTED,
-  APP_STATUS.OFFER_DECLINED,
-  APP_STATUS.JOINING_PENDING,
-  APP_STATUS.EMPLOYEE,
-];
+// The old offer-status tones don't match Tag's tone names — map them once.
+const OFFER_TONE = { neutral: 'grey', warning: 'amber', info: 'blue', success: 'green', error: 'red' };
 
 const COLUMNS = [
-  { key: 'candidateId', label: 'Candidate ID' },
-  { key: 'name', label: 'Candidate Name' },
-  { key: 'position', label: 'Position' },
-  { key: 'department', label: 'Department' },
+  { key: 'name', label: 'Candidate', sortable: true },
+  { key: 'position', label: 'Position', sortable: true },
+  { key: 'docs', label: 'Documents' },
   { key: 'offerStatus', label: 'Offer Status' },
-  { key: 'joiningDate', label: 'Joining Date' },
-  { key: 'hrStatus', label: 'HR Status' },
-  { key: 'action', label: 'Action' },
+  { key: 'joiningDate', label: 'Joining Date', sortable: true },
+  { key: 'hrStatus', label: 'HR Status', sortable: true },
+  { key: 'actions', label: 'Actions' },
 ];
 
 export default function HRCandidatesPage() {
-  const { data, offerFor } = useApp();
   const navigate = useNavigate();
+  const { data, offerFor, documentsFor } = useApp();
   const [sp] = useSearchParams();
-  const stageParam = sp.get('stage');
-  const [q, setQ] = useState('');
-  const [status, setStatus] = useState(stageParam || 'all');
-
-  useEffect(() => {
-    if (stageParam) setStatus(stageParam);
-  }, [stageParam]);
 
   const rows = useMemo(
     () =>
       (data.applications || [])
-        .filter((a) => HR_STATUSES.includes(a.status))
+        .filter((a) => hrStageRank(a.status) >= 0 || a.status === APP_STATUS.OFFER_DECLINED)
         .map((a) => {
           const offer = offerFor(a.id);
+          const docs = documentsFor(a.id);
+          const verified = docs.filter((d) => d.status === DOC_STATUS.VERIFIED).length;
+          const rejected = docs.filter((d) => d.status === DOC_STATUS.REJECTED).length;
           return {
             id: a.id,
             candidateId: a.candidateId,
             name: `${a.personal.firstName} ${a.personal.lastName}`,
             position: a.jobTitle,
-            department: offer?.department || '—',
+            department: offer?.department || 'General',
             offerStatus: offer?.status || null,
             joiningDate: offer?.joiningDate || null,
             hrStatus: a.status,
+            hrRank: hrStageRank(a.status),
+            docs: rejected ? { tone: 'red', text: `${rejected} rejected` }
+              : docs.length && verified === docs.length ? { tone: 'green', text: 'All verified' }
+              : verified ? { tone: 'amber', text: `${verified}/${docs.length} verified` }
+              : { tone: 'grey', text: '—' },
           };
-        })
-        .filter((r) => {
-          const t = q.trim().toLowerCase();
-          return (!t || r.name.toLowerCase().includes(t) || r.candidateId.toLowerCase().includes(t)) && (status === 'all' || r.hrStatus === status);
         }),
-    [data.applications, offerFor, q, status]
+    [data.applications, offerFor, documentsFor]
   );
 
-  const tiles = useMemo(() => {
-    const all = (data.applications || []).filter((a) => HR_STATUSES.includes(a.status));
-    const c = (fn) => all.filter(fn).length;
-    return [
-      { n: c((a) => a.status === APP_STATUS.DOCS_VERIFIED || a.status === APP_STATUS.OFFER_PENDING_HR), label: 'Awaiting HR' },
-      { n: c((a) => a.status === APP_STATUS.OFFER_ISSUED), label: 'Offer issued' },
-      { n: c((a) => a.status === APP_STATUS.OFFER_ACCEPTED || a.status === APP_STATUS.JOINING_PENDING), label: 'Joining', tone: 'warn' },
-      { n: c((a) => a.status === APP_STATUS.EMPLOYEE), label: 'Onboarded', tone: 'accent' },
-    ];
-  }, [data.applications]);
+  // Stage filter is a bucket ("reached this stage or further"), not an exact status —
+  // this matches the dashboard's funnel exactly, so clicking a funnel stage there
+  // shows exactly the candidates counted in it here.
+  const stageParam = HR_FUNNEL_STAGES.some((s) => s.key === sp.get('stage')) ? sp.get('stage') : 'all';
+  const [stage, setStageKey] = useState(stageParam);
+
+  const view = useCollectionView(rows, {
+    searchFields: ['name', 'candidateId'],
+    pageSize: 12,
+    initialSort: { key: 'name', dir: 'asc' },
+    initialFilters: stageParam !== 'all'
+      ? { hrRank: (r) => r.hrRank >= HR_FUNNEL_STAGES.find((s) => s.key === stageParam).rank }
+      : undefined,
+  });
+
+  const setStage = (key) => {
+    setStageKey(key);
+    const target = HR_FUNNEL_STAGES.find((s) => s.key === key);
+    view.setFilter('hrRank', key === 'all' ? 'all' : (r) => r.hrRank >= target.rank);
+  };
+
+  const clearAll = () => {
+    view.setQuery('');
+    setStage('all');
+  };
+
+  const chips = [
+    stage !== 'all' && { key: 'stage', label: HR_FUNNEL_STAGES.find((s) => s.key === stage)?.label, onRemove: () => setStage('all') },
+    view.query && { key: 'q', label: `“${view.query}”`, onRemove: () => view.setQuery('') },
+  ].filter(Boolean);
 
   return (
-    <div className="page-body">
-      <div className="page-head">
-        <div>
-          <h1 className="page-title">Candidates</h1>
-          <div className="page-head__sub">Candidates who have reached the HR stage</div>
-        </div>
-      </div>
-      <StatTiles tiles={tiles} />
-      <div className="toolbar">
-        <SearchBar value={q} onChange={setQ} placeholder="Search candidate or ID" />
-        <FilterSelect
-          label="HR Status"
-          value={status}
-          onChange={setStatus}
-          options={HR_STATUSES.map((s) => ({ value: s, label: s }))}
-        />
-      </div>
-      {rows.length === 0 ? (
-        <EmptyState icon="Users" title="No candidates at the HR stage yet" message="Candidates appear here once their documents are verified." />
-      ) : (
-        <DataTable
-          columns={COLUMNS}
-          rows={rows}
-          emptyProps={{ icon: 'Users', title: 'No candidates found' }}
-          renderRow={(r) => (
-            <tr key={r.id}>
-              <td className="mono">{r.candidateId}</td>
+    <>
+      <TAHeader title="Candidates" subtitle="Candidates who have reached the HR stage." />
+
+      <Toolbar
+        search={{ value: view.query, onChange: view.setQuery, placeholder: 'Search candidate or ID…' }}
+        filters={[
+          {
+            label: 'Stage',
+            value: stage,
+            onChange: setStage,
+            options: HR_FUNNEL_STAGES.map((s) => ({ value: s.key, label: s.label })),
+          },
+        ]}
+        chips={chips}
+        onClearAll={chips.length > 1 ? clearAll : undefined}
+      />
+
+      <DataGrid
+        columns={COLUMNS}
+        rows={view.rows}
+        sort={view.sort}
+        onSort={view.onSort}
+        pager={{ page: view.page, pageSize: view.pageSize, total: view.total, onPage: view.setPage }}
+        empty={{ icon: 'Users', title: 'No candidates at the HR stage yet', message: 'Candidates appear here once their documents are verified.' }}
+        renderRow={(r) => {
+          const hrBadge = stageBadgeForStatus(r.hrStatus);
+          const offerMeta = r.offerStatus ? OFFER_STATUS_META[r.offerStatus] : null;
+          return (
+            <tr key={r.id} onClick={() => navigate(`/hr/candidates/${r.candidateId}`)} style={{ cursor: 'pointer' }}>
               <td>
-                <span className="identity">
-                  <Avatar name={r.name} size="sm" />
-                  <span className="strong">{r.name}</span>
+                <span className="ta-cell-cand">
+                  <Avatar name={r.name} />
+                  <span>
+                    <span className="ta-cell-cand__name">{r.name}</span><br />
+                    <span className="ta-cell-cand__sub">{r.candidateId}</span>
+                  </span>
                 </span>
               </td>
-              <td>{r.position}</td>
-              <td>{r.department}</td>
               <td>
-                {r.offerStatus ? (
-                  <Badge tone={OFFER_STATUS_META[r.offerStatus].tone} icon={OFFER_STATUS_META[r.offerStatus].icon}>
-                    {OFFER_STATUS_META[r.offerStatus].label}
-                  </Badge>
+                <span className="ta-cell-strong">{r.position}</span><br />
+                <span className="ta-cell-sub">{r.department}</span>
+              </td>
+              <td>{r.docs.text === '—' ? <span className="ta-cell-mute">—</span> : <Tag tone={r.docs.tone}>{r.docs.text}</Tag>}</td>
+              <td>
+                {offerMeta ? (
+                  <Tag tone={OFFER_TONE[offerMeta.tone] || 'grey'}>{offerMeta.label}</Tag>
                 ) : (
-                  <span className="text-secondary text-xs">Not prepared</span>
+                  <span className="ta-cell-mute">Not prepared</span>
                 )}
               </td>
-              <td>{r.joiningDate ? formatDate(r.joiningDate) : '—'}</td>
+              <td className="ta-cell-mute">{r.joiningDate ? formatDate(r.joiningDate) : '—'}</td>
+              <td><Tag tone={hrBadge.tone}>{hrBadge.label}</Tag></td>
               <td>
-                <StatusBadge status={r.hrStatus} />
-              </td>
-              <td>
-                <Button size="sm" variant="secondary" icon="ArrowRight" onClick={() => navigate(`/hr/candidates/${r.candidateId}`)}>
-                  Open
-                </Button>
+                <span className="ta-rowactions" onClick={(e) => e.stopPropagation()}>
+                  <button className="ta-iconbtn" onClick={() => navigate(`/hr/candidates/${r.candidateId}`)} aria-label="Open candidate">
+                    <Icon name="ArrowRight" size={15} />
+                  </button>
+                </span>
               </td>
             </tr>
-          )}
-        />
-      )}
-    </div>
+          );
+        }}
+      />
+    </>
   );
 }

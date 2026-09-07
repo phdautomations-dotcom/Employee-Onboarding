@@ -48,21 +48,11 @@ export default function OfferDrawer({ open, onClose, application, job, existingO
             Save Draft
           </Button>
           <Button icon="Send" onClick={() => save(true)}>
-            Submit for HR Approval
+            Send Offer to Candidate
           </Button>
         </>
       }
     >
-      {existingOffer?.returnReason && (
-        <div className="alert alert--warning mb-4">
-          <span className="alert__icon" />
-          <div>
-            <div className="strong">Returned by HR</div>
-            <div>{existingOffer.returnReason}</div>
-          </div>
-        </div>
-      )}
-
       <div className="form-grid">
         <Field label="Candidate Name">
           <Input value={f.candidateName} disabled />
