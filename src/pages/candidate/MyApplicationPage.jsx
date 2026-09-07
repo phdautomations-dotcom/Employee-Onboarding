@@ -11,7 +11,6 @@ import { useToast } from '../../context/ToastContext.jsx';
 import { initialsOf, formatDate, formatCurrencyINR } from '../../utils/format.js';
 import {
   APP_STATUS,
-  PIPELINE_STAGES,
   stageIndexForStatus,
   stageBadgeForStatus,
   ROUND_STATUS,
@@ -30,7 +29,11 @@ const DOC_STAGES = [
 const toneMap = { info: 'blue', success: 'green', error: 'red', warning: 'amber', neutral: 'grey' };
 
 /* Short pipeline steps for the header strip. */
-const STEPS = ['Applied', 'Screening', 'Interview', 'Documents', 'Offer', 'Joining'];
+/* The candidate's own journey — the TA-only "screening" phase is left out. */
+const CANDIDATE_STEPS = ['Applied', 'Interview', 'Documents', 'Offer', 'Joining'];
+/* PIPELINE_STAGES index (0 application, 1 ta_review, 2 interview … 5 onboarding)
+   mapped to a CANDIDATE_STEPS index. */
+const PIPELINE_TO_CANDIDATE = [0, 0, 1, 2, 3, 4];
 
 /* Which on-page card an activity entry belongs to. */
 const SECTION_BY_TYPE = {
@@ -140,19 +143,21 @@ export default function MyApplicationPage() {
 
   const stageIdx = stageIndexForStatus(app.status);
   const rejected = app.status === APP_STATUS.REJECTED;
-  const progress = rejected ? 0 : Math.round(((Math.max(0, stageIdx) + 1) / PIPELINE_STAGES.length) * 100);
 
-  /* Show steps only up to the one in progress — future steps stay hidden. */
-  const shownCount = rejected ? PIPELINE_STAGES.length : Math.max(1, stageIdx + 1);
+  /* Where the candidate is in their own journey, and how many steps to show
+     (future steps stay hidden until the application reaches them). */
+  const candIdx = PIPELINE_TO_CANDIDATE[Math.max(0, stageIdx)] ?? 0;
+  const shownCount = rejected ? CANDIDATE_STEPS.length : candIdx + 1;
+  const progress = rejected ? 0 : Math.round(((candIdx + 1) / CANDIDATE_STEPS.length) * 100);
 
   const showDocuments = DOC_STAGES.includes(app.status);
   const verifiedCount = documents.filter((d) => d.status === DOC_STATUS.VERIFIED).length;
   const pendingDocs = documents.filter((d) => [DOC_STATUS.PENDING, DOC_STATUS.REJECTED].includes(d.status)).length;
   const hint = nextStep(app.status, pendingDocs);
 
-  const steps = STEPS.slice(0, shownCount).map((label, i) => ({
+  const steps = CANDIDATE_STEPS.slice(0, shownCount).map((label, i) => ({
     label,
-    state: rejected ? (i === 0 ? 'done' : 'pending') : i < stageIdx ? 'done' : 'active',
+    state: rejected ? (i === 0 ? 'done' : 'pending') : i < candIdx ? 'done' : 'active',
   }));
 
   return (
