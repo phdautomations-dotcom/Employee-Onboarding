@@ -1,6 +1,6 @@
 # Project graph — recruitment-onboarding-frontend
 
-_Generated 2026-09-07 by `scripts/graphify.mjs`. 105 files, 374 import edges._
+_Generated 2026-09-07 by `scripts/graphify.mjs`. 105 files, 373 import edges._
 
 **Read this file instead of scanning `src/`.** Regenerate after code changes with `npm run graph`.
 
@@ -26,8 +26,8 @@ _Generated 2026-09-07 by `scripts/graphify.mjs`. 105 files, 374 import edges._
 - `src/utils/format.js` — 26 importers
 - `src/constants/statuses.js` — 22 importers
 - `src/components/common/Button.jsx` — 13 importers
-- `src/components/ta/Button.jsx` — 13 importers
 - `src/constants/roles.js` — 13 importers
+- `src/components/ta/Button.jsx` — 12 importers
 - `src/context/ToastContext.jsx` — 12 importers
 - `src/components/ta/Card.jsx` — 11 importers
 - `src/components/ta/TAHeader.jsx` — 10 importers
@@ -134,8 +134,8 @@ _Generated 2026-09-07 by `scripts/graphify.mjs`. 105 files, 374 import edges._
 ### navigation
 
 - **`src/components/navigation/CandidateHeader.jsx`**
-  78 loc · imports 5 · imported by 1 · exports: default (CandidateHeader)
-  imports: `src/components/common/Icon.jsx`, `src/components/ta/Button.jsx`, `src/context/AppContext.jsx`, `src/constants/roles.js`, `src/utils/format.js`
+  68 loc · imports 4 · imported by 1 · exports: default (CandidateHeader)
+  imports: `src/components/common/Icon.jsx`, `src/context/AppContext.jsx`, `src/constants/roles.js`, `src/utils/format.js`
   importedBy: `src/layouts/CandidateLayout.jsx`
 - **`src/components/navigation/GlobalSearch.jsx`**
   76 loc · imports 2 · imported by 3 · exports: default (GlobalSearch)
@@ -158,10 +158,10 @@ _Generated 2026-09-07 by `scripts/graphify.mjs`. 105 files, 374 import edges._
   imports: `src/components/common/Icon.jsx`, `src/context/AppContext.jsx`, `src/constants/roles.js`
   importedBy: `src/components/navigation/Topbar.jsx`
 - **`src/components/navigation/Sidebar.jsx`**
-  45 loc · imports 1 · imported by 0 · exports: default (Sidebar)
+  43 loc · imports 1 · imported by 0 · exports: default (Sidebar)
   imports: `src/components/common/Icon.jsx`
 - **`src/components/navigation/TASidebar.jsx`**
-  108 loc · imports 3 · imported by 1 · exports: default (TASidebar)
+  96 loc · imports 3 · imported by 1 · exports: default (TASidebar)
   imports: `src/components/common/Icon.jsx`, `src/context/AppContext.jsx`, `src/constants/roles.js`
   importedBy: `src/layouts/TALayout.jsx`
 - **`src/components/navigation/TATopbar.jsx`**
@@ -179,7 +179,7 @@ _Generated 2026-09-07 by `scripts/graphify.mjs`. 105 files, 374 import edges._
   imports: `src/components/common/Icon.jsx`, `src/components/ta/Button.jsx`, `src/components/ta/Card.jsx`
   importedBy: `src/routes/AppRoutes.jsx`
 - **`src/pages/candidate/ApplyPage.jsx`**
-  355 loc · imports 9 · imported by 1 · exports: default (ApplyPage)
+  353 loc · imports 9 · imported by 1 · exports: default (ApplyPage)
   imports: `src/components/common/Icon.jsx`, `src/components/ta/Button.jsx`, `src/components/ta/Card.jsx`, `src/components/ta/Field.jsx`, `src/context/AppContext.jsx`, `src/context/ToastContext.jsx`, `src/utils/resumeParser.js`, `src/hooks/useLocalStorage.js`, `src/utils/ids.js`
   importedBy: `src/routes/AppRoutes.jsx`
 - **`src/pages/candidate/CandidateProfilePage.jsx`**
@@ -195,11 +195,11 @@ _Generated 2026-09-07 by `scripts/graphify.mjs`. 105 files, 374 import edges._
   imports: `src/components/ta/Button.jsx`, `src/components/ta/EmptyState.jsx`, `src/components/JobCard.jsx`, `src/components/JobFilters.jsx`, `src/context/AppContext.jsx`, `src/hooks/useJobFilters.js`
   importedBy: `src/routes/AppRoutes.jsx`
 - **`src/pages/candidate/LandingPage.jsx`**
-  45 loc · imports 6 · imported by 1 · exports: default (LandingPage)
+  42 loc · imports 6 · imported by 1 · exports: default (LandingPage)
   imports: `src/components/ta/Button.jsx`, `src/components/ta/EmptyState.jsx`, `src/components/JobCard.jsx`, `src/components/JobFilters.jsx`, `src/context/AppContext.jsx`, `src/hooks/useJobFilters.js`
   importedBy: `src/routes/AppRoutes.jsx`
 - **`src/pages/candidate/MyApplicationPage.jsx`**
-  383 loc · imports 11 · imported by 1 · exports: default (MyApplicationPage)
+  453 loc · imports 11 · imported by 1 · exports: default (MyApplicationPage)
   imports: `src/components/common/Icon.jsx`, `src/components/ta/Button.jsx`, `src/components/ta/Card.jsx`, `src/components/ta/Tag.jsx`, `src/components/ta/EmptyState.jsx`, `src/components/common/Modal.jsx`, `src/components/common/Field.jsx`, `src/context/AppContext.jsx`, `src/context/ToastContext.jsx`, `src/utils/format.js`, `src/constants/statuses.js`
   importedBy: `src/routes/AppRoutes.jsx`
 - **`src/pages/hr/HRActivityPage.jsx`**
@@ -227,7 +227,7 @@ _Generated 2026-09-07 by `scripts/graphify.mjs`. 105 files, 374 import edges._
   imports: `src/components/common/Icon.jsx`, `src/components/ta/TAHeader.jsx`, `src/components/ta/DataGrid.jsx`, `src/components/ta/Toolbar.jsx`, `src/components/ta/Avatar.jsx`, `src/components/ta/Tag.jsx`, `src/context/AppContext.jsx`, `src/hooks/useCollectionView.js`, `src/constants/statuses.js`, `src/utils/format.js`
   importedBy: `src/routes/AppRoutes.jsx`
 - **`src/pages/LoginPage.jsx`**
-  74 loc · imports 4 · imported by 1 · exports: default (LoginPage)
+  72 loc · imports 4 · imported by 1 · exports: default (LoginPage)
   imports: `src/components/common/Icon.jsx`, `src/components/common/Button.jsx`, `src/context/AppContext.jsx`, `src/constants/roles.js`
   importedBy: `src/routes/AppRoutes.jsx`
 - **`src/pages/shared/ActivityFeed.jsx`**
@@ -377,9 +377,9 @@ _Generated 2026-09-07 by `scripts/graphify.mjs`. 105 files, 374 import edges._
   imports: `src/utils/format.js`
   importedBy: `src/pages/hr/HRCandidateDetailPage.jsx`, `src/pages/hr/HRCandidatesPage.jsx`, `src/pages/hr/HRDashboard.jsx`, `src/pages/hr/HREmployeesPage.jsx`, `src/pages/hr/HROffersPage.jsx`, `src/pages/talentAcquisition/TACandidateDetailPage.jsx`, `src/pages/talentAcquisition/TACandidatesPage.jsx`
 - **`src/components/ta/Button.jsx`**
-  13 loc · imports 1 · imported by 13 · exports: default (Button)
+  13 loc · imports 1 · imported by 12 · exports: default (Button)
   imports: `src/components/common/Icon.jsx`
-  importedBy: `src/components/JobCard.jsx`, `src/components/navigation/CandidateHeader.jsx`, `src/pages/candidate/ApplicationSuccessPage.jsx`, `src/pages/candidate/ApplyPage.jsx`, `src/pages/candidate/CandidateProfilePage.jsx`, `src/pages/candidate/JobDetailsPage.jsx`, `src/pages/candidate/JobsPage.jsx`, `src/pages/candidate/LandingPage.jsx`, `src/pages/candidate/MyApplicationPage.jsx`, `src/pages/hr/HRCandidateDetailPage.jsx`, `src/pages/talentAcquisition/TACandidateDetailPage.jsx`, `src/pages/talentAcquisition/TAJobDetailPage.jsx`, `src/pages/talentAcquisition/TAJobsPage.jsx`
+  importedBy: `src/components/JobCard.jsx`, `src/pages/candidate/ApplicationSuccessPage.jsx`, `src/pages/candidate/ApplyPage.jsx`, `src/pages/candidate/CandidateProfilePage.jsx`, `src/pages/candidate/JobDetailsPage.jsx`, `src/pages/candidate/JobsPage.jsx`, `src/pages/candidate/LandingPage.jsx`, `src/pages/candidate/MyApplicationPage.jsx`, `src/pages/hr/HRCandidateDetailPage.jsx`, `src/pages/talentAcquisition/TACandidateDetailPage.jsx`, `src/pages/talentAcquisition/TAJobDetailPage.jsx`, `src/pages/talentAcquisition/TAJobsPage.jsx`
 - **`src/components/ta/Card.jsx`** — Plain premium card. Optional header with a title and a right-side action.
   15 loc · imports 0 · imported by 11 · exports: default (Card)
   importedBy: `src/pages/candidate/ApplicationSuccessPage.jsx`, `src/pages/candidate/ApplyPage.jsx`, `src/pages/candidate/CandidateProfilePage.jsx`, `src/pages/candidate/JobDetailsPage.jsx`, `src/pages/candidate/MyApplicationPage.jsx`, `src/pages/hr/HRCandidateDetailPage.jsx`, `src/pages/hr/HRDashboard.jsx`, `src/pages/hr/HREmployeesPage.jsx`, `src/pages/talentAcquisition/TACandidateDetailPage.jsx`, `src/pages/talentAcquisition/TADashboard.jsx`, `src/pages/talentAcquisition/TAJobDetailPage.jsx`
@@ -500,15 +500,15 @@ _Generated 2026-09-07 by `scripts/graphify.mjs`. 105 files, 374 import edges._
   253 loc · imports 0 · imported by 4 · exports: JOBS, findJob
   importedBy: `src/context/AppContext.jsx`, `src/data/seed.js`, `src/pages/talentAcquisition/TACandidateDetailPage.jsx`, `src/pages/talentAcquisition/TAOffersPage.jsx`
 - **`src/data/seed.js`**
-  703 loc · imports 3 · imported by 1 · exports: buildSeed
+  706 loc · imports 3 · imported by 1 · exports: buildSeed
   imports: `src/constants/statuses.js`, `src/data/jobs.js`, `src/utils/ids.js`
   importedBy: `src/context/AppContext.jsx`
 
 ### style
 
 - **`src/index.css`**
-  840 loc · imports 0 · imported by 1
+  847 loc · imports 0 · imported by 1
   importedBy: `src/main.jsx`
 - **`src/styles/ta.css`**
-  803 loc · imports 0 · imported by 1
+  896 loc · imports 0 · imported by 1
   importedBy: `src/main.jsx`

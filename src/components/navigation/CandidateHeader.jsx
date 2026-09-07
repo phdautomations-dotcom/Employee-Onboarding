@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import Icon from '../common/Icon.jsx';
-import Button from '../ta/Button.jsx';
 import { useApp } from '../../context/AppContext.jsx';
 import { ROLES, ROLE_META } from '../../constants/roles.js';
 import { initialsOf } from '../../utils/format.js';
+import logo from '../../assets/ccentrik-logo.png';
 
 const navClass = ({ isActive }) => (isActive ? 'active' : undefined);
 
@@ -24,19 +24,10 @@ export default function CandidateHeader() {
   return (
     <header className="cx-header">
       <div className="cx-header__inner">
-        <NavLink to="/candidate" className="cx-brand">
-          <span className="cx-brand__mark">
-            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="#fff" strokeWidth="1.8">
-              <circle cx="9" cy="9" r="5" />
-              <circle cx="15" cy="9" r="5" />
-              <circle cx="12" cy="15" r="5" />
-            </svg>
-          </span>
-          <span>
-            <span className="cx-brand__name" style={{ display: 'block' }}>TalentFlow</span>
-            <span className="cx-brand__sub" style={{ display: 'block' }}>Careers</span>
-          </span>
-        </NavLink>
+        <div className="cx-brand">
+          <img className="cx-brand__logo" src={logo} alt="Ccentrik" />
+          <span className="cx-brand__sub">Careers</span>
+        </div>
 
         <nav className="cx-nav">
           <NavLink to="/candidate/jobs" className={navClass}>Jobs</NavLink>
@@ -69,7 +60,6 @@ export default function CandidateHeader() {
               </div>
             )}
           </div>
-          <Button iconRight="ArrowRight" onClick={() => navigate('/candidate/apply')}>Apply Now</Button>
         </div>
       </div>
     </header>

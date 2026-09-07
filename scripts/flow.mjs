@@ -38,7 +38,7 @@ await build({
   entryPoints: ['_flow_entry.jsx'],
   bundle: true, format: 'esm', platform: 'node', outfile: out, jsx: 'automatic',
   external: ['react', 'react-dom', 'react-router-dom', 'lucide-react'],
-  loader: { '.js': 'jsx' }, logLevel: 'silent',
+  loader: { '.js': 'jsx', '.png': 'dataurl', '.jpg': 'dataurl', '.jpeg': 'dataurl', '.svg': 'dataurl', '.css': 'empty' }, logLevel: 'silent',
 });
 const { App } = await import(pathToFileURL(process.cwd() + '/' + out).href);
 

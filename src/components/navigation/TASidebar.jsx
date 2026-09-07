@@ -3,6 +3,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import Icon from '../common/Icon.jsx';
 import { useApp } from '../../context/AppContext.jsx';
 import { DEMO_USERS, ROLES, ROLE_META } from '../../constants/roles.js';
+import logo from '../../assets/ccentrik-logo.png';
 
 const NAV = [
   { to: '/ta', label: 'Dashboard', icon: 'Home', end: true },
@@ -11,19 +12,6 @@ const NAV = [
 ];
 
 const OTHER_ROLES = [ROLES.CANDIDATE, ROLES.HR];
-
-/* The overlapping-rings logo mark, drawn inline so it matches at any size. */
-function BrandMark() {
-  return (
-    <span className="ta-brand__mark">
-      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#fff" strokeWidth="1.8">
-        <circle cx="9" cy="9" r="5" />
-        <circle cx="15" cy="9" r="5" />
-        <circle cx="12" cy="15" r="5" />
-      </svg>
-    </span>
-  );
-}
 
 export default function TASidebar({ open, collapsed, onToggleCollapse, onNavigate }) {
   const navigate = useNavigate();
@@ -48,9 +36,9 @@ export default function TASidebar({ open, collapsed, onToggleCollapse, onNavigat
       </button>
 
       <div className="ta-brand">
-        <BrandMark />
+        <img className="ta-brand__logo" src={logo} alt="Ccentrik" />
+        <span className="ta-brand__badge" aria-hidden="true">C</span>
         <span className="ta-brand__text">
-          <span className="ta-brand__name">TalentFlow</span>
           <span className="ta-brand__sub">TA Portal</span>
         </span>
       </div>

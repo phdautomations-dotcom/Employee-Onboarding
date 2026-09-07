@@ -15,14 +15,11 @@ export default function LandingPage() {
     <div className="cx-page">
       <div className="cx-hero">
         <div>
-          <div className="cx-hero__eyebrow">TalentFlow Careers</div>
+          <div className="cx-hero__eyebrow">Ccentrik Careers</div>
           <h1>Find your next opportunity</h1>
-          <p>{jobs.length} open roles across {f.facets.departments.length} departments.</p>
+          <p>{jobs.length} open roles across {f.facets.departments.length} departments. Submit your profile and we'll match you to the right role.</p>
         </div>
-        <div className="ta-page-actions" style={{ margin: 0 }}>
-          <Button icon="UploadCloud" onClick={() => navigate('/candidate/apply')}>Apply with resume</Button>
-          <Button variant="ghost" icon="FileText" onClick={() => navigate('/candidate/apply')}>General application</Button>
-        </div>
+        <Button icon="FileText" onClick={() => navigate('/candidate/apply')}>Submit general application</Button>
       </div>
 
       <JobFilters f={f} />
