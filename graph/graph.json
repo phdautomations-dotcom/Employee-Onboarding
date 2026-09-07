@@ -1,9 +1,9 @@
 {
   "app": "recruitment-onboarding-frontend",
-  "generatedAt": "2026-09-07T04:46:26.859Z",
+  "generatedAt": "2026-09-07T08:55:34.087Z",
   "stats": {
     "files": 103,
-    "edges": 389,
+    "edges": 385,
     "layers": {
       "entry": 2,
       "component": 46,
@@ -188,7 +188,7 @@
     },
     {
       "id": "src/utils/format.js",
-      "importers": 26
+      "importers": 25
     },
     {
       "id": "src/constants/statuses.js",
@@ -1078,8 +1078,7 @@
       ],
       "importedBy": [
         "src/pages/talentAcquisition/TACandidateDetailPage.jsx",
-        "src/pages/talentAcquisition/TACandidatesPage.jsx",
-        "src/pages/talentAcquisition/TADashboard.jsx"
+        "src/pages/talentAcquisition/TACandidatesPage.jsx"
       ]
     },
     {
@@ -1138,7 +1137,6 @@
       ],
       "importedBy": [
         "src/pages/talentAcquisition/TACandidatesPage.jsx",
-        "src/pages/talentAcquisition/TADashboard.jsx",
         "src/pages/talentAcquisition/TAJobsPage.jsx"
       ]
     },
@@ -1147,12 +1145,14 @@
       "name": "DonutChart.jsx",
       "dir": "src/components/ta",
       "layer": "component",
-      "loc": 64,
-      "summary": "Donut chart for a small set of categories (<= 5). `slices` = [{ label, value, color }]. Identity is shown in the legend with value + percent, so it never rests on colour alone.",
+      "loc": 88,
+      "summary": "",
       "exports": [
         "default (DonutChart)"
       ],
-      "externals": [],
+      "externals": [
+        "react"
+      ],
       "imports": [],
       "importedBy": [
         "src/pages/talentAcquisition/TADashboard.jsx"
@@ -1183,12 +1183,14 @@
       "name": "FunnelChart.jsx",
       "dir": "src/components/ta",
       "layer": "component",
-      "loc": 39,
-      "summary": "Stage funnel matching the reference: coloured trapezoid bands that narrow down the pipeline, with the conversion percent (from the first stage) on the right. `stages` = [{ label, value, color }] in pipeline order.",
+      "loc": 59,
+      "summary": "",
       "exports": [
         "default (FunnelChart)"
       ],
-      "externals": [],
+      "externals": [
+        "react"
+      ],
       "imports": [],
       "importedBy": [
         "src/pages/talentAcquisition/TADashboard.jsx"
@@ -1271,7 +1273,6 @@
       "importedBy": [
         "src/pages/talentAcquisition/TACandidateDetailPage.jsx",
         "src/pages/talentAcquisition/TACandidatesPage.jsx",
-        "src/pages/talentAcquisition/TADashboard.jsx",
         "src/pages/talentAcquisition/TAJobDetailPage.jsx",
         "src/pages/talentAcquisition/TAJobsPage.jsx"
       ]
@@ -1727,7 +1728,7 @@
       "name": "seed.js",
       "dir": "src/data",
       "layer": "data",
-      "loc": 636,
+      "loc": 650,
       "summary": "",
       "exports": [
         "buildSeed"
@@ -2440,7 +2441,7 @@
       "name": "TACandidatesPage.jsx",
       "dir": "src/pages/talentAcquisition",
       "layer": "page",
-      "loc": 186,
+      "loc": 198,
       "summary": "",
       "exports": [
         "default (TACandidatesPage)"
@@ -2470,7 +2471,7 @@
       "name": "TADashboard.jsx",
       "dir": "src/pages/talentAcquisition",
       "layer": "page",
-      "loc": 227,
+      "loc": 226,
       "summary": "",
       "exports": [
         "default (TADashboard)"
@@ -2486,14 +2487,10 @@
         "src/components/ta/KpiCard.jsx",
         "src/components/ta/DonutChart.jsx",
         "src/components/ta/FunnelChart.jsx",
-        "src/components/ta/DataGrid.jsx",
-        "src/components/ta/Avatar.jsx",
-        "src/components/ta/Tag.jsx",
         "src/context/AppContext.jsx",
         "src/constants/roles.js",
         "src/constants/statuses.js",
-        "src/utils/metrics.js",
-        "src/utils/format.js"
+        "src/utils/metrics.js"
       ],
       "importedBy": [
         "src/routes/AppRoutes.jsx"
@@ -2693,7 +2690,7 @@
       "name": "ta.css",
       "dir": "src/styles",
       "layer": "style",
-      "loc": 546,
+      "loc": 572,
       "summary": "",
       "exports": [],
       "externals": [],
@@ -2741,7 +2738,6 @@
         "src/pages/shared/DocumentsReview.jsx",
         "src/pages/talentAcquisition/TACandidateDetailPage.jsx",
         "src/pages/talentAcquisition/TACandidatesPage.jsx",
-        "src/pages/talentAcquisition/TADashboard.jsx",
         "src/pages/talentAcquisition/TAInterviewsPage.jsx",
         "src/pages/talentAcquisition/TAJobDetailPage.jsx",
         "src/pages/talentAcquisition/TAJobsPage.jsx",
@@ -2776,13 +2772,14 @@
       "name": "metrics.js",
       "dir": "src/utils",
       "layer": "util",
-      "loc": 46,
+      "loc": 54,
       "summary": "Small pure helpers for dashboard numbers and charts. Everything here works on the real app data — no fake values.",
       "exports": [
         "countInWindow",
         "trendPercent",
         "weeklyCounts",
-        "groupCounts"
+        "groupCounts",
+        "noticePeriodDays"
       ],
       "externals": [],
       "imports": [],
@@ -4045,18 +4042,6 @@
     },
     {
       "source": "src/pages/talentAcquisition/TADashboard.jsx",
-      "target": "src/components/ta/DataGrid.jsx"
-    },
-    {
-      "source": "src/pages/talentAcquisition/TADashboard.jsx",
-      "target": "src/components/ta/Avatar.jsx"
-    },
-    {
-      "source": "src/pages/talentAcquisition/TADashboard.jsx",
-      "target": "src/components/ta/Tag.jsx"
-    },
-    {
-      "source": "src/pages/talentAcquisition/TADashboard.jsx",
       "target": "src/context/AppContext.jsx"
     },
     {
@@ -4070,10 +4055,6 @@
     {
       "source": "src/pages/talentAcquisition/TADashboard.jsx",
       "target": "src/utils/metrics.js"
-    },
-    {
-      "source": "src/pages/talentAcquisition/TADashboard.jsx",
-      "target": "src/utils/format.js"
     },
     {
       "source": "src/pages/talentAcquisition/TADocumentsPage.jsx",

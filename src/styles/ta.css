@@ -290,6 +290,16 @@
 .ta-pipe__count { font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; }
 .ta-pipe-wrap { display: grid; grid-template-columns: minmax(0, 1fr) 290px; gap: 22px; align-items: center; }
 
+/* ---------- Notice period ---------- */
+/* "Reach out now" callout below the donut — a plain button styled as a highlight strip */
+.ta-notice-callout {
+  display: flex; align-items: center; gap: 10px; width: 100%; margin-top: 14px;
+  padding: 11px 14px; border-radius: 10px; border: 1px solid var(--tag-amber-fg);
+  background: var(--tag-amber-bg); color: var(--tag-amber-fg);
+  font: inherit; font-size: 12.5px; text-align: left; cursor: pointer;
+}
+.ta-notice-callout b { font-size: 13.5px; }
+
 /* ---------- Funnel ---------- */
 .ta-chartbox { position: relative; }
 .ta-funnel { display: block; width: 100%; max-width: 290px; height: auto; margin: 0 auto; }

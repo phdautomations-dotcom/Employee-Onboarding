@@ -2,9 +2,11 @@ import { useState } from 'react';
 
 /* Donut chart for a small set of categories (<= 5).
    Hover a slice (or its legend row): the slice pops out, the rest dim, and
-   the centre shows that slice's numbers. `slices` = [{ label, value, color }]. */
-export default function DonutChart({ slices, caption = 'Total' }) {
+   the centre shows that slice's numbers. `slices` = [{ label, value, color }].
+   Pass `onSliceClick(label)` to make slices clickable (e.g. to drill into a filtered list). */
+export default function DonutChart({ slices, caption = 'Total', onSliceClick }) {
   const [hover, setHover] = useState(null); // hovered slice label
+  const clickable = typeof onSliceClick === 'function';
   const total = slices.reduce((sum, s) => sum + s.value, 0) || 1;
   const size = 170;
   const stroke = 24;
@@ -51,8 +53,9 @@ export default function DonutChart({ slices, caption = 'Total' }) {
                 strokeWidth={active ? stroke + 3 : stroke}
                 strokeDasharray={a.dash}
                 transform={`translate(${active ? a.dx : 0} ${active ? a.dy : 0}) rotate(${a.rot} ${size / 2} ${size / 2})`}
-                style={{ opacity: dim ? 0.35 : 1 }}
+                style={{ opacity: dim ? 0.35 : 1, cursor: clickable ? 'pointer' : 'default' }}
                 onMouseEnter={() => setHover(a.label)}
+                onClick={clickable ? () => onSliceClick(a.label) : undefined}
               />
             );
           })}
@@ -69,6 +72,8 @@ export default function DonutChart({ slices, caption = 'Total' }) {
             className={`ta-legend__row${hover === s.label ? ' is-hover' : ''}${hover && hover !== s.label ? ' is-dim' : ''}`}
             key={s.label}
             onMouseEnter={() => setHover(s.label)}
+            onClick={clickable && s.value > 0 ? () => onSliceClick(s.label) : undefined}
+            style={clickable && s.value > 0 ? { cursor: 'pointer' } : undefined}
           >
             <span className="ta-legend__dot" style={{ background: s.color }} />
             <span className="ta-legend__name">{s.label}</span>

@@ -35,6 +35,7 @@ function baseApplication({
   totalExp,
   company,
   title,
+  noticePeriod = '30 days',
 }) {
   const job = findJob(jobId);
   const candidateId = makeCandidateId(seq);
@@ -74,7 +75,7 @@ function baseApplication({
       employmentStatus: 'Employed',
       currentCTC: '1800000',
       expectedCTC: '2400000',
-      noticePeriod: '60 days',
+      noticePeriod,
       preferredJobLocation: job?.location?.split(',')[0] || 'Bengaluru',
       skills,
       certifications: [],
@@ -105,6 +106,9 @@ const LAST_NAMES = ['Sharma', 'Verma', 'Nair', 'Reddy', 'Iyer', 'Menon', 'Bose',
 const COMPANIES = ['BrightApps', 'DataForge', 'NimbusTech', 'CloudNine', 'PixelWorks', 'CoreLogic', 'Finmark', 'Zentrix', 'Apex Digital', 'Northwind'];
 const SKILL_POOL = ['React', 'TypeScript', 'Node.js', 'Python', 'SQL', 'AWS', 'Docker', 'Figma', 'SAP', 'Kubernetes', 'Testing', 'Analytics'];
 const SOURCE_WEIGHTS = [['Direct', 35], ['Job Board', 28], ['Referral', 22], ['Social', 15]];
+const NOTICE_WEIGHTS = [['Immediate', 8], ['15 days', 14], ['30 days', 30], ['45 days', 12], ['60 days', 26], ['90 days', 10]];
+// Every bucket's label, in the same order as NOTICE_WEIGHTS — used to guarantee each one gets at least one candidate.
+const ALL_NOTICE_PERIODS = NOTICE_WEIGHTS.map(([label]) => label);
 const STAGE_PLAN = [
   [APP_STATUS.SUBMITTED, 20], [APP_STATUS.TA_REVIEW, 13], [APP_STATUS.INTERVIEW_PLANNING, 7],
   [APP_STATUS.INTERVIEW_IN_PROGRESS, 10], [APP_STATUS.INTERVIEW_PASSED, 4], [APP_STATUS.INTERVIEW_FAILED, 4],
@@ -169,6 +173,8 @@ function buildSyntheticCandidates(startSeq) {
       skills, totalExp,
       company: COMPANIES[Math.floor(rng() * COMPANIES.length)],
       title: skills[0] + ' Specialist',
+      // First few candidates cover every notice-period bucket once, so none ever shows 0 on the dashboard.
+      noticePeriod: idx < ALL_NOTICE_PERIODS.length ? ALL_NOTICE_PERIODS[idx] : weightedPick(rng, NOTICE_WEIGHTS),
     });
     app.source = weightedPick(rng, SOURCE_WEIGHTS);
     out.applications.push(app);
@@ -246,6 +252,7 @@ export function buildSeed() {
     totalExp: 6,
     company: 'BrightApps',
     title: 'Frontend Engineer',
+    noticePeriod: '30 days',
   });
   applications.push(a1);
   addActivity(a1.id, 'application', 'Application Submitted', 'Candidate submitted application.', a1.submittedAt, 'Meera Krishnan');
@@ -266,6 +273,7 @@ export function buildSeed() {
     totalExp: 5,
     company: 'DataForge',
     title: 'Backend Engineer',
+    noticePeriod: '60 days',
   });
   applications.push(a2);
   addActivity(a2.id, 'application', 'Application Submitted', 'Candidate submitted application.', a2.submittedAt, 'Vikram Desai');
@@ -286,6 +294,7 @@ export function buildSeed() {
     totalExp: 5,
     company: 'ABC Technologies',
     title: 'Senior SAP Consultant',
+    noticePeriod: '15 days',
   });
   applications.push(a3);
   interviews.push(
@@ -343,6 +352,7 @@ export function buildSeed() {
     totalExp: 7,
     company: 'Nimbus Digital',
     title: 'Product Designer',
+    noticePeriod: '90 days',
   });
   applications.push(a4);
   interviews.push({
@@ -389,6 +399,7 @@ export function buildSeed() {
     totalExp: 4,
     company: 'InsightWorks',
     title: 'Data Analyst',
+    noticePeriod: '30 days',
   });
   applications.push(a5);
   interviews.push({
@@ -455,6 +466,7 @@ export function buildSeed() {
     totalExp: 5,
     company: 'QualityLabs',
     title: 'QA Automation Engineer',
+    noticePeriod: 'Immediate',
   });
   applications.push(a6);
   documents = documents.concat(
@@ -505,6 +517,7 @@ export function buildSeed() {
     totalExp: 6,
     company: 'ConsultEdge',
     title: 'Business Analyst',
+    noticePeriod: '60 days',
   });
   applications.push(a7);
   documents = documents.concat(
@@ -565,6 +578,7 @@ export function buildSeed() {
     totalExp: 6,
     company: 'CloudScale',
     title: 'DevOps Engineer',
+    noticePeriod: '45 days',
   });
   applications.push(a8);
   documents = documents.concat(

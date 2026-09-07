@@ -30,6 +30,9 @@ const EXPERIENCE = {
 
 const SOURCES = ['Direct', 'Job Board', 'Referral', 'Social'];
 
+// Same notice-period options offered on the apply form, so the filter matches the stored values.
+const NOTICE_PERIODS = ['Immediate', '15 days', '30 days', '45 days', '60 days', '90 days'];
+
 function experienceLabel(n) {
   return n <= 0 ? 'Fresher' : `${n}+ Years`;
 }
@@ -39,6 +42,7 @@ const COLUMNS = [
   { key: 'job', label: 'Job Applied', sortable: true },
   { key: 'experience', label: 'Experience', sortable: true },
   { key: 'status', label: 'Current Stage', sortable: true },
+  { key: 'noticePeriod', label: 'Notice Period', sortable: true },
   { key: 'submittedAt', label: 'Applied On', sortable: true },
   { key: 'docs', label: 'Documents' },
   { key: 'actions', label: 'Actions' },
@@ -66,6 +70,7 @@ export default function TACandidatesPage() {
           department: job?.department || 'General',
           experience: Number(a.professional.totalExperience) || 0,
           source: a.source || 'Direct',
+          noticePeriod: a.professional?.noticePeriod || 'Not specified',
           submittedAt: a.submittedAt,
           status: a.status,
           docs: rejected ? { tone: 'red', text: `${rejected} rejected` }
@@ -79,12 +84,14 @@ export default function TACandidatesPage() {
 
   const stageParam = STAGE_GROUPS[sp.get('stage')] ? sp.get('stage') : 'all';
   const jobParam = sp.get('job') || null;
+  const noticeParam = sp.get('notice') || null; // set when arriving from the dashboard's notice-period chart
   const [stage, setStageKey] = useState(stageParam);
   const [experience, setExpKey] = useState('all');
 
   const initialFilters = {};
   if (stageParam !== 'all') initialFilters.status = (r) => STAGE_GROUPS[stageParam].match(r.status);
   if (jobParam) initialFilters.job = jobParam;
+  if (noticeParam) initialFilters.noticePeriod = noticeParam;
 
   const view = useCollectionView(rows, {
     searchFields: ['name', 'email', 'candidateId', 'job'],
@@ -100,6 +107,7 @@ export default function TACandidatesPage() {
 
   const activeJob = typeof view.filters.job === 'string' ? view.filters.job : 'all';
   const activeSource = typeof view.filters.source === 'string' ? view.filters.source : 'all';
+  const activeNotice = typeof view.filters.noticePeriod === 'string' ? view.filters.noticePeriod : 'all';
 
   const setStage = (key) => {
     setStageKey(key);
@@ -115,6 +123,7 @@ export default function TACandidatesPage() {
     experience !== 'all' && { key: 'exp', label: EXPERIENCE[experience].label, onRemove: () => setExperience('all') },
     activeJob !== 'all' && { key: 'job', label: activeJob, onRemove: () => view.setFilter('job', 'all') },
     activeSource !== 'all' && { key: 'src', label: activeSource, onRemove: () => view.setFilter('source', 'all') },
+    activeNotice !== 'all' && { key: 'notice', label: activeNotice, onRemove: () => view.setFilter('noticePeriod', 'all') },
     view.query && { key: 'q', label: `“${view.query}”`, onRemove: () => view.setQuery('') },
   ].filter(Boolean);
 
@@ -124,6 +133,7 @@ export default function TACandidatesPage() {
     setExperience('all');
     view.setFilter('job', 'all');
     view.setFilter('source', 'all');
+    view.setFilter('noticePeriod', 'all');
   };
 
   return (
@@ -137,6 +147,7 @@ export default function TACandidatesPage() {
           { label: 'Job', value: activeJob, onChange: (v) => view.setFilter('job', v), options: jobOptions },
           { label: 'Experience', value: experience, onChange: setExperience, options: Object.entries(EXPERIENCE).map(([value, g]) => ({ value, label: g.label })) },
           { label: 'Source', value: activeSource, onChange: (v) => view.setFilter('source', v), options: SOURCES.map((s) => ({ value: s, label: s })) },
+          { label: 'Notice Period', value: activeNotice, onChange: (v) => view.setFilter('noticePeriod', v), options: NOTICE_PERIODS.map((n) => ({ value: n, label: n })) },
         ]}
         chips={chips}
         onClearAll={chips.length > 1 ? clearAll : undefined}
@@ -168,6 +179,7 @@ export default function TACandidatesPage() {
               </td>
               <td className="ta-cell-mute">{experienceLabel(r.experience)}</td>
               <td><Tag tone={badge.tone}>{badge.label}</Tag></td>
+              <td className="ta-cell-mute">{r.noticePeriod}</td>
               <td className="ta-cell-mute">{formatDate(r.submittedAt)}</td>
               <td>{r.docs.text === '—' ? <span className="ta-cell-mute">—</span> : <Tag tone={r.docs.tone}>{r.docs.text}</Tag>}</td>
               <td>
