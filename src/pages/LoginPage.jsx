@@ -4,6 +4,7 @@ import Icon from '../components/common/Icon.jsx';
 import Button from '../components/common/Button.jsx';
 import { useApp } from '../context/AppContext.jsx';
 import { ROLES, ROLE_META } from '../constants/roles.js';
+import logo from '../assets/ccentrik-logo.png';
 
 const OPTIONS = [
   { role: ROLES.CANDIDATE, icon: 'User' },
@@ -25,10 +26,7 @@ export default function LoginPage() {
     <div className="login-wrap">
       <div className="login-split">
         <aside className="login-brand">
-          <div className="brand" style={{ color: '#fff' }}>
-            <span className="brand__mark" style={{ background: 'rgba(255,255,255,.16)' }}>TF</span>
-            <span>TalentFlow</span>
-          </div>
+          <span className="brand-chip"><img src={logo} alt="Ccentrik" /></span>
           <h2>Recruitment &amp; onboarding, from first application to first day.</h2>
           <p>One workspace for candidates, talent acquisition and HR — applications, interviews, documents, offers and onboarding.</p>
           <div className="login-brand__feats">

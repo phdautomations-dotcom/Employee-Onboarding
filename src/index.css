@@ -630,6 +630,13 @@ table.data-table { width: 100%; border-collapse: collapse; font-size: var(--fs-s
   font-weight: 700; font-size: 11px;
 }
 
+/* Logo on a white chip — used on dark surfaces (HR sidebar, login panel). */
+.brand-chip {
+  display: inline-flex; align-items: center;
+  background: #fff; border-radius: 8px; padding: 6px 11px;
+}
+.brand-chip img { height: 20px; width: auto; display: block; }
+
 /* ---------- Legacy hero / job-card (unused but kept safe) ---------- */
 .hero { padding: var(--space-10) 0; border-bottom: 1px solid var(--color-border); background: #fff; }
 .hero h1 { font-size: 28px; font-weight: 650; max-width: 620px; }

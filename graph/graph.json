@@ -1,9 +1,9 @@
 {
   "app": "recruitment-onboarding-frontend",
-  "generatedAt": "2026-09-07T11:24:43.541Z",
+  "generatedAt": "2026-09-07T11:53:15.142Z",
   "stats": {
     "files": 105,
-    "edges": 374,
+    "edges": 373,
     "layers": {
       "entry": 2,
       "component": 46,
@@ -191,12 +191,12 @@
       "importers": 13
     },
     {
-      "id": "src/components/ta/Button.jsx",
+      "id": "src/constants/roles.js",
       "importers": 13
     },
     {
-      "id": "src/constants/roles.js",
-      "importers": 13
+      "id": "src/components/ta/Button.jsx",
+      "importers": 12
     },
     {
       "id": "src/context/ToastContext.jsx",
@@ -831,7 +831,7 @@
       "name": "CandidateHeader.jsx",
       "dir": "src/components/navigation",
       "layer": "navigation",
-      "loc": 78,
+      "loc": 68,
       "summary": "",
       "exports": [
         "default (CandidateHeader)"
@@ -842,7 +842,6 @@
       ],
       "imports": [
         "src/components/common/Icon.jsx",
-        "src/components/ta/Button.jsx",
         "src/context/AppContext.jsx",
         "src/constants/roles.js",
         "src/utils/format.js"
@@ -971,7 +970,7 @@
       "name": "Sidebar.jsx",
       "dir": "src/components/navigation",
       "layer": "navigation",
-      "loc": 45,
+      "loc": 43,
       "summary": "",
       "exports": [
         "default (Sidebar)"
@@ -989,7 +988,7 @@
       "name": "TASidebar.jsx",
       "dir": "src/components/navigation",
       "layer": "navigation",
-      "loc": 108,
+      "loc": 96,
       "summary": "",
       "exports": [
         "default (TASidebar)"
@@ -1108,7 +1107,6 @@
       ],
       "importedBy": [
         "src/components/JobCard.jsx",
-        "src/components/navigation/CandidateHeader.jsx",
         "src/pages/candidate/ApplicationSuccessPage.jsx",
         "src/pages/candidate/ApplyPage.jsx",
         "src/pages/candidate/CandidateProfilePage.jsx",
@@ -1735,7 +1733,7 @@
       "name": "seed.js",
       "dir": "src/data",
       "layer": "data",
-      "loc": 703,
+      "loc": 706,
       "summary": "",
       "exports": [
         "buildSeed"
@@ -1819,7 +1817,7 @@
       "name": "index.css",
       "dir": "src",
       "layer": "style",
-      "loc": 840,
+      "loc": 847,
       "summary": "",
       "exports": [],
       "externals": [],
@@ -1923,7 +1921,7 @@
       "name": "LoginPage.jsx",
       "dir": "src/pages",
       "layer": "page",
-      "loc": 74,
+      "loc": 72,
       "summary": "",
       "exports": [
         "default (LoginPage)"
@@ -1969,7 +1967,7 @@
       "name": "ApplyPage.jsx",
       "dir": "src/pages/candidate",
       "layer": "page",
-      "loc": 355,
+      "loc": 353,
       "summary": "",
       "exports": [
         "default (ApplyPage)"
@@ -2072,7 +2070,7 @@
       "name": "LandingPage.jsx",
       "dir": "src/pages/candidate",
       "layer": "page",
-      "loc": 45,
+      "loc": 42,
       "summary": "",
       "exports": [
         "default (LandingPage)"
@@ -2097,7 +2095,7 @@
       "name": "MyApplicationPage.jsx",
       "dir": "src/pages/candidate",
       "layer": "page",
-      "loc": 383,
+      "loc": 453,
       "summary": "",
       "exports": [
         "default (MyApplicationPage)"
@@ -2701,7 +2699,7 @@
       "name": "ta.css",
       "dir": "src/styles",
       "layer": "style",
-      "loc": 803,
+      "loc": 896,
       "summary": "",
       "exports": [],
       "externals": [],
@@ -2960,10 +2958,6 @@
     {
       "source": "src/components/navigation/CandidateHeader.jsx",
       "target": "src/components/common/Icon.jsx"
-    },
-    {
-      "source": "src/components/navigation/CandidateHeader.jsx",
-      "target": "src/components/ta/Button.jsx"
     },
     {
       "source": "src/components/navigation/CandidateHeader.jsx",

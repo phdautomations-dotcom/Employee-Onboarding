@@ -24,7 +24,7 @@ export default function ApplicationSuccessPage() {
         <span className="cx-success__check"><Icon name="CheckCircle2" size={26} /></span>
         <h1 className="cx-page__title">Application submitted</h1>
         <p className="cx-page__sub" style={{ marginBottom: 20 }}>
-          Thank you for applying to TalentFlow{state.jobTitle ? ` for ${state.jobTitle}` : ''}. Our team will review it and get back to you.
+          Thank you for applying to Ccentrik{state.jobTitle ? ` for ${state.jobTitle}` : ''}. Our team will review it and get back to you.
         </p>
       </div>
 
