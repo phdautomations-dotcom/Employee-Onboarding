@@ -137,27 +137,33 @@ export default function MyApplicationPage() {
   return (
     <div className="cx-page">
       <div className={`cx-idcard${employee ? ' cx-idcard--done' : ''}`}>
-        <div className="cx-idcard__id">
-          <span className="cx-idcard__avatar">{initialsOf(name)}</span>
-          <div>
-            <h2>{employee ? `Welcome aboard, ${app.personal.firstName}` : `Hi ${app.personal.firstName}`}</h2>
-            <div className="cx-idcard__meta">
-              {employee ? `Employee ID · ${employee.id}` : `Candidate ID · ${app.candidateId}`} · {app.jobTitle}
+        <div className="cx-idcard__top">
+          <div className="cx-idcard__id">
+            <span className="cx-idcard__avatar">{initialsOf(name)}</span>
+            <div>
+              <h2>{employee ? `Welcome aboard, ${app.personal.firstName}` : `Hi ${app.personal.firstName}`}</h2>
+              <div className="cx-idcard__meta">{app.jobTitle}</div>
             </div>
           </div>
-        </div>
-        <div className="cx-idcard__progress">
-          <div className="cx-idcard__progresshead">
-            <span>{rejected ? 'Application status' : 'Progress'}</span>
-            <span>{rejected ? 'Closed' : `${progress}%`}</span>
+          <div className="cx-idcard__progress">
+            <div className="cx-idcard__progresshead">
+              <span>{rejected ? 'Application status' : 'Progress'}</span>
+              <span>{rejected ? 'Closed' : `${progress}%`}</span>
+            </div>
+            <div className="cx-idcard__bar"><div style={{ width: `${rejected ? 100 : progress}%` }} /></div>
+            <div className="cx-idcard__tag"><Tag tone={badge.tone}>{badge.label}</Tag></div>
           </div>
-          <div className="cx-idcard__bar"><div style={{ width: `${rejected ? 100 : progress}%` }} /></div>
-          <div className="cx-idcard__tag"><Tag tone={badge.tone}>{badge.label}</Tag></div>
         </div>
-      </div>
-
-      <div className="ta-cell-sub" style={{ marginBottom: 14 }}>
-        {app.id} · Submitted {formatDate(app.submittedAt)} · Assigned to {app.assignedTo}
+        <dl className="cx-idcard__facts">
+          <div>
+            <dt>{employee ? 'Employee ID' : 'Candidate ID'}</dt>
+            <dd>{employee ? employee.id : app.candidateId}</dd>
+          </div>
+          <div><dt>Application ID</dt><dd>{app.id}</dd></div>
+          <div><dt>Position</dt><dd>{app.jobTitle}</dd></div>
+          <div><dt>Submitted</dt><dd>{formatDate(app.submittedAt)}</dd></div>
+          <div><dt>Assigned to</dt><dd>{app.assignedTo}</dd></div>
+        </dl>
       </div>
 
       {!rejected && (
@@ -171,14 +177,6 @@ export default function MyApplicationPage() {
               </li>
             ))}
           </ol>
-        </div>
-      )}
-
-      {hint && app.status !== APP_STATUS.RETURNED && (
-        <div className="cx-next">
-          <span className="cx-next__icon"><Icon name={hint.icon} size={15} /></span>
-          <span className="cx-next__label">What's next</span>
-          <span className="cx-next__text">{hint.text}</span>
         </div>
       )}
 
@@ -201,6 +199,12 @@ export default function MyApplicationPage() {
 
       <div className="ta-stack">
           <Card title="Recruitment progress">
+            {hint && app.status !== APP_STATUS.RETURNED && (
+              <div className="cx-nextline">
+                <Icon name={hint.icon} size={15} />
+                <span><strong>What's next:</strong> {hint.text}</span>
+              </div>
+            )}
             <ol className="cx-proglist">
               {stages.map((s) => (
                 <li key={s.label}>
