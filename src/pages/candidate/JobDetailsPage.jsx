@@ -1,18 +1,17 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import Icon from '../../components/common/Icon.jsx';
-import Button from '../../components/common/Button.jsx';
-import { EmptyState } from '../../components/common/States.jsx';
+import Button from '../../components/ta/Button.jsx';
+import Card from '../../components/ta/Card.jsx';
+import EmptyState from '../../components/ta/EmptyState.jsx';
 import { useApp } from '../../context/AppContext.jsx';
 import { formatDate } from '../../utils/format.js';
 
-function Block({ title, items }) {
+function List({ title, items }) {
   if (!items?.length) return null;
   return (
-    <div className="mb-6">
-      <h3 className="section-title mb-3">{title}</h3>
-      <ul style={{ margin: 0, paddingLeft: 18 }} className="text-small stack gap-2 text-secondary">
-        {items.map((i) => <li key={i}>{i}</li>)}
-      </ul>
+    <div style={{ marginBottom: 20 }}>
+      <h3 className="ta-card__title" style={{ marginBottom: 10 }}>{title}</h3>
+      <ul className="ta-bullets">{items.map((i) => <li key={i}>{i}</li>)}</ul>
     </div>
   );
 }
@@ -25,75 +24,70 @@ export default function JobDetailsPage() {
 
   if (!job) {
     return (
-      <div className="cand csection">
-        <EmptyState icon="SearchX" title="Job not found" action={<Button onClick={() => navigate('/candidate/jobs')}>Back to all jobs</Button>} />
+      <div className="cx-page">
+        <EmptyState icon="SearchX" title="Job not found"
+          action={<Button variant="ghost" onClick={() => navigate('/candidate/jobs')}>Back to all jobs</Button>} />
       </div>
     );
   }
 
   const meta = [
-    { icon: 'Building2', label: 'Department', value: job.department },
-    { icon: 'MapPin', label: 'Location', value: job.location },
-    { icon: 'Briefcase', label: 'Employment', value: `${job.employmentType} · ${job.workMode}` },
-    { icon: 'BadgeCheck', label: 'Experience', value: job.experience },
-    { icon: 'CalendarDays', label: 'Apply by', value: formatDate(job.deadline) },
+    { label: 'Department', value: job.department },
+    { label: 'Location', value: job.location },
+    { label: 'Employment', value: `${job.employmentType} · ${job.workMode}` },
+    { label: 'Experience', value: job.experience },
+    { label: 'Apply by', value: formatDate(job.deadline) },
   ];
 
   return (
-    <div className="cand csection">
-      <Button variant="ghost" icon="ArrowLeft" onClick={() => navigate('/candidate/jobs')}>
-        All jobs
-      </Button>
+    <div className="cx-page">
+      <button className="ta-link" onClick={() => navigate('/candidate/jobs')} style={{ marginBottom: 14 }}>
+        <Icon name="ArrowLeft" size={14} /> All jobs
+      </button>
 
-      <div className="apply-grid mt-4">
-        <div>
-          <span className="pjob__dept">{job.department}</span>
-          <h1 className="page-title" style={{ fontSize: 30, marginTop: 4 }}>{job.title}</h1>
-          <div className="pjob__meta mt-3 mb-6">
-            <span><Icon name="MapPin" size={13} /> {job.location}</span>
-            <span><Icon name="BadgeCheck" size={13} /> {job.experience}</span>
-            <span><Icon name="Briefcase" size={13} /> {job.employmentType}</span>
-            <span><Icon name="Hash" size={13} /> {job.id}</span>
-          </div>
+      <div className="cx-page__head">
+        <span className="ta-cell-sub">{job.department} · {job.id}</span>
+        <h1 className="cx-page__title" style={{ marginTop: 2 }}>{job.title}</h1>
+        <p className="cx-page__sub">{job.location} · {job.employmentType} · {job.workMode}</p>
+      </div>
 
-          <div className="mb-6">
-            <h3 className="section-title mb-3">About the Role</h3>
-            <p className="text-small text-secondary">{job.description}</p>
+      <div className="ta-detail-grid">
+        <Card>
+          <div style={{ marginBottom: 20 }}>
+            <h3 className="ta-card__title" style={{ marginBottom: 10 }}>About the role</h3>
+            <p className="ta-cell-mute" style={{ lineHeight: 1.7 }}>{job.description}</p>
           </div>
-          <Block title="Responsibilities" items={job.responsibilities} />
-          <div className="mb-6">
-            <h3 className="section-title mb-3">Required Skills</h3>
-            <div className="job-card__skills">
-              {job.requiredSkills.map((s) => <span className="skill-tag" key={s}>{s}</span>)}
+          <List title="Responsibilities" items={job.responsibilities} />
+          {job.requiredSkills?.length > 0 && (
+            <div style={{ marginBottom: 20 }}>
+              <h3 className="ta-card__title" style={{ marginBottom: 10 }}>Required skills</h3>
+              <div className="ta-skills">{job.requiredSkills.map((s) => <span key={s} className="ta-skill">{s}</span>)}</div>
             </div>
-          </div>
-          <div className="mb-6">
-            <h3 className="section-title mb-3">Preferred Skills</h3>
-            <div className="job-card__skills">
-              {job.preferredSkills.map((s) => <span className="skill-tag" key={s}>{s}</span>)}
+          )}
+          {job.preferredSkills?.length > 0 && (
+            <div style={{ marginBottom: 20 }}>
+              <h3 className="ta-card__title" style={{ marginBottom: 10 }}>Preferred skills</h3>
+              <div className="ta-skills">{job.preferredSkills.map((s) => <span key={s} className="ta-skill">{s}</span>)}</div>
             </div>
-          </div>
-          <Block title="Qualifications" items={job.qualifications} />
-          <Block title="What We Offer" items={job.benefits} />
-        </div>
+          )}
+          <List title="Qualifications" items={job.qualifications} />
+          <List title="What we offer" items={job.benefits} />
+        </Card>
 
-        <div className="apply-summary">
-          <div className="apply-summary__head">
-            <div className="strong">Ready to apply?</div>
-            <div className="text-xs text-secondary">Takes about 2 minutes with your resume.</div>
-          </div>
-          <div className="apply-summary__body">
+        <Card title="Ready to apply?">
+          <p className="ta-cell-sub" style={{ marginBottom: 14 }}>Takes about 2 minutes with your resume.</p>
+          <div className="ta-info ta-info--1" style={{ marginBottom: 16 }}>
             {meta.map((m) => (
-              <div className="apply-summary__row" key={m.label}>
-                <span className="k"><Icon name={m.icon} size={13} /> {m.label}</span>
-                <span className="v">{m.value}</span>
+              <div className="ta-info__item" key={m.label}>
+                <span className="ta-info__label">{m.label}</span>
+                <span className="ta-info__value">{m.value}</span>
               </div>
             ))}
-            <Button block className="mt-4" icon="ArrowRight" onClick={() => navigate(`/candidate/apply/${job.id}`)}>
-              Apply Now
-            </Button>
           </div>
-        </div>
+          <Button iconRight="ArrowRight" onClick={() => navigate(`/candidate/apply/${job.id}`)} style={{ width: '100%' }}>
+            Apply now
+          </Button>
+        </Card>
       </div>
     </div>
   );

@@ -1,7 +1,8 @@
 import { useNavigate } from 'react-router-dom';
 import Icon from './common/Icon.jsx';
-import Button from './common/Button.jsx';
+import Button from './ta/Button.jsx';
 
+/* Roughly how long ago a job was posted (deadlines are ~30 days out). */
 function postedAgo(deadline) {
   const d = new Date(deadline);
   d.setDate(d.getDate() - 30);
@@ -14,35 +15,27 @@ function postedAgo(deadline) {
 export default function JobCard({ job }) {
   const navigate = useNavigate();
   return (
-    <article className="pjob">
-      <span className="pjob__icon"><Icon name="Briefcase" size={16} /></span>
+    <article className="cx-job" onClick={() => navigate(`/candidate/jobs/${job.id}`)}>
+      <span className="cx-job__icon"><Icon name="Briefcase" size={17} /></span>
 
-      <div className="pjob__body">
-        <div className="pjob__title">{job.title}</div>
-        <div className="pjob__dept">{job.department}</div>
-        <div className="pjob__meta">
+      <div className="cx-job__body">
+        <div className="cx-job__title">{job.title}</div>
+        <div className="cx-job__dept">{job.department}</div>
+        <div className="cx-job__meta">
           <span><Icon name="MapPin" size={12} /> {job.location}</span>
           <span><Icon name="BadgeCheck" size={12} /> {job.experience}</span>
           <span><Icon name="Clock3" size={12} /> {job.employmentType}</span>
         </div>
-        <div className="pjob__skills">
-          {job.requiredSkills.slice(0, 4).map((s) => (
-            <span className="skill-tag" key={s}>{s}</span>
-          ))}
+        <div className="cx-job__skills">
+          {job.requiredSkills.slice(0, 4).map((s) => <span key={s} className="ta-skill">{s}</span>)}
         </div>
       </div>
 
-      <div className="pjob__side">
-        <span className="pjob__posted">
-          <Icon name="CalendarDays" size={11} /> Posted {postedAgo(job.deadline)}
-        </span>
-        <div className="pjob__actions">
-          <Button variant="secondary" size="sm" onClick={() => navigate(`/candidate/jobs/${job.id}`)}>
-            View Details
-          </Button>
-          <Button className="pjob__apply" variant="secondary" size="sm" iconRight="ArrowRight" onClick={() => navigate(`/candidate/apply/${job.id}`)}>
-            Apply
-          </Button>
+      <div className="cx-job__side">
+        <span className="cx-job__posted"><Icon name="CalendarDays" size={11} /> Posted {postedAgo(job.deadline)}</span>
+        <div className="cx-job__actions" onClick={(e) => e.stopPropagation()}>
+          <Button variant="ghost" onClick={() => navigate(`/candidate/jobs/${job.id}`)}>View</Button>
+          <Button iconRight="ArrowRight" onClick={() => navigate(`/candidate/apply/${job.id}`)}>Apply</Button>
         </div>
       </div>
     </article>
