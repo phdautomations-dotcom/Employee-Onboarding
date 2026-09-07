@@ -50,7 +50,7 @@ export default function TASidebar({ open, collapsed, onToggleCollapse, onNavigat
       <div className="ta-brand">
         <BrandMark />
         <span className="ta-brand__text">
-          <span className="ta-brand__name">TalentFlow</span>
+          <span className="ta-brand__name">Talent Blooming</span>
           <span className="ta-brand__sub">TA Portal</span>
         </span>
       </div>

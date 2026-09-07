@@ -63,7 +63,7 @@ export default function MyApplicationPage() {
 
   if (!app) {
     return (
-      <div className="cx-page cx-page--narrow">
+      <div className="cx-page">
         <EmptyState
           icon="FileText"
           title="No application yet"
@@ -95,7 +95,7 @@ export default function MyApplicationPage() {
   const verifiedCount = documents.filter((d) => d.status === DOC_STATUS.VERIFIED).length;
 
   return (
-    <div className="cx-page cx-page--narrow">
+    <div className="cx-page">
       <div className={`cx-idcard${employee ? ' cx-idcard--done' : ''}`}>
         <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
           <div>
@@ -226,7 +226,7 @@ export default function MyApplicationPage() {
             >
               <p className="ta-cell-mute" style={{ lineHeight: 1.7, marginBottom: 14 }}>
                 Dear {offer.candidateName}, we are pleased to offer you the position of <strong>{offer.jobTitle}</strong> in
-                the {offer.department} team at TalentFlow, based in {offer.location}.
+                the {offer.department} team at Talent Blooming, based in {offer.location}.
               </p>
               <div className="ta-info" style={{ marginBottom: 14 }}>
                 <div className="ta-info__item"><span className="ta-info__label">Joining date</span><span className="ta-info__value">{formatDate(offer.joiningDate)}</span></div>

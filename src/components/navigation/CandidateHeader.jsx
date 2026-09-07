@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import Icon from '../common/Icon.jsx';
-import Button from '../ta/Button.jsx';
 import { useApp } from '../../context/AppContext.jsx';
 import { ROLES, ROLE_META } from '../../constants/roles.js';
 import { initialsOf } from '../../utils/format.js';
@@ -32,9 +31,9 @@ export default function CandidateHeader() {
               <circle cx="12" cy="15" r="5" />
             </svg>
           </span>
-          <span>
-            <span className="cx-brand__name" style={{ display: 'block' }}>TalentFlow</span>
-            <span className="cx-brand__sub" style={{ display: 'block' }}>Careers</span>
+          <span className="cx-brand__text">
+            <span className="cx-brand__name">Talent Blooming</span>
+            <span className="cx-brand__sub">Careers</span>
           </span>
         </NavLink>
 
@@ -69,7 +68,6 @@ export default function CandidateHeader() {
               </div>
             )}
           </div>
-          <Button iconRight="ArrowRight" onClick={() => navigate('/candidate/apply')}>Apply Now</Button>
         </div>
       </div>
     </header>

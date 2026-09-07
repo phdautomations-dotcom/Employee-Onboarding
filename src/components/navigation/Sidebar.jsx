@@ -6,8 +6,8 @@ export default function Sidebar({ title, badge, items, footerItems, open, onNavi
     <aside className={`sidebar${open ? ' sidebar--open' : ''}`}>
       <div className="sidebar__brand">
         <div className="brand">
-          <span className="brand__mark">TF</span>
-          <span>TalentFlow</span>
+          <span className="brand__mark">TB</span>
+          <span>Talent Blooming</span>
         </div>
       </div>
       <div className="sidebar__section-label">{title}</div>

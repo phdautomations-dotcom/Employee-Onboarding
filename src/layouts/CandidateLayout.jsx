@@ -10,7 +10,7 @@ export default function CandidateLayout() {
         <Outlet />
       </main>
       <footer className="cx-footer">
-        <div className="cx-footer__inner">© 2026 TalentFlow · Recruitment &amp; Onboarding</div>
+        <div className="cx-footer__inner">© 2026 Talent Blooming · Recruitment &amp; Onboarding</div>
       </footer>
     </div>
   );
