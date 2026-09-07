@@ -137,22 +137,22 @@ export default function MyApplicationPage() {
   return (
     <div className="cx-page">
       <div className={`cx-idcard${employee ? ' cx-idcard--done' : ''}`}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
+        <div className="cx-idcard__id">
+          <span className="cx-idcard__avatar">{initialsOf(name)}</span>
           <div>
-            <div className="cx-idcard__avatar">{initialsOf(name)}</div>
             <h2>{employee ? `Welcome aboard, ${app.personal.firstName}` : `Hi ${app.personal.firstName}`}</h2>
             <div className="cx-idcard__meta">
               {employee ? `Employee ID · ${employee.id}` : `Candidate ID · ${app.candidateId}`} · {app.jobTitle}
             </div>
           </div>
-          <div style={{ minWidth: 200 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'rgba(255,255,255,.8)' }}>
-              <span>{rejected ? 'Application status' : 'Progress'}</span>
-              <span>{rejected ? 'Closed' : `${progress}%`}</span>
-            </div>
-            <div className="cx-idcard__bar"><div style={{ width: `${rejected ? 100 : progress}%` }} /></div>
-            <div style={{ marginTop: 10 }}><Tag tone={badge.tone}>{badge.label}</Tag></div>
+        </div>
+        <div className="cx-idcard__progress">
+          <div className="cx-idcard__progresshead">
+            <span>{rejected ? 'Application status' : 'Progress'}</span>
+            <span>{rejected ? 'Closed' : `${progress}%`}</span>
           </div>
+          <div className="cx-idcard__bar"><div style={{ width: `${rejected ? 100 : progress}%` }} /></div>
+          <div className="cx-idcard__tag"><Tag tone={badge.tone}>{badge.label}</Tag></div>
         </div>
       </div>
 
@@ -221,7 +221,7 @@ export default function MyApplicationPage() {
             </ol>
           </Card>
 
-          {interviews.length > 0 && (
+          {interviews.some((iv) => iv.status === ROUND_STATUS.SCHEDULED) && (
             <Card title="Interviews">
               <div className="ta-stack">
                 {interviews.map((iv) => {
