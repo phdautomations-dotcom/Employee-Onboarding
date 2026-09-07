@@ -12,7 +12,6 @@ import { initialsOf, formatDate, formatCurrencyINR } from '../../utils/format.js
 import {
   APP_STATUS,
   PIPELINE_STAGES,
-  statusMeta,
   stageIndexForStatus,
   stageBadgeForStatus,
   ROUND_STATUS,
@@ -32,6 +31,30 @@ const toneMap = { info: 'blue', success: 'green', error: 'red', warning: 'amber'
 
 /* Short pipeline steps for the header strip. */
 const STEPS = ['Applied', 'Screening', 'Interview', 'Documents', 'Offer', 'Joining'];
+
+/* Which on-page card an activity entry belongs to. */
+const SECTION_BY_TYPE = {
+  interview: 'sec-interviews',
+  documents: 'sec-documents',
+  offer: 'sec-offer',
+  onboarding: 'sec-employee',
+};
+
+/* Jump to whatever an activity entry is about — the exact document row when we
+   can identify it, otherwise the section card — and flash it. */
+function jumpToActivity(a, documents) {
+  let id = SECTION_BY_TYPE[a.type] || 'sec-progress';
+  if (a.type === 'documents') {
+    const m = /^(.+?)\s+(rejected|verified|uploaded)/i.exec(a.description || '');
+    const doc = m && documents.find((d) => d.label === m[1]);
+    if (doc) id = `doc-${doc.id}`;
+  }
+  const el = document.getElementById(id) || document.getElementById('sec-progress');
+  if (!el) return;
+  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  el.classList.add('cx-flash');
+  setTimeout(() => el.classList.remove('cx-flash'), 1400);
+}
 
 /* One friendly line telling the candidate what happens next. */
 function nextStep(status, pendingDocs) {
@@ -119,12 +142,8 @@ export default function MyApplicationPage() {
   const rejected = app.status === APP_STATUS.REJECTED;
   const progress = rejected ? 0 : Math.round(((Math.max(0, stageIdx) + 1) / PIPELINE_STAGES.length) * 100);
 
-  /* Show stages only up to the one in progress — future stages stay hidden. */
+  /* Show steps only up to the one in progress — future steps stay hidden. */
   const shownCount = rejected ? PIPELINE_STAGES.length : Math.max(1, stageIdx + 1);
-  const stages = PIPELINE_STAGES.slice(0, shownCount).map((s, i) => ({
-    label: s.label,
-    state: rejected ? (i === 0 ? 'done' : 'pending') : i < stageIdx ? 'done' : 'current',
-  }));
 
   const showDocuments = DOC_STAGES.includes(app.status);
   const verifiedCount = documents.filter((d) => d.status === DOC_STATUS.VERIFIED).length;
@@ -156,28 +175,29 @@ export default function MyApplicationPage() {
           <div><dt>Assigned to</dt><dd>{app.assignedTo}</dd></div>
         </dl>
         <div className="cx-idcard__progress">
-          <div className="cx-idcard__progresshead">
-            <span>{rejected ? 'Application status' : 'Progress'}</span>
-            <span>{rejected ? 'Closed' : `${progress}%`}</span>
+          <div className="cx-idcard__donut" role="img" aria-label={`Progress ${progress} percent`}>
+            <svg viewBox="0 0 42 42">
+              <circle className="cx-donut-track" cx="21" cy="21" r="15.9" pathLength="100" />
+              <circle
+                className="cx-donut-arc" cx="21" cy="21" r="15.9" pathLength="100"
+                strokeDasharray={`${rejected ? 100 : progress} 100`}
+              />
+              <defs>
+                <linearGradient id="cxDonut" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#5eead4" />
+                  <stop offset="50%" stopColor="#38bdf8" />
+                  <stop offset="100%" stopColor="#a78bfa" />
+                </linearGradient>
+              </defs>
+            </svg>
+            <span className="cx-idcard__donutnum">{rejected ? '—' : `${progress}%`}</span>
           </div>
-          <div className="cx-idcard__bar"><div style={{ width: `${rejected ? 100 : progress}%` }} /></div>
-          <div className="cx-idcard__tag"><Tag tone={badge.tone}>{badge.label}</Tag></div>
+          <div className="cx-idcard__pmeta">
+            <span className="cx-idcard__plabel">{rejected ? 'Application status' : 'Progress'}</span>
+            <div className="cx-idcard__tag"><Tag tone={badge.tone}>{badge.label}</Tag></div>
+          </div>
         </div>
       </div>
-
-      {!rejected && (
-        <div className="cx-steps-card">
-          <ol className="cx-steps">
-            {steps.map((s, i) => (
-              <li key={s.label} className={`cx-step${s.state === 'done' ? ' cx-step--done' : ' cx-step--active'}`}>
-                <span className="cx-step__dot">{s.state === 'done' ? <Icon name="Check" size={12} /> : i + 1}</span>
-                <span>{s.label}</span>
-                {i < steps.length - 1 && <span className="cx-step__line" />}
-              </li>
-            ))}
-          </ol>
-        </div>
-      )}
 
       {app.status === APP_STATUS.RETURNED && (
         <div className="ta-note ta-note--warn" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 6 }}>
@@ -198,32 +218,30 @@ export default function MyApplicationPage() {
 
       <div className="ta-detail-grid">
         <div className="ta-stack">
-          <Card title="Recruitment progress">
+          <Card id="sec-progress" title="Recruitment progress">
+            {!rejected && (
+              <div className="cx-steps-scroll">
+                <ol className="cx-steps">
+                  {steps.map((s, i) => (
+                    <li key={s.label} className={`cx-step${s.state === 'done' ? ' cx-step--done' : ' cx-step--active'}`}>
+                      <span className="cx-step__dot">{s.state === 'done' ? <Icon name="Check" size={12} /> : i + 1}</span>
+                      <span>{s.label}</span>
+                      {i < steps.length - 1 && <span className="cx-step__line" />}
+                    </li>
+                  ))}
+                </ol>
+              </div>
+            )}
             {hint && app.status !== APP_STATUS.RETURNED && (
               <div className="cx-nextline">
                 <Icon name={hint.icon} size={15} />
                 <span><strong>What's next:</strong> {hint.text}</span>
               </div>
             )}
-            <ol className="cx-proglist">
-              {stages.map((s) => (
-                <li key={s.label}>
-                  <span className="cx-proglist__dot" style={{
-                    background: s.state === 'current' ? 'var(--ta-blue)' : 'var(--tag-green-fg)',
-                  }} />
-                  <div>
-                    <div className="ta-cell-strong">{s.label}</div>
-                    <div className="ta-cell-sub">
-                      {s.state === 'done' ? 'Completed' : statusMeta(app.status).label}
-                    </div>
-                  </div>
-                </li>
-              ))}
-            </ol>
           </Card>
 
           {interviews.some((iv) => iv.status === ROUND_STATUS.SCHEDULED) && (
-            <Card title="Interviews">
+            <Card id="sec-interviews" title="Interviews">
               <div className="ta-stack">
                 {interviews.map((iv) => {
                   const m = ROUND_STATUS_META[iv.status];
@@ -249,6 +267,7 @@ export default function MyApplicationPage() {
 
           {showDocuments && (
             <Card
+              id="sec-documents"
               title="Required documents"
               action={<Tag tone={verifiedCount === documents.length ? 'green' : 'amber'}>{verifiedCount} of {documents.length} verified</Tag>}
             >
@@ -262,7 +281,7 @@ export default function MyApplicationPage() {
                     {documents.filter((d) => d.category === cat).map((doc) => {
                       const m = DOC_STATUS_META[doc.status];
                       return (
-                        <div className="ta-docrow" key={doc.id}>
+                        <div className="ta-docrow" key={doc.id} id={`doc-${doc.id}`}>
                           <span className="ta-docrow__icon"><Icon name="FileText" size={15} /></span>
                           <div className="grow" style={{ minWidth: 0 }}>
                             <div className="ta-cell-strong">{doc.label}</div>
@@ -286,6 +305,7 @@ export default function MyApplicationPage() {
 
           {offer && [OFFER_STATUS.ISSUED, OFFER_STATUS.ACCEPTED, OFFER_STATUS.DECLINED].includes(offer.status) && (
             <Card
+              id="sec-offer"
               title="Your offer"
               action={<Tag tone={toneMap[OFFER_STATUS_META[offer.status].tone] || 'grey'}>{OFFER_STATUS_META[offer.status].label}</Tag>}
             >
@@ -315,7 +335,7 @@ export default function MyApplicationPage() {
           )}
 
           {employee && (
-            <Card title="Employee record">
+            <Card id="sec-employee" title="Employee record">
               <div className="ta-note ta-note--ok" style={{ margin: 0 }}>
                 <Icon name="UserRoundCheck" size={15} />
                 <span>Employee ID <strong>{employee.id}</strong> · {employee.position} · joined {formatDate(employee.joiningDate)}</span>
@@ -333,11 +353,11 @@ export default function MyApplicationPage() {
                 {activities.slice(0, 12).map((a) => (
                   <li key={a.id}>
                     <span className="ta-timeline__dot" />
-                    <div>
+                    <button type="button" className="cx-actitem" onClick={() => jumpToActivity(a, documents)}>
                       <div className="ta-cell-strong">{a.title}</div>
                       <div className="ta-cell-sub">{a.description}</div>
                       <div className="ta-cell-sub">{formatDate(a.at)} · {a.actor}</div>
-                    </div>
+                    </button>
                   </li>
                 ))}
               </ol>

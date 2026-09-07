@@ -530,10 +530,22 @@
 .ta-timeline__dot { width: 9px; height: 9px; border-radius: 999px; background: var(--ta-blue); flex-shrink: 0; margin-top: 3px; z-index: 1; }
 .ta-timeline li > div { flex: 1; min-width: 0; }
 
-/* recruitment-progress stages — flow into columns so the card fills its width */
-.cx-proglist { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 16px 24px; }
-.cx-proglist li { display: flex; gap: 10px; align-items: flex-start; }
-.cx-proglist__dot { width: 9px; height: 9px; border-radius: 999px; flex-shrink: 0; margin-top: 4px; }
+/* activity rows link to their section on the page */
+.cx-actitem {
+  flex: 1; min-width: 0; display: block; width: 100%; text-align: left; font: inherit; color: inherit;
+  background: none; border: 0; cursor: pointer; padding: 5px 7px; margin: -5px -7px;
+  border-radius: 7px; transition: background 0.12s;
+}
+.cx-actitem:hover { background: var(--ta-bg); }
+.cx-actitem:hover .ta-cell-strong { color: var(--ta-blue-ink); }
+
+/* brief highlight when an activity row jumps you to a card or document */
+@keyframes cxFlash {
+  0%, 40% { box-shadow: 0 0 0 3px var(--ta-blue); }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+.cx-flash { animation: cxFlash 1.4s ease; }
+[id^="doc-"], [id^="sec-"] { scroll-margin-top: 76px; }
 
 .ta-bullets { margin: 0; padding-left: 18px; color: var(--ta-text-soft); font-size: 12.5px; line-height: 1.8; }
 .ta-skills { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -713,13 +725,9 @@
 .cx-upload__title { font-size: 13px; font-weight: 600; }
 .cx-upload__sub { font-size: 11.5px; color: var(--ta-text-soft); }
 
-/* steps strip */
-.cx-steps-card {
-  background: var(--ta-surface); border: 1px solid var(--ta-line);
-  border-radius: var(--ta-radius); box-shadow: var(--ta-shadow);
-  padding: 10px 16px; margin-bottom: 14px; overflow-x: auto;
-}
-.cx-steps { display: flex; align-items: center; margin: 0; padding: 0; list-style: none; width: 100%; min-width: 380px; }
+/* steps strip — lives inside the Recruitment progress card */
+.cx-steps-scroll { overflow-x: auto; margin-bottom: 16px; padding-bottom: 2px; }
+.cx-steps { display: flex; align-items: center; margin: 0; padding: 0; list-style: none; width: 100%; min-width: 360px; }
 .cx-step { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--ta-text); font-weight: 600; white-space: nowrap; flex: 1; }
 .cx-step:last-child { flex: 0 0 auto; }
 .cx-step__dot {
@@ -732,10 +740,10 @@
 .cx-step__line { flex: 1; min-width: 24px; height: 2px; border-radius: 2px; background: var(--ta-line); margin: 0 8px; }
 .cx-step--done .cx-step__line { background: var(--ta-blue); }
 
-/* what's-next hint — lead line of the progress card */
+/* what's-next hint inside the progress card */
 .cx-nextline {
   display: flex; align-items: flex-start; gap: 9px;
-  margin-bottom: 16px; padding: 10px 12px; border-radius: 9px;
+  padding: 10px 12px; border-radius: 9px;
   background: var(--ta-blue-wash); border: 1px solid var(--ta-line);
   color: var(--ta-text); font-size: 12.5px; line-height: 1.5;
 }
@@ -756,11 +764,18 @@
 }
 .cx-idcard h2 { color: #fff; font-size: 15px; }
 .cx-idcard__meta { font-size: 12px; color: rgba(255,255,255,0.7); margin-top: 1px; }
-.cx-idcard__progress { flex-shrink: 0; width: 200px; }
-.cx-idcard__progresshead { display: flex; justify-content: space-between; gap: 12px; font-size: 11px; color: rgba(255,255,255,0.8); }
-.cx-idcard__bar { height: 5px; border-radius: 999px; background: rgba(255,255,255,0.2); overflow: hidden; margin-top: 7px; }
-.cx-idcard__bar > div { height: 100%; background: #fff; border-radius: 999px; transition: width 0.5s ease; }
-.cx-idcard__tag { margin-top: 8px; }
+.cx-idcard__progress { flex-shrink: 0; display: flex; align-items: center; gap: 13px; }
+.cx-idcard__donut { position: relative; width: 60px; height: 60px; flex-shrink: 0; }
+.cx-idcard__donut svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.cx-donut-track { fill: none; stroke: rgba(255, 255, 255, 0.16); stroke-width: 4; }
+.cx-donut-arc { fill: none; stroke: url(#cxDonut); stroke-width: 4; stroke-linecap: round; transition: stroke-dasharray 0.6s ease; }
+.cx-idcard__donutnum {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  font-size: 12.5px; font-weight: 700; color: #fff;
+}
+.cx-idcard__pmeta { display: flex; flex-direction: column; gap: 8px; }
+.cx-idcard__plabel { font-size: 11px; color: rgba(255, 255, 255, 0.8); text-transform: uppercase; letter-spacing: 0.04em; }
+.cx-idcard__tag { margin: 0; }
 .cx-idcard__facts {
   flex: 1 1 300px; display: flex; flex-wrap: wrap; gap: 12px 28px; margin: 0;
   padding-left: 28px; border-left: 1px solid rgba(255,255,255,0.16);
