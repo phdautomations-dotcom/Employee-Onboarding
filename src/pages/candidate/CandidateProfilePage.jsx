@@ -1,10 +1,18 @@
 import { useNavigate } from 'react-router-dom';
-import Icon from '../../components/common/Icon.jsx';
-import Button from '../../components/common/Button.jsx';
-import { Card, InfoList } from '../../components/common/Card.jsx';
-import { EmptyState } from '../../components/common/States.jsx';
+import Button from '../../components/ta/Button.jsx';
+import Card from '../../components/ta/Card.jsx';
+import EmptyState from '../../components/ta/EmptyState.jsx';
 import { useApp } from '../../context/AppContext.jsx';
-import { formatCurrencyINR } from '../../utils/format.js';
+import { initialsOf, formatCurrencyINR } from '../../utils/format.js';
+
+function Info({ label, value }) {
+  return (
+    <div className="ta-info__item">
+      <span className="ta-info__label">{label}</span>
+      <span className="ta-info__value">{value || '—'}</span>
+    </div>
+  );
+}
 
 export default function CandidateProfilePage() {
   const navigate = useNavigate();
@@ -13,7 +21,7 @@ export default function CandidateProfilePage() {
 
   if (!app) {
     return (
-      <div className="cand csection" style={{ maxWidth: 720 }}>
+      <div className="cx-page cx-page--narrow">
         <EmptyState
           icon="UserRound"
           title="No profile yet"
@@ -26,50 +34,52 @@ export default function CandidateProfilePage() {
 
   const p = app.personal;
   const pr = app.professional;
+  const name = `${p.firstName} ${p.lastName}`;
 
   return (
-    <div className="cand csection" style={{ maxWidth: 860 }}>
-      <div className="csection__head">
-        <h2>My Profile</h2>
-        <p>Details from your application — {app.candidateId}</p>
+    <div className="cx-page cx-page--narrow">
+      <div className="cx-page__head">
+        <h1 className="cx-page__title">My profile</h1>
+        <p className="cx-page__sub">Details from your application — {app.candidateId}</p>
       </div>
 
-      <Card className="mb-4">
-        <div className="row gap-4 mb-4">
-          <span className="avatar avatar--xl">{`${p.firstName[0] || ''}${p.lastName[0] || ''}`}</span>
-          <div>
-            <div className="section-title">{p.firstName} {p.lastName}</div>
-            <div className="text-secondary text-small">{pr.currentJobTitle || 'Candidate'}{pr.currentCompany ? ` · ${pr.currentCompany}` : ''}</div>
+      <div className="ta-profile-head" style={{ marginBottom: 16 }}>
+        <span className="ta-avatar">{initialsOf(name)}</span>
+        <div className="grow">
+          <div className="ta-cell-strong" style={{ fontSize: 15 }}>{name}</div>
+          <div className="ta-cell-sub">
+            {pr.currentJobTitle || 'Candidate'}{pr.currentCompany ? ` · ${pr.currentCompany}` : ''}
           </div>
         </div>
-        <InfoList
-          items={[
-            { label: 'Email', value: p.email },
-            { label: 'Phone', value: p.mobile },
-            { label: 'Current Location', value: p.currentLocation },
-            { label: 'Total Experience', value: `${pr.totalExperience || '—'} years` },
-            { label: 'Notice Period', value: pr.noticePeriod },
-            { label: 'Expected Salary', value: formatCurrencyINR(pr.expectedCTC) },
-          ]}
-        />
+      </div>
+
+      <Card title="Contact & details" bodyStyle={{ }}>
+        <div className="ta-info">
+          <Info label="Email" value={p.email} />
+          <Info label="Phone" value={p.mobile} />
+          <Info label="Current location" value={p.currentLocation} />
+          <Info label="Total experience" value={pr.totalExperience ? `${pr.totalExperience} years` : '—'} />
+          <Info label="Notice period" value={pr.noticePeriod} />
+          <Info label="Expected salary" value={formatCurrencyINR(pr.expectedCTC)} />
+        </div>
       </Card>
 
-      <Card title="Education & skills" className="mb-4">
-        <InfoList
-          items={[
-            { label: 'Highest Qualification', value: app.education?.[0]?.qualification },
-            { label: 'Skills', value: pr.skills?.join(', ') },
-          ]}
-        />
+      <div style={{ height: 16 }} />
+
+      <Card title="Education & skills">
+        <div className="ta-info ta-info--1" style={{ marginBottom: 12 }}>
+          <Info label="Highest qualification" value={app.education?.[0]?.qualification} />
+        </div>
+        <div className="ta-skills">
+          {(pr.skills || []).length
+            ? pr.skills.map((s) => <span key={s} className="ta-skill">{s}</span>)
+            : <span className="ta-cell-mute">No skills listed</span>}
+        </div>
       </Card>
 
-      <div className="row gap-3">
-        <Button icon="ClipboardList" onClick={() => navigate('/candidate/application')}>
-          View my application
-        </Button>
-        <Button variant="secondary" icon="Briefcase" onClick={() => navigate('/candidate/jobs')}>
-          Browse jobs
-        </Button>
+      <div style={{ display: 'flex', gap: 8, marginTop: 16, flexWrap: 'wrap' }}>
+        <Button icon="ClipboardList" onClick={() => navigate('/candidate/application')}>View my application</Button>
+        <Button variant="ghost" icon="Briefcase" onClick={() => navigate('/candidate/jobs')}>Browse jobs</Button>
       </div>
     </div>
   );
