@@ -24,10 +24,10 @@ export default function CandidateHeader() {
   return (
     <header className="cx-header">
       <div className="cx-header__inner">
-        <NavLink to="/candidate" className="cx-brand">
+        <div className="cx-brand">
           <img className="cx-brand__logo" src={logo} alt="Ccentrik" />
           <span className="cx-brand__sub">Careers</span>
-        </NavLink>
+        </div>
 
         <nav className="cx-nav">
           <NavLink to="/candidate/jobs" className={navClass}>Jobs</NavLink>

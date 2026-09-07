@@ -176,11 +176,9 @@ export default function MyApplicationPage() {
 
       {hint && app.status !== APP_STATUS.RETURNED && (
         <div className="cx-next">
-          <span className="cx-next__icon"><Icon name={hint.icon} size={16} /></span>
-          <div>
-            <div className="cx-next__label">What's next</div>
-            <div className="cx-next__text">{hint.text}</div>
-          </div>
+          <span className="cx-next__icon"><Icon name={hint.icon} size={15} /></span>
+          <span className="cx-next__label">What's next</span>
+          <span className="cx-next__text">{hint.text}</span>
         </div>
       )}
 
@@ -201,8 +199,7 @@ export default function MyApplicationPage() {
         </div>
       )}
 
-      <div className="ta-detail-grid">
-        <div className="ta-stack">
+      <div className="ta-stack">
           <Card title="Recruitment progress">
             <ol className="cx-proglist">
               {stages.map((s) => (
@@ -321,37 +318,24 @@ export default function MyApplicationPage() {
               </div>
             </Card>
           )}
-        </div>
-
-        <div className="ta-stack">
-          <Card title="Application details">
-            <div className="ta-info ta-info--1">
-              <div className="ta-info__item"><span className="ta-info__label">Candidate ID</span><span className="ta-info__value">{app.candidateId}</span></div>
-              <div className="ta-info__item"><span className="ta-info__label">Application ID</span><span className="ta-info__value">{app.id}</span></div>
-              <div className="ta-info__item"><span className="ta-info__label">Position</span><span className="ta-info__value">{app.jobTitle}</span></div>
-              <div className="ta-info__item"><span className="ta-info__label">Submitted</span><span className="ta-info__value">{formatDate(app.submittedAt)}</span></div>
-              <div className="ta-info__item"><span className="ta-info__label">Assigned to</span><span className="ta-info__value">{app.assignedTo}</span></div>
-            </div>
-          </Card>
-          <Card title="Activity">
-            {activities.length === 0 ? (
-              <p className="ta-cell-mute">No activity yet.</p>
-            ) : (
-              <ol className="ta-timeline">
-                {activities.slice(0, 12).map((a) => (
-                  <li key={a.id}>
-                    <span className="ta-timeline__dot" />
-                    <div>
-                      <div className="ta-cell-strong">{a.title}</div>
-                      <div className="ta-cell-sub">{a.description}</div>
-                      <div className="ta-cell-sub">{formatDate(a.at)} · {a.actor}</div>
-                    </div>
-                  </li>
-                ))}
-              </ol>
-            )}
-          </Card>
-        </div>
+        <Card title="Activity">
+          {activities.length === 0 ? (
+            <p className="ta-cell-mute">No activity yet.</p>
+          ) : (
+            <ol className="cx-activity">
+              {activities.slice(0, 12).map((a) => (
+                <li key={a.id}>
+                  <span className="ta-timeline__dot" />
+                  <div>
+                    <div className="ta-cell-strong">{a.title}</div>
+                    <div className="ta-cell-sub">{a.description}</div>
+                    <div className="ta-cell-sub">{formatDate(a.at)} · {a.actor}</div>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          )}
+        </Card>
       </div>
 
       <ConfirmDialog
