@@ -1,0 +1,185 @@
+import { useMemo, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import Icon from '../../components/common/Icon.jsx';
+import TAHeader from '../../components/ta/TAHeader.jsx';
+import DataGrid from '../../components/ta/DataGrid.jsx';
+import Toolbar from '../../components/ta/Toolbar.jsx';
+import Avatar from '../../components/ta/Avatar.jsx';
+import Tag from '../../components/ta/Tag.jsx';
+import { useApp } from '../../context/AppContext.jsx';
+import { useCollectionView } from '../../hooks/useCollectionView.js';
+import { APP_STATUS, DOC_STATUS, stageBadgeForStatus } from '../../constants/statuses.js';
+import { formatDate } from '../../utils/format.js';
+
+/* Friendly stage buckets for the filter dropdown. */
+const STAGE_GROUPS = {
+  applied: { label: 'Applied', match: (s) => [APP_STATUS.SUBMITTED, APP_STATUS.RETURNED].includes(s) },
+  screening: { label: 'Screening', match: (s) => s === APP_STATUS.TA_REVIEW },
+  interview: { label: 'Interview', match: (s) => [APP_STATUS.INTERVIEW_PLANNING, APP_STATUS.INTERVIEW_IN_PROGRESS, APP_STATUS.INTERVIEW_PASSED].includes(s) },
+  documents: { label: 'Documents', match: (s) => [APP_STATUS.DOC_VERIFICATION, APP_STATUS.DOCS_VERIFIED].includes(s) },
+  offer: { label: 'Offer', match: (s) => [APP_STATUS.OFFER_DRAFT, APP_STATUS.OFFER_PENDING_HR, APP_STATUS.OFFER_ISSUED, APP_STATUS.OFFER_ACCEPTED].includes(s) },
+  hired: { label: 'Hired', match: (s) => [APP_STATUS.JOINING_PENDING, APP_STATUS.EMPLOYEE].includes(s) },
+  rejected: { label: 'Rejected', match: (s) => [APP_STATUS.REJECTED, APP_STATUS.INTERVIEW_FAILED].includes(s) },
+};
+
+const EXPERIENCE = {
+  junior: { label: '0–3 years', match: (n) => n <= 3 },
+  mid: { label: '3–6 years', match: (n) => n > 3 && n <= 6 },
+  senior: { label: '6+ years', match: (n) => n > 6 },
+};
+
+const SOURCES = ['Direct', 'Job Board', 'Referral', 'Social'];
+
+function experienceLabel(n) {
+  return n <= 0 ? 'Fresher' : `${n}+ Years`;
+}
+
+const COLUMNS = [
+  { key: 'name', label: 'Candidate', sortable: true },
+  { key: 'job', label: 'Job Applied', sortable: true },
+  { key: 'experience', label: 'Experience', sortable: true },
+  { key: 'status', label: 'Current Stage', sortable: true },
+  { key: 'submittedAt', label: 'Applied On', sortable: true },
+  { key: 'docs', label: 'Documents' },
+  { key: 'actions', label: 'Actions' },
+];
+
+export default function TACandidatesPage() {
+  const navigate = useNavigate();
+  const { data, getJob, documentsFor } = useApp();
+  const [sp] = useSearchParams();
+  const apps = data.applications || [];
+
+  const rows = useMemo(
+    () =>
+      apps.map((a) => {
+        const job = getJob(a.jobId);
+        const docs = documentsFor(a.id);
+        const verified = docs.filter((d) => d.status === DOC_STATUS.VERIFIED).length;
+        const rejected = docs.filter((d) => d.status === DOC_STATUS.REJECTED).length;
+        return {
+          id: a.id,
+          candidateId: a.candidateId,
+          name: `${a.personal.firstName} ${a.personal.lastName}`,
+          email: a.personal.email,
+          job: a.jobTitle,
+          department: job?.department || 'General',
+          experience: Number(a.professional.totalExperience) || 0,
+          source: a.source || 'Direct',
+          submittedAt: a.submittedAt,
+          status: a.status,
+          docs: rejected ? { tone: 'red', text: `${rejected} rejected` }
+            : docs.length && verified === docs.length ? { tone: 'green', text: 'All verified' }
+            : verified ? { tone: 'amber', text: `${verified}/${docs.length} verified` }
+            : { tone: 'grey', text: '—' },
+        };
+      }),
+    [apps, getJob, documentsFor]
+  );
+
+  const stageParam = STAGE_GROUPS[sp.get('stage')] ? sp.get('stage') : 'all';
+  const jobParam = sp.get('job') || null;
+  const [stage, setStageKey] = useState(stageParam);
+  const [experience, setExpKey] = useState('all');
+
+  const initialFilters = {};
+  if (stageParam !== 'all') initialFilters.status = (r) => STAGE_GROUPS[stageParam].match(r.status);
+  if (jobParam) initialFilters.job = jobParam;
+
+  const view = useCollectionView(rows, {
+    searchFields: ['name', 'email', 'candidateId', 'job'],
+    pageSize: 12,
+    initialSort: { key: 'submittedAt', dir: 'desc' },
+    initialFilters: Object.keys(initialFilters).length ? initialFilters : undefined,
+  });
+
+  const jobOptions = useMemo(
+    () => [...new Set(rows.map((r) => r.job))].sort().map((j) => ({ value: j, label: j })),
+    [rows]
+  );
+
+  const activeJob = typeof view.filters.job === 'string' ? view.filters.job : 'all';
+  const activeSource = typeof view.filters.source === 'string' ? view.filters.source : 'all';
+
+  const setStage = (key) => {
+    setStageKey(key);
+    view.setFilter('status', key === 'all' ? 'all' : (r) => STAGE_GROUPS[key].match(r.status));
+  };
+  const setExperience = (key) => {
+    setExpKey(key);
+    view.setFilter('experience', key === 'all' ? 'all' : (r) => EXPERIENCE[key].match(r.experience));
+  };
+
+  const chips = [
+    stage !== 'all' && { key: 'stage', label: STAGE_GROUPS[stage].label, onRemove: () => setStage('all') },
+    experience !== 'all' && { key: 'exp', label: EXPERIENCE[experience].label, onRemove: () => setExperience('all') },
+    activeJob !== 'all' && { key: 'job', label: activeJob, onRemove: () => view.setFilter('job', 'all') },
+    activeSource !== 'all' && { key: 'src', label: activeSource, onRemove: () => view.setFilter('source', 'all') },
+    view.query && { key: 'q', label: `“${view.query}”`, onRemove: () => view.setQuery('') },
+  ].filter(Boolean);
+
+  const clearAll = () => {
+    view.setQuery('');
+    setStage('all');
+    setExperience('all');
+    view.setFilter('job', 'all');
+    view.setFilter('source', 'all');
+  };
+
+  return (
+    <>
+      <TAHeader title="Candidates" subtitle="Manage and track candidates through the recruitment process." />
+
+      <Toolbar
+        search={{ value: view.query, onChange: view.setQuery, placeholder: 'Search candidates by name, email or ID…' }}
+        filters={[
+          { label: 'Stage', value: stage, onChange: setStage, options: Object.entries(STAGE_GROUPS).map(([value, g]) => ({ value, label: g.label })) },
+          { label: 'Job', value: activeJob, onChange: (v) => view.setFilter('job', v), options: jobOptions },
+          { label: 'Experience', value: experience, onChange: setExperience, options: Object.entries(EXPERIENCE).map(([value, g]) => ({ value, label: g.label })) },
+          { label: 'Source', value: activeSource, onChange: (v) => view.setFilter('source', v), options: SOURCES.map((s) => ({ value: s, label: s })) },
+        ]}
+        chips={chips}
+        onClearAll={chips.length > 1 ? clearAll : undefined}
+      />
+
+      <DataGrid
+        columns={COLUMNS}
+        rows={view.rows}
+        sort={view.sort}
+        onSort={view.onSort}
+        pager={{ page: view.page, pageSize: view.pageSize, total: view.total, onPage: view.setPage }}
+        empty={{ icon: 'Users', title: 'No candidates match', message: 'Try changing the filters or search.' }}
+        renderRow={(r) => {
+          const badge = stageBadgeForStatus(r.status);
+          return (
+            <tr key={r.id} onClick={() => navigate(`/ta/candidates/${r.candidateId}`)} style={{ cursor: 'pointer' }}>
+              <td>
+                <span className="ta-cell-cand">
+                  <Avatar name={r.name} />
+                  <span>
+                    <span className="ta-cell-cand__name">{r.name}</span><br />
+                    <span className="ta-cell-cand__sub">{r.email}</span>
+                  </span>
+                </span>
+              </td>
+              <td>
+                <span className="ta-cell-strong">{r.job}</span><br />
+                <span className="ta-cell-sub">{r.department}</span>
+              </td>
+              <td className="ta-cell-mute">{experienceLabel(r.experience)}</td>
+              <td><Tag tone={badge.tone}>{badge.label}</Tag></td>
+              <td className="ta-cell-mute">{formatDate(r.submittedAt)}</td>
+              <td>{r.docs.text === '—' ? <span className="ta-cell-mute">—</span> : <Tag tone={r.docs.tone}>{r.docs.text}</Tag>}</td>
+              <td>
+                <span className="ta-rowactions" onClick={(e) => e.stopPropagation()}>
+                  <a className="ta-iconbtn" href={`mailto:${r.email}`} aria-label={`Email ${r.name}`}><Icon name="Mail" size={15} /></a>
+                  <button className="ta-iconbtn" onClick={() => navigate(`/ta/candidates/${r.candidateId}`)} aria-label="Open candidate"><Icon name="ArrowRight" size={15} /></button>
+                </span>
+              </td>
+            </tr>
+          );
+        }}
+      />
+    </>
+  );
+}

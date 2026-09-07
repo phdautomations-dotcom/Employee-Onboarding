@@ -1,0 +1,702 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Graphify</title>
+<style>
+  :root {
+    --bg: #05060c;
+    --panel: rgba(14, 17, 28, 0.72);
+    --panel-line: rgba(120, 140, 220, 0.18);
+    --ink: #e8ecff;
+    --ink-dim: #8b93b8;
+    --accent: #6c8cff;
+    --glow: 0 0 24px rgba(108, 140, 255, 0.45);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--ink);
+    font: 13px/1.5 "SF Pro Text", "Segoe UI", system-ui, -apple-system, sans-serif;
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  canvas { position: fixed; inset: 0; display: block; }
+
+  /* ---- top HUD ---------------------------------------------------------- */
+  .hud {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    padding: 14px 20px;
+    background: linear-gradient(180deg, rgba(5, 6, 12, 0.9), rgba(5, 6, 12, 0));
+    pointer-events: none;
+    z-index: 5;
+  }
+
+  .brand {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    letter-spacing: 0.32em;
+    font-weight: 700;
+    font-size: 15px;
+    text-transform: uppercase;
+    text-shadow: var(--glow);
+  }
+  .brand b {
+    background: linear-gradient(120deg, #7de3ff, #6c8cff 45%, #b98bff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .brand span { letter-spacing: 0.2em; font-size: 11px; color: var(--ink-dim); font-weight: 500; }
+
+  .stats { display: flex; gap: 18px; margin-left: auto; }
+  .stat { text-align: right; }
+  .stat u { display: block; font-size: 16px; font-weight: 700; font-style: normal; }
+  .stat i { font-style: normal; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-dim); }
+
+  /* ---- search --------------------------------------------------------- */
+  .search {
+    position: fixed;
+    top: 54px; left: 20px;
+    width: 300px;
+    z-index: 6;
+  }
+  .search input {
+    width: 100%;
+    padding: 11px 14px;
+    border-radius: 12px;
+    border: 1px solid var(--panel-line);
+    background: var(--panel);
+    color: var(--ink);
+    font: inherit;
+    outline: none;
+    backdrop-filter: blur(14px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+  }
+  .search input:focus { border-color: var(--accent); box-shadow: var(--glow), 0 12px 40px rgba(0, 0, 0, 0.45); }
+  .results {
+    margin-top: 6px;
+    border-radius: 12px;
+    overflow: hidden auto;
+    max-height: 40vh;
+    background: var(--panel);
+    border: 1px solid var(--panel-line);
+    backdrop-filter: blur(14px);
+  }
+  .results:empty { display: none; }
+  .results div {
+    padding: 8px 14px;
+    cursor: pointer;
+    border-left: 2px solid transparent;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .results div:hover { background: rgba(108, 140, 255, 0.14); border-left-color: var(--accent); }
+  .results small { color: var(--ink-dim); }
+
+  /* ---- legend -------------------------------------------------------- */
+  .legend {
+    position: fixed;
+    left: 20px; bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    background: var(--panel);
+    border: 1px solid var(--panel-line);
+    backdrop-filter: blur(14px);
+    z-index: 6;
+  }
+  .legend h4 { font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-dim); margin-bottom: 5px; }
+  .legend label { display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 2px 0; user-select: none; }
+  .legend label.off { opacity: 0.32; }
+  .legend .dot { width: 10px; height: 10px; border-radius: 50%; box-shadow: 0 0 10px currentColor; }
+  .legend em { font-style: normal; margin-left: auto; color: var(--ink-dim); font-size: 11px; }
+
+  /* ---- controls ----------------------------------------------------- */
+  .controls {
+    position: fixed;
+    right: 20px; bottom: 20px;
+    display: flex;
+    gap: 8px;
+    z-index: 6;
+  }
+  .controls button {
+    width: 38px; height: 38px;
+    border-radius: 11px;
+    border: 1px solid var(--panel-line);
+    background: var(--panel);
+    color: var(--ink);
+    font-size: 15px;
+    cursor: pointer;
+    backdrop-filter: blur(14px);
+    transition: 0.15s;
+  }
+  .controls button:hover { border-color: var(--accent); color: #fff; box-shadow: var(--glow); }
+
+  /* ---- detail drawer ---------------------------------------------- */
+  .drawer {
+    position: fixed;
+    top: 0; right: 0; bottom: 0;
+    width: 380px;
+    padding: 24px 22px;
+    background: var(--panel);
+    border-left: 1px solid var(--panel-line);
+    backdrop-filter: blur(20px);
+    transform: translateX(105%);
+    transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+    overflow-y: auto;
+    z-index: 7;
+  }
+  .drawer.open { transform: none; }
+  .drawer .close { position: absolute; top: 18px; right: 18px; background: none; border: none; color: var(--ink-dim); font-size: 20px; cursor: pointer; }
+  .drawer .close:hover { color: var(--ink); }
+
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+  .drawer h2 { font-size: 17px; margin: 12px 0 4px; word-break: break-all; }
+  .drawer .path { color: var(--ink-dim); font-size: 11px; word-break: break-all; margin-bottom: 14px; }
+  .drawer .summary { color: #c4ccf0; margin-bottom: 18px; }
+  .drawer .metrics { display: flex; gap: 18px; margin-bottom: 20px; }
+  .drawer .metrics div u { display: block; font-size: 18px; font-weight: 700; font-style: normal; }
+  .drawer .metrics div i { font-style: normal; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-dim); }
+
+  .drawer h5 { font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-dim); margin: 18px 0 8px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chips span { padding: 3px 9px; border-radius: 8px; background: rgba(108, 140, 255, 0.12); border: 1px solid var(--panel-line); font-size: 11px; }
+  .links a {
+    display: block;
+    padding: 6px 10px;
+    border-radius: 8px;
+    color: var(--ink);
+    text-decoration: none;
+    font-size: 12px;
+    border-left: 2px solid transparent;
+  }
+  .links a:hover { background: rgba(108, 140, 255, 0.12); border-left-color: var(--accent); }
+  .links a small { color: var(--ink-dim); }
+
+  .hint {
+    position: fixed;
+    bottom: 20px; left: 50%;
+    transform: translateX(-50%);
+    color: var(--ink-dim);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    pointer-events: none;
+    z-index: 5;
+  }
+  .stale { color: #ffb454; }
+</style>
+</head>
+<body>
+<canvas id="stage"></canvas>
+
+<div class="hud">
+  <div class="brand"><b>Graphify</b><span id="appName"></span></div>
+  <div class="stats">
+    <div class="stat"><u id="sFiles">0</u><i>files</i></div>
+    <div class="stat"><u id="sEdges">0</u><i>edges</i></div>
+    <div class="stat"><u id="sHubs">0</u><i>hubs</i></div>
+  </div>
+</div>
+
+<div class="search">
+  <input id="q" placeholder="Search files, exports  ( / )" autocomplete="off" />
+  <div class="results" id="results"></div>
+</div>
+
+<div class="legend" id="legend"><h4>Layers</h4></div>
+
+<div class="controls">
+  <button id="cReheat" title="Re-run layout">&#8635;</button>
+  <button id="cFit" title="Fit to screen">&#9633;</button>
+  <button id="cIn" title="Zoom in">+</button>
+  <button id="cOut" title="Zoom out">&minus;</button>
+</div>
+
+<div class="drawer" id="drawer">
+  <button class="close" id="drawerClose">&times;</button>
+  <div id="drawerBody"></div>
+</div>
+
+<div class="hint" id="hint">drag to pan &nbsp;·&nbsp; scroll to zoom &nbsp;·&nbsp; click a node &nbsp;·&nbsp; double-click to isolate</div>
+
+<script src="graph-data.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  const G = window.GRAPH;
+  if (!G) {
+    document.getElementById("hint").innerHTML =
+      '<span class="stale">graph-data.js missing — run <b>npm run graph</b> first</span>';
+    return;
+  }
+
+  // ---- palette --------------------------------------------------------------
+  const COLORS = {
+    entry: "#ff4d6d", route: "#f9c74f", layout: "#f8961e", navigation: "#8ce99a",
+    page: "#4cc9f0", component: "#8b7bff", hook: "#f783ac", context: "#3be8c6",
+    util: "#b8c0ff", constant: "#c9a9a6", data: "#ffd166", style: "#7a869a",
+    other: "#adb5bd",
+  };
+  const colorOf = (l) => COLORS[l] || COLORS.other;
+
+  // ---- model --------------------------------------------------------------
+  const nodes = G.nodes.map((n, i) => ({
+    ...n,
+    // start on a tight spiral near the origin so the layout opens outward
+    // smoothly instead of flinging nodes to the far corners
+    x: Math.cos(i * 2.399) * (30 + i * 3.2),
+    y: Math.sin(i * 2.399) * (30 + i * 3.2),
+    vx: 0, vy: 0,
+    deg: n.imports.length + n.importedBy.length,
+    r: 4 + Math.sqrt(n.importedBy.length) * 2.6,
+  }));
+  const byId = new Map(nodes.map((n) => [n.id, n]));
+  const links = G.edges
+    .map((e) => ({ s: byId.get(e.source), t: byId.get(e.target) }))
+    .filter((e) => e.s && e.t);
+
+  const neighbors = new Map(nodes.map((n) => [n.id, new Set()]));
+  links.forEach((l) => {
+    neighbors.get(l.s.id).add(l.t.id);
+    neighbors.get(l.t.id).add(l.s.id);
+  });
+
+  const hidden = new Set();          // layers toggled off
+  let focusId = null;                // isolated ego network
+  let selected = null;
+  let hover = null;
+
+  // ---- canvas + camera --------------------------------------------------
+  const cv = document.getElementById("stage");
+  const ctx = cv.getContext("2d");
+  let W = 0, H = 0, DPR = Math.min(window.devicePixelRatio || 1, 2);
+  const cam = { k: 0.85, x: 0, y: 0 };
+
+  function resize() {
+    W = window.innerWidth; H = window.innerHeight;
+    cv.width = W * DPR; cv.height = H * DPR;
+    cv.style.width = W + "px"; cv.style.height = H + "px";
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  }
+  window.addEventListener("resize", resize);
+  resize();
+
+  const toScreen = (wx, wy) => [wx * cam.k + cam.x, wy * cam.k + cam.y];
+  const toWorld = (sx, sy) => [(sx - cam.x) / cam.k, (sy - cam.y) / cam.k];
+
+  // ---- force simulation ------------------------------------------------
+  let alpha = 1;
+  const REPULSION = 4200;
+  const SPRING = 0.012;
+  const REST = 120;
+  const GRAVITY = 0.026;
+
+  function visible(n) {
+    if (hidden.has(n.layer)) return false;
+    if (!focusId) return true;
+    return n.id === focusId || neighbors.get(focusId).has(n.id);
+  }
+
+  function tick() {
+    if (alpha < 0.02) return;
+    const active = nodes.filter(visible);
+
+    for (let i = 0; i < active.length; i++) {
+      const a = active[i];
+      for (let j = i + 1; j < active.length; j++) {
+        const b = active[j];
+        let dx = a.x - b.x, dy = a.y - b.y;
+        let d2 = dx * dx + dy * dy || 1;
+        if (d2 > 900 * 900) continue;
+        const f = (REPULSION * alpha) / d2;
+        const d = Math.sqrt(d2);
+        const fx = (dx / d) * f, fy = (dy / d) * f;
+        a.vx += fx; a.vy += fy;
+        b.vx -= fx; b.vy -= fy;
+      }
+    }
+
+    links.forEach((l) => {
+      if (!visible(l.s) || !visible(l.t)) return;
+      let dx = l.t.x - l.s.x, dy = l.t.y - l.s.y;
+      const d = Math.sqrt(dx * dx + dy * dy) || 1;
+      const f = (d - REST) * SPRING * alpha;
+      const fx = (dx / d) * f, fy = (dy / d) * f;
+      l.s.vx += fx; l.s.vy += fy;
+      l.t.vx -= fx; l.t.vy -= fy;
+    });
+
+    // keep a floor on the centring pull so nodes (especially unconnected
+    // ones) don't freeze halfway out as the simulation cools
+    const grav = GRAVITY * Math.max(alpha, 0.35);
+    active.forEach((n) => {
+      n.vx -= n.x * grav;
+      n.vy -= n.y * grav;
+      if (n === drag) return;
+      n.x += n.vx; n.y += n.vy;
+      n.vx *= 0.82; n.vy *= 0.82;
+    });
+
+    alpha *= 0.985;
+  }
+
+  const reheat = () => { alpha = Math.max(alpha, 0.9); };
+
+  // ---- draw ----------------------------------------------------------
+  let t = 0;
+  function frame() {
+    try { draw(); } catch (err) { console.error(err); }
+    requestAnimationFrame(frame);
+  }
+
+  function draw() {
+    t += 1;
+    tick();
+
+    // background wash
+    ctx.clearRect(0, 0, W, H);
+    const g = ctx.createRadialGradient(W * 0.5, H * 0.42, 0, W * 0.5, H * 0.42, Math.max(W, H) * 0.75);
+    g.addColorStop(0, "#0b1022");
+    g.addColorStop(1, "#05060c");
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, W, H);
+    drawGrid();
+
+    const dim = hover || selected || focusId;
+    const lit = dim ? litSet(dim) : null;
+
+    // edges
+    ctx.lineWidth = 1;
+    links.forEach((l) => {
+      if (!visible(l.s) || !visible(l.t)) return;
+      const on = !lit || (lit.has(l.s.id) && lit.has(l.t.id));
+      const [x1, y1] = toScreen(l.s.x, l.s.y);
+      const [x2, y2] = toScreen(l.t.x, l.t.y);
+      ctx.strokeStyle = on ? "rgba(150,175,255,0.28)" : "rgba(120,140,200,0.05)";
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+      if (on && lit) drawFlow(x1, y1, x2, y2, colorOf(l.t.layer));
+    });
+
+    // nodes
+    nodes.forEach((n) => {
+      if (!visible(n)) return;
+      const on = !lit || lit.has(n.id);
+      const [x, y] = toScreen(n.x, n.y);
+      const r = Math.max(2.4, n.r * cam.k);
+      const c = colorOf(n.layer);
+
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, 7);
+      if (on) {
+        ctx.shadowColor = c;
+        ctx.shadowBlur = 16 + r;
+        ctx.fillStyle = c;
+      } else {
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = "rgba(120,135,180,0.22)";
+      }
+      ctx.fill();
+      ctx.shadowBlur = 0;
+
+      if (on && (n === selected || n === hover)) {
+        ctx.strokeStyle = "#fff";
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+      }
+
+      if (on && (cam.k > 1.15 || n.importedBy.length >= 6 || n === hover || n === selected)) {
+        ctx.fillStyle = "rgba(232,236,255,0.9)";
+        ctx.font = "11px system-ui, sans-serif";
+        ctx.fillText(n.name, x + r + 4, y + 3);
+      }
+    });
+
+  }
+
+  // `x` may be a node object (hover / selected) or an id string (focusId)
+  function litSet(x) {
+    const id = typeof x === "string" ? x : x && x.id;
+    const s = new Set([id]);
+    const nb = neighbors.get(id);
+    if (nb) nb.forEach((n) => s.add(n));
+    return s;
+  }
+
+  function drawFlow(x1, y1, x2, y2, color) {
+    const p = ((t % 90) / 90);
+    const x = x1 + (x2 - x1) * p;
+    const y = y1 + (y2 - y1) * p;
+    ctx.beginPath();
+    ctx.arc(x, y, 1.8, 0, 7);
+    ctx.fillStyle = color;
+    ctx.shadowColor = color;
+    ctx.shadowBlur = 8;
+    ctx.fill();
+    ctx.shadowBlur = 0;
+  }
+
+  function drawGrid() {
+    const step = 70 * cam.k;
+    if (step < 22) return;
+    ctx.strokeStyle = "rgba(120,140,220,0.05)";
+    ctx.lineWidth = 1;
+    const ox = cam.x % step, oy = cam.y % step;
+    ctx.beginPath();
+    for (let x = ox; x < W; x += step) { ctx.moveTo(x, 0); ctx.lineTo(x, H); }
+    for (let y = oy; y < H; y += step) { ctx.moveTo(0, y); ctx.lineTo(W, y); }
+    ctx.stroke();
+  }
+
+  // ---- hit testing + interaction ------------------------------------
+  let drag = null, panning = false, last = null, moved = 0;
+
+  function nodeAt(sx, sy) {
+    let best = null, bd = 16 * 16;
+    nodes.forEach((n) => {
+      if (!visible(n)) return;
+      const [x, y] = toScreen(n.x, n.y);
+      const d = (x - sx) ** 2 + (y - sy) ** 2;
+      const rr = Math.max(9, n.r * cam.k + 5);
+      if (d < rr * rr && d < bd) { bd = d; best = n; }
+    });
+    return best;
+  }
+
+  cv.addEventListener("mousedown", (e) => {
+    last = [e.clientX, e.clientY];
+    moved = 0;
+    const n = nodeAt(e.clientX, e.clientY);
+    if (n) { drag = n; n.vx = n.vy = 0; reheat(); }
+    else { panning = true; }
+  });
+
+  window.addEventListener("mousemove", (e) => {
+    if (last) moved += Math.abs(e.clientX - last[0]) + Math.abs(e.clientY - last[1]);
+    if (drag) {
+      const [wx, wy] = toWorld(e.clientX, e.clientY);
+      drag.x = wx; drag.y = wy;
+      last = [e.clientX, e.clientY];
+      return;
+    }
+    if (panning && last) {
+      cam.x += e.clientX - last[0];
+      cam.y += e.clientY - last[1];
+      last = [e.clientX, e.clientY];
+      return;
+    }
+    const n = nodeAt(e.clientX, e.clientY);
+    hover = n;
+    cv.style.cursor = n ? "pointer" : (panning ? "grabbing" : "grab");
+  });
+
+  window.addEventListener("mouseup", (e) => {
+    if (drag && moved < 4) select(drag);
+    else if (panning && moved < 4) { select(null); focusId = null; }
+    drag = null; panning = false; last = null;
+  });
+
+  cv.addEventListener("dblclick", (e) => {
+    const n = nodeAt(e.clientX, e.clientY);
+    if (n) { focusId = focusId === n.id ? null : n.id; select(n); reheat(); }
+  });
+
+  cv.addEventListener("wheel", (e) => {
+    e.preventDefault();
+    const f = e.deltaY < 0 ? 1.12 : 1 / 1.12;
+    const [wx, wy] = toWorld(e.clientX, e.clientY);
+    cam.k = Math.max(0.15, Math.min(6, cam.k * f));
+    cam.x = e.clientX - wx * cam.k;
+    cam.y = e.clientY - wy * cam.k;
+  }, { passive: false });
+
+  // ---- fit / zoom buttons -----------------------------------------
+  function fit() {
+    const vis = nodes.filter(visible);
+    if (!vis.length) return;
+    // ignore the farthest ~4% so one stray node can't shrink the whole map
+    const cx0 = vis.reduce((s, n) => s + n.x, 0) / vis.length;
+    const cy0 = vis.reduce((s, n) => s + n.y, 0) / vis.length;
+    const keep = vis
+      .map((n) => ({ n, d: (n.x - cx0) ** 2 + (n.y - cy0) ** 2 }))
+      .sort((a, b) => a.d - b.d)
+      .slice(0, Math.max(1, Math.floor(vis.length * 0.96)))
+      .map((x) => x.n);
+    let minX = 1e9, minY = 1e9, maxX = -1e9, maxY = -1e9;
+    keep.forEach((n) => {
+      minX = Math.min(minX, n.x); maxX = Math.max(maxX, n.x);
+      minY = Math.min(minY, n.y); maxY = Math.max(maxY, n.y);
+    });
+    const pad = 90;
+    cam.k = Math.max(0.15, Math.min(2.5,
+      Math.min((W - pad * 2) / (maxX - minX || 1), (H - pad * 2) / (maxY - minY || 1))));
+    cam.x = W / 2 - ((minX + maxX) / 2) * cam.k;
+    cam.y = H / 2 - ((minY + maxY) / 2) * cam.k;
+  }
+  const zoom = (f) => {
+    const [wx, wy] = toWorld(W / 2, H / 2);
+    cam.k = Math.max(0.15, Math.min(6, cam.k * f));
+    cam.x = W / 2 - wx * cam.k;
+    cam.y = H / 2 - wy * cam.k;
+  };
+  document.getElementById("cReheat").onclick = () => {
+    nodes.forEach((n, i) => {
+      n.x = Math.cos(i * 2.399) * (30 + i * 3.2);
+      n.y = Math.sin(i * 2.399) * (30 + i * 3.2);
+      n.vx = n.vy = 0;
+    });
+    for (let pass = 0; pass < 3; pass++) {
+      alpha = pass === 0 ? 1 : 0.32;
+      for (let i = 0; i < 240 && alpha > 0.02; i++) tick();
+    }
+    alpha = 0;
+    fit();
+  };
+  document.getElementById("cFit").onclick = fit;
+  document.getElementById("cIn").onclick = () => zoom(1.25);
+  document.getElementById("cOut").onclick = () => zoom(1 / 1.25);
+
+  // ---- detail drawer --------------------------------------------
+  const drawer = document.getElementById("drawer");
+  const drawerBody = document.getElementById("drawerBody");
+  document.getElementById("drawerClose").onclick = () => { drawer.classList.remove("open"); selected = null; };
+
+  function select(n) {
+    selected = n;
+    if (!n) { drawer.classList.remove("open"); return; }
+    const c = colorOf(n.layer);
+    const link = (id) => {
+      const m = byId.get(id);
+      return `<a data-id="${id}">${m ? m.name : id} <small>${id.replace(/^src\//, "")}</small></a>`;
+    };
+    drawerBody.innerHTML = `
+      <span class="badge" style="background:${c}22;color:${c};border:1px solid ${c}55">${n.layer}</span>
+      <h2>${n.name}</h2>
+      <div class="path">${n.id}</div>
+      ${n.summary ? `<div class="summary">${n.summary}</div>` : ""}
+      <div class="metrics">
+        <div><u>${n.loc}</u><i>lines</i></div>
+        <div><u>${n.imports.length}</u><i>imports</i></div>
+        <div><u>${n.importedBy.length}</u><i>imported by</i></div>
+      </div>
+      ${n.exports.length ? `<h5>Exports</h5><div class="chips">${n.exports.map((e) => `<span>${e}</span>`).join("")}</div>` : ""}
+      ${n.externals.length ? `<h5>External packages</h5><div class="chips">${n.externals.map((e) => `<span>${e}</span>`).join("")}</div>` : ""}
+      ${n.imports.length ? `<h5>Imports (${n.imports.length})</h5><div class="links">${n.imports.map(link).join("")}</div>` : ""}
+      ${n.importedBy.length ? `<h5>Imported by (${n.importedBy.length})</h5><div class="links">${n.importedBy.map(link).join("")}</div>` : ""}
+    `;
+    drawerBody.querySelectorAll("a[data-id]").forEach((a) => {
+      a.onclick = () => { const m = byId.get(a.dataset.id); if (m) { select(m); centerOn(m); } };
+    });
+    drawer.classList.add("open");
+  }
+
+  function centerOn(n) {
+    cam.x = W / 2 - n.x * cam.k;
+    cam.y = H / 2 - n.y * cam.k;
+    reheat();
+  }
+
+  // ---- search --------------------------------------------------
+  const q = document.getElementById("q");
+  const results = document.getElementById("results");
+  q.addEventListener("input", () => {
+    const term = q.value.trim().toLowerCase();
+    results.innerHTML = "";
+    if (!term) return;
+    nodes
+      .map((n) => ({ n, score: match(n, term) }))
+      .filter((x) => x.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 20)
+      .forEach(({ n }) => {
+        const d = document.createElement("div");
+        d.innerHTML = `${n.name} <small>${n.id.replace(/^src\//, "")}</small>`;
+        d.onclick = () => { q.value = ""; results.innerHTML = ""; select(n); focusId = null; centerOn(n); cam.k = Math.max(cam.k, 1.4); };
+        results.appendChild(d);
+      });
+  });
+  function match(n, term) {
+    let s = 0;
+    if (n.name.toLowerCase().includes(term)) s += 5;
+    if (n.id.toLowerCase().includes(term)) s += 2;
+    if (n.exports.some((e) => e.toLowerCase().includes(term))) s += 3;
+    if ((n.summary || "").toLowerCase().includes(term)) s += 1;
+    return s;
+  }
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "/" && document.activeElement !== q) { e.preventDefault(); q.focus(); }
+    if (e.key === "Escape") { q.value = ""; results.innerHTML = ""; q.blur(); select(null); focusId = null; }
+  });
+
+  // ---- legend -------------------------------------------------
+  const legend = document.getElementById("legend");
+  const counts = {};
+  nodes.forEach((n) => { counts[n.layer] = (counts[n.layer] || 0) + 1; });
+  Object.entries(counts).sort((a, b) => b[1] - a[1]).forEach(([layer, c]) => {
+    const l = document.createElement("label");
+    l.innerHTML = `<span class="dot" style="color:${colorOf(layer)};background:${colorOf(layer)}"></span>${layer}<em>${c}</em>`;
+    l.onclick = () => {
+      if (hidden.has(layer)) hidden.delete(layer); else hidden.add(layer);
+      l.classList.toggle("off", hidden.has(layer));
+      reheat();
+    };
+    legend.appendChild(l);
+  });
+
+  // ---- HUD --------------------------------------------------
+  document.getElementById("appName").textContent = G.app || "";
+  document.getElementById("sFiles").textContent = G.stats.files;
+  document.getElementById("sEdges").textContent = G.stats.edges;
+  document.getElementById("sHubs").textContent = (G.hubs || []).length;
+
+  const age = Date.now() - new Date(G.generatedAt).getTime();
+  if (age > 36e5) {
+    document.getElementById("hint").innerHTML =
+      `<span class="stale">graph is ${Math.round(age / 36e5)}h old — run <b>npm run graph</b> to refresh</span>`;
+  }
+
+  // ---- go --------------------------------------------------
+  // Pre-settle the layout before the first paint. Without this the graph
+  // loads, then keeps expanding under the repulsion force and drifts off
+  // screen — so it looks like it "loads then disappears".
+  for (let pass = 0; pass < 3; pass++) {
+    alpha = pass === 0 ? 1 : 0.32;
+    for (let i = 0; i < 240 && alpha > 0.02; i++) tick();
+  }
+  alpha = 0;                 // freeze until the user interacts (drag / reheat)
+  fit();
+  frame();
+  // safety re-fits in case fonts / layout shift the viewport just after load
+  setTimeout(fit, 300);
+  setTimeout(fit, 1200);
+  window.addEventListener("resize", () => setTimeout(fit, 60));
+})();
+</script>
+</body>
+</html>
