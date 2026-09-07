@@ -119,9 +119,11 @@ export default function MyApplicationPage() {
   const rejected = app.status === APP_STATUS.REJECTED;
   const progress = rejected ? 0 : Math.round(((Math.max(0, stageIdx) + 1) / PIPELINE_STAGES.length) * 100);
 
-  const stages = PIPELINE_STAGES.map((s, i) => ({
+  /* Show stages only up to the one in progress — future stages stay hidden. */
+  const shownCount = rejected ? PIPELINE_STAGES.length : Math.max(1, stageIdx + 1);
+  const stages = PIPELINE_STAGES.slice(0, shownCount).map((s, i) => ({
     label: s.label,
-    state: rejected ? (i === 0 ? 'done' : 'pending') : i < stageIdx ? 'done' : i === stageIdx ? 'current' : 'pending',
+    state: rejected ? (i === 0 ? 'done' : 'pending') : i < stageIdx ? 'done' : 'current',
   }));
 
   const showDocuments = DOC_STAGES.includes(app.status);
@@ -129,29 +131,19 @@ export default function MyApplicationPage() {
   const pendingDocs = documents.filter((d) => [DOC_STATUS.PENDING, DOC_STATUS.REJECTED].includes(d.status)).length;
   const hint = nextStep(app.status, pendingDocs);
 
-  const steps = STEPS.map((label, i) => ({
+  const steps = STEPS.slice(0, shownCount).map((label, i) => ({
     label,
-    state: rejected ? (i === 0 ? 'done' : 'pending') : i < stageIdx ? 'done' : i === stageIdx ? 'active' : 'pending',
+    state: rejected ? (i === 0 ? 'done' : 'pending') : i < stageIdx ? 'done' : 'active',
   }));
 
   return (
     <div className="cx-page">
       <div className={`cx-idcard${employee ? ' cx-idcard--done' : ''}`}>
-        <div className="cx-idcard__top">
-          <div className="cx-idcard__id">
-            <span className="cx-idcard__avatar">{initialsOf(name)}</span>
-            <div>
-              <h2>{employee ? `Welcome aboard, ${app.personal.firstName}` : `Hi ${app.personal.firstName}`}</h2>
-              <div className="cx-idcard__meta">{app.jobTitle}</div>
-            </div>
-          </div>
-          <div className="cx-idcard__progress">
-            <div className="cx-idcard__progresshead">
-              <span>{rejected ? 'Application status' : 'Progress'}</span>
-              <span>{rejected ? 'Closed' : `${progress}%`}</span>
-            </div>
-            <div className="cx-idcard__bar"><div style={{ width: `${rejected ? 100 : progress}%` }} /></div>
-            <div className="cx-idcard__tag"><Tag tone={badge.tone}>{badge.label}</Tag></div>
+        <div className="cx-idcard__id">
+          <span className="cx-idcard__avatar">{initialsOf(name)}</span>
+          <div>
+            <h2>{employee ? `Welcome aboard, ${app.personal.firstName}` : `Hi ${app.personal.firstName}`}</h2>
+            <div className="cx-idcard__meta">{app.jobTitle}</div>
           </div>
         </div>
         <dl className="cx-idcard__facts">
@@ -160,17 +152,24 @@ export default function MyApplicationPage() {
             <dd>{employee ? employee.id : app.candidateId}</dd>
           </div>
           <div><dt>Application ID</dt><dd>{app.id}</dd></div>
-          <div><dt>Position</dt><dd>{app.jobTitle}</dd></div>
           <div><dt>Submitted</dt><dd>{formatDate(app.submittedAt)}</dd></div>
           <div><dt>Assigned to</dt><dd>{app.assignedTo}</dd></div>
         </dl>
+        <div className="cx-idcard__progress">
+          <div className="cx-idcard__progresshead">
+            <span>{rejected ? 'Application status' : 'Progress'}</span>
+            <span>{rejected ? 'Closed' : `${progress}%`}</span>
+          </div>
+          <div className="cx-idcard__bar"><div style={{ width: `${rejected ? 100 : progress}%` }} /></div>
+          <div className="cx-idcard__tag"><Tag tone={badge.tone}>{badge.label}</Tag></div>
+        </div>
       </div>
 
       {!rejected && (
         <div className="cx-steps-card">
           <ol className="cx-steps">
             {steps.map((s, i) => (
-              <li key={s.label} className={`cx-step${s.state === 'done' ? ' cx-step--done' : s.state === 'active' ? ' cx-step--active' : ''}`}>
+              <li key={s.label} className={`cx-step${s.state === 'done' ? ' cx-step--done' : ' cx-step--active'}`}>
                 <span className="cx-step__dot">{s.state === 'done' ? <Icon name="Check" size={12} /> : i + 1}</span>
                 <span>{s.label}</span>
                 {i < steps.length - 1 && <span className="cx-step__line" />}
@@ -197,7 +196,8 @@ export default function MyApplicationPage() {
         </div>
       )}
 
-      <div className="ta-stack">
+      <div className="ta-detail-grid">
+        <div className="ta-stack">
           <Card title="Recruitment progress">
             {hint && app.status !== APP_STATUS.RETURNED && (
               <div className="cx-nextline">
@@ -209,12 +209,12 @@ export default function MyApplicationPage() {
               {stages.map((s) => (
                 <li key={s.label}>
                   <span className="cx-proglist__dot" style={{
-                    background: s.state === 'pending' ? 'var(--ta-line)' : s.state === 'current' ? 'var(--ta-blue)' : 'var(--tag-green-fg)',
+                    background: s.state === 'current' ? 'var(--ta-blue)' : 'var(--tag-green-fg)',
                   }} />
                   <div>
-                    <div className="ta-cell-strong" style={{ color: s.state === 'pending' ? 'var(--ta-text-mute)' : undefined }}>{s.label}</div>
+                    <div className="ta-cell-strong">{s.label}</div>
                     <div className="ta-cell-sub">
-                      {s.state === 'done' ? 'Completed' : s.state === 'current' ? statusMeta(app.status).label : 'Not started'}
+                      {s.state === 'done' ? 'Completed' : statusMeta(app.status).label}
                     </div>
                   </div>
                 </li>
@@ -322,24 +322,28 @@ export default function MyApplicationPage() {
               </div>
             </Card>
           )}
-        <Card title="Activity">
-          {activities.length === 0 ? (
-            <p className="ta-cell-mute">No activity yet.</p>
-          ) : (
-            <ol className="cx-activity">
-              {activities.slice(0, 12).map((a) => (
-                <li key={a.id}>
-                  <span className="ta-timeline__dot" />
-                  <div>
-                    <div className="ta-cell-strong">{a.title}</div>
-                    <div className="ta-cell-sub">{a.description}</div>
-                    <div className="ta-cell-sub">{formatDate(a.at)} · {a.actor}</div>
-                  </div>
-                </li>
-              ))}
-            </ol>
-          )}
-        </Card>
+        </div>
+
+        <div className="ta-stack">
+          <Card title="Activity">
+            {activities.length === 0 ? (
+              <p className="ta-cell-mute">No activity yet.</p>
+            ) : (
+              <ol className="ta-timeline">
+                {activities.slice(0, 12).map((a) => (
+                  <li key={a.id}>
+                    <span className="ta-timeline__dot" />
+                    <div>
+                      <div className="ta-cell-strong">{a.title}</div>
+                      <div className="ta-cell-sub">{a.description}</div>
+                      <div className="ta-cell-sub">{formatDate(a.at)} · {a.actor}</div>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            )}
+          </Card>
+        </div>
       </div>
 
       <ConfirmDialog

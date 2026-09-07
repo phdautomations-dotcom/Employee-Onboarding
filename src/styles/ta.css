@@ -528,15 +528,12 @@
 .ta-timeline li { display: flex; gap: 11px; position: relative; }
 .ta-timeline li:not(:last-child)::before { content: ''; position: absolute; left: 4px; top: 13px; bottom: -14px; width: 2px; background: var(--ta-line); }
 .ta-timeline__dot { width: 9px; height: 9px; border-radius: 999px; background: var(--ta-blue); flex-shrink: 0; margin-top: 3px; z-index: 1; }
+.ta-timeline li > div { flex: 1; min-width: 0; }
 
-/* Recruitment-progress stages — flow into columns so the card fills its width. */
-.cx-proglist { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px 24px; }
+/* recruitment-progress stages — flow into columns so the card fills its width */
+.cx-proglist { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 16px 24px; }
 .cx-proglist li { display: flex; gap: 10px; align-items: flex-start; }
 .cx-proglist__dot { width: 9px; height: 9px; border-radius: 999px; flex-shrink: 0; margin-top: 4px; }
-
-/* Activity feed — columns on wide screens so it fills the card. */
-.cx-activity { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 14px 28px; }
-.cx-activity li { display: flex; gap: 11px; }
 
 .ta-bullets { margin: 0; padding-left: 18px; color: var(--ta-text-soft); font-size: 12.5px; line-height: 1.8; }
 .ta-skills { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -720,21 +717,19 @@
 .cx-steps-card {
   background: var(--ta-surface); border: 1px solid var(--ta-line);
   border-radius: var(--ta-radius); box-shadow: var(--ta-shadow);
-  padding: 14px 18px; margin-bottom: 14px; overflow-x: auto;
+  padding: 10px 16px; margin-bottom: 14px; overflow-x: auto;
 }
-.cx-steps { display: flex; align-items: center; margin: 0; padding: 0; list-style: none; min-width: 520px; }
-.cx-step { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--ta-text-mute); flex: 1; }
+.cx-steps { display: flex; align-items: center; margin: 0; padding: 0; list-style: none; width: 100%; min-width: 380px; }
+.cx-step { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--ta-text); font-weight: 600; white-space: nowrap; flex: 1; }
 .cx-step:last-child { flex: 0 0 auto; }
-.cx-step > span:nth-child(2) { white-space: nowrap; }
 .cx-step__dot {
-  width: 24px; height: 24px; border-radius: 999px; flex-shrink: 0;
+  width: 21px; height: 21px; border-radius: 999px; flex-shrink: 0;
   border: 1.5px solid var(--ta-line); display: flex; align-items: center; justify-content: center;
-  font-size: 11px; font-weight: 700;
+  font-size: 10.5px; font-weight: 700;
 }
 .cx-step--done .cx-step__dot { background: var(--ta-blue); border-color: var(--ta-blue); color: #fff; }
 .cx-step--active .cx-step__dot { border-color: var(--ta-blue); color: var(--ta-blue); background: var(--ta-blue-wash); }
-.cx-step--done, .cx-step--active { color: var(--ta-text); font-weight: 600; }
-.cx-step__line { flex: 1; min-width: 16px; height: 2px; border-radius: 2px; background: var(--ta-line); margin: 0 4px; }
+.cx-step__line { flex: 1; min-width: 24px; height: 2px; border-radius: 2px; background: var(--ta-line); margin: 0 8px; }
 .cx-step--done .cx-step__line { background: var(--ta-blue); }
 
 /* what's-next hint — lead line of the progress card */
@@ -750,28 +745,27 @@
 /* candidate id / progress card */
 .cx-idcard {
   background: linear-gradient(135deg, #26429a 0%, #1e326f 100%); color: #fff;
-  border-radius: var(--ta-radius); padding: 16px 18px; margin-bottom: 14px;
+  border-radius: var(--ta-radius); padding: 16px 20px; margin-bottom: 14px;
+  display: flex; align-items: center; gap: 18px 30px; flex-wrap: wrap;
 }
 .cx-idcard--done { background: linear-gradient(135deg, #177a4f 0%, #0f5136 100%); }
-.cx-idcard__top {
-  display: flex; align-items: center; justify-content: space-between; gap: 16px 24px; flex-wrap: wrap;
-}
-.cx-idcard__id { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.cx-idcard__id { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
 .cx-idcard__avatar {
   width: 38px; height: 38px; border-radius: 999px; background: rgba(255,255,255,0.16); flex-shrink: 0;
   display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px;
 }
 .cx-idcard h2 { color: #fff; font-size: 15px; }
 .cx-idcard__meta { font-size: 12px; color: rgba(255,255,255,0.7); margin-top: 1px; }
-.cx-idcard__progress { min-width: 180px; }
+.cx-idcard__progress { flex-shrink: 0; width: 200px; }
 .cx-idcard__progresshead { display: flex; justify-content: space-between; gap: 12px; font-size: 11px; color: rgba(255,255,255,0.8); }
 .cx-idcard__bar { height: 5px; border-radius: 999px; background: rgba(255,255,255,0.2); overflow: hidden; margin-top: 7px; }
 .cx-idcard__bar > div { height: 100%; background: #fff; border-radius: 999px; transition: width 0.5s ease; }
 .cx-idcard__tag { margin-top: 8px; }
 .cx-idcard__facts {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px 22px;
-  margin: 14px 0 0; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.16);
+  flex: 1 1 300px; display: flex; flex-wrap: wrap; gap: 12px 28px; margin: 0;
+  padding-left: 28px; border-left: 1px solid rgba(255,255,255,0.16);
 }
+.cx-idcard__facts > div { min-width: 0; }
 .cx-idcard__facts dt {
   font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
   color: rgba(255,255,255,0.6);
