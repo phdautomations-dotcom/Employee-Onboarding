@@ -20,7 +20,6 @@ import {
   ROUND_STATUS_META,
   DOC_STATUS,
   DOC_STATUS_META,
-  OFFER_STATUS,
   OFFER_STATUS_META,
   PIPELINE_STAGES,
   stageIndexForStatus,
@@ -41,8 +40,9 @@ const IN_REVIEW = [APP_STATUS.SUBMITTED, APP_STATUS.TA_REVIEW];
 const IN_INTERVIEW = [APP_STATUS.INTERVIEW_PLANNING, APP_STATUS.INTERVIEW_IN_PROGRESS, APP_STATUS.INTERVIEW_PASSED];
 const CAN_OFFER = [APP_STATUS.DOCS_VERIFIED, APP_STATUS.OFFER_DRAFT];
 const DOC_STAGES = [
-  APP_STATUS.DOC_VERIFICATION, APP_STATUS.DOCS_VERIFIED, APP_STATUS.OFFER_DRAFT, APP_STATUS.OFFER_PENDING_HR,
-  APP_STATUS.OFFER_ISSUED, APP_STATUS.OFFER_ACCEPTED, APP_STATUS.JOINING_PENDING, APP_STATUS.EMPLOYEE,
+  APP_STATUS.DOC_VERIFICATION, APP_STATUS.DOCS_VERIFIED, APP_STATUS.OFFER_DRAFT,
+  APP_STATUS.OFFER_ISSUED, APP_STATUS.OFFER_ACCEPTED, APP_STATUS.ONBOARDING_PENDING,
+  APP_STATUS.HR_VERIFICATION, APP_STATUS.HR_VERIFICATION_REJECTED, APP_STATUS.JOINING_PENDING, APP_STATUS.EMPLOYEE,
 ];
 
 export default function TACandidateDetailPage() {
@@ -247,9 +247,6 @@ export default function TACandidateDetailPage() {
                 <Info label="Reporting manager" value={offer.reportingManager} />
                 <Info label="Probation" value={offer.probationPeriod} />
               </div>
-              {offer.returnReason && offer.status === OFFER_STATUS.RETURNED && (
-                <div className="ta-note ta-note--warn" style={{ marginTop: 12 }}><Icon name="RotateCcw" size={15} /> HR returned this offer: {offer.returnReason}</div>
-              )}
             </Card>
           )}
         </div>

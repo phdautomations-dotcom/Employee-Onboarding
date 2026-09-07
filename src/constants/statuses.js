@@ -15,10 +15,12 @@ export const APP_STATUS = {
   DOC_VERIFICATION: 'DOC_VERIFICATION',
   DOCS_VERIFIED: 'DOCS_VERIFIED',
   OFFER_DRAFT: 'OFFER_DRAFT',
-  OFFER_PENDING_HR: 'OFFER_PENDING_HR',
   OFFER_ISSUED: 'OFFER_ISSUED',
   OFFER_ACCEPTED: 'OFFER_ACCEPTED',
   OFFER_DECLINED: 'OFFER_DECLINED',
+  ONBOARDING_PENDING: 'ONBOARDING_PENDING',
+  HR_VERIFICATION: 'HR_VERIFICATION',
+  HR_VERIFICATION_REJECTED: 'HR_VERIFICATION_REJECTED',
   JOINING_PENDING: 'JOINING_PENDING',
   EMPLOYEE: 'EMPLOYEE',
 };
@@ -35,10 +37,12 @@ export const STATUS_META = {
   [APP_STATUS.DOC_VERIFICATION]: { label: 'Document Verification', tone: 'warning', icon: 'Files' },
   [APP_STATUS.DOCS_VERIFIED]: { label: 'Documents Verified', tone: 'success', icon: 'CheckCircle2' },
   [APP_STATUS.OFFER_DRAFT]: { label: 'Offer Draft', tone: 'neutral', icon: 'FileCheck' },
-  [APP_STATUS.OFFER_PENDING_HR]: { label: 'Offer Pending HR Approval', tone: 'warning', icon: 'FileCheck' },
   [APP_STATUS.OFFER_ISSUED]: { label: 'Offer Issued', tone: 'info', icon: 'FileCheck' },
   [APP_STATUS.OFFER_ACCEPTED]: { label: 'Offer Accepted', tone: 'success', icon: 'CheckCircle2' },
   [APP_STATUS.OFFER_DECLINED]: { label: 'Offer Declined', tone: 'error', icon: 'XCircle' },
+  [APP_STATUS.ONBOARDING_PENDING]: { label: 'Onboarding Forms Pending', tone: 'warning', icon: 'ClipboardList' },
+  [APP_STATUS.HR_VERIFICATION]: { label: 'HR Verification', tone: 'warning', icon: 'Eye' },
+  [APP_STATUS.HR_VERIFICATION_REJECTED]: { label: 'Returned by HR', tone: 'error', icon: 'RotateCcw' },
   [APP_STATUS.JOINING_PENDING]: { label: 'Joining Pending', tone: 'warning', icon: 'Clock3' },
   [APP_STATUS.EMPLOYEE]: { label: 'Employee', tone: 'success', icon: 'UserRoundCheck' },
 };
@@ -64,7 +68,12 @@ export const PIPELINE_STAGES = [
   {
     key: 'offer',
     label: 'Offer',
-    statuses: [APP_STATUS.OFFER_DRAFT, APP_STATUS.OFFER_PENDING_HR, APP_STATUS.OFFER_ISSUED, APP_STATUS.OFFER_ACCEPTED, APP_STATUS.OFFER_DECLINED],
+    statuses: [APP_STATUS.OFFER_DRAFT, APP_STATUS.OFFER_ISSUED, APP_STATUS.OFFER_ACCEPTED, APP_STATUS.OFFER_DECLINED],
+  },
+  {
+    key: 'onboarding_verification',
+    label: 'Onboarding Verification',
+    statuses: [APP_STATUS.ONBOARDING_PENDING, APP_STATUS.HR_VERIFICATION, APP_STATUS.HR_VERIFICATION_REJECTED],
   },
   { key: 'onboarding', label: 'HR Onboarding', statuses: [APP_STATUS.JOINING_PENDING, APP_STATUS.EMPLOYEE] },
 ];
@@ -80,10 +89,12 @@ const STAGE_ORDER = [
   APP_STATUS.DOC_VERIFICATION,
   APP_STATUS.DOCS_VERIFIED,
   APP_STATUS.OFFER_DRAFT,
-  APP_STATUS.OFFER_PENDING_HR,
   APP_STATUS.OFFER_ISSUED,
   APP_STATUS.OFFER_ACCEPTED,
   APP_STATUS.OFFER_DECLINED,
+  APP_STATUS.ONBOARDING_PENDING,
+  APP_STATUS.HR_VERIFICATION,
+  APP_STATUS.HR_VERIFICATION_REJECTED,
   APP_STATUS.JOINING_PENDING,
   APP_STATUS.EMPLOYEE,
 ];
@@ -104,6 +115,7 @@ const STAGE_BADGE_BY_KEY = {
   interview: { label: 'Interview', tone: 'amber' },
   documents: { label: 'Documents', tone: 'teal' },
   offer: { label: 'Offer', tone: 'green' },
+  onboarding_verification: { label: 'Onboarding', tone: 'violet' },
   onboarding: { label: 'Hired', tone: 'green' },
 };
 
@@ -113,6 +125,38 @@ export function stageBadgeForStatus(status) {
   }
   const stage = PIPELINE_STAGES[Math.max(0, stageIndexForStatus(status))];
   return STAGE_BADGE_BY_KEY[stage?.key] || { label: 'Applied', tone: 'blue' };
+}
+
+/* HR's own funnel — how far an application has gotten through the HR side of
+   the process (docs verified onward). Used by both the HR dashboard funnel and
+   the candidates table's stage filter, so clicking a funnel stage shows exactly
+   the candidates counted in it. Each stage is cumulative ("reached this stage
+   or further"), which keeps the funnel monotonically non-increasing. */
+export const HR_FUNNEL_STAGES = [
+  { key: 'reached_hr', label: 'Reached HR', icon: 'Files', tone: 'blue', rank: 0 },
+  { key: 'offer_sent', label: 'Offer Sent', icon: 'FileCheck', tone: 'violet', rank: 1 },
+  { key: 'onboarding', label: 'Onboarding', icon: 'ClipboardList', tone: 'amber', rank: 2 },
+  { key: 'verification', label: 'Verification', icon: 'Eye', tone: 'amber', rank: 3 },
+  { key: 'joining', label: 'Joining', icon: 'Clock3', tone: 'teal', rank: 4 },
+  { key: 'onboarded', label: 'Onboarded', icon: 'UserRoundCheck', tone: 'green', rank: 5 },
+];
+
+const HR_STAGE_RANK = {
+  [APP_STATUS.DOCS_VERIFIED]: 0,
+  [APP_STATUS.OFFER_DRAFT]: 0,
+  [APP_STATUS.OFFER_ISSUED]: 1,
+  [APP_STATUS.OFFER_ACCEPTED]: 2,
+  [APP_STATUS.ONBOARDING_PENDING]: 2,
+  [APP_STATUS.HR_VERIFICATION]: 3,
+  [APP_STATUS.HR_VERIFICATION_REJECTED]: 3,
+  [APP_STATUS.JOINING_PENDING]: 4,
+  [APP_STATUS.EMPLOYEE]: 5,
+};
+
+/* -1 for anything not on the HR side yet (still with TA, rejected, etc.) so it
+   never matches any HR funnel stage. */
+export function hrStageRank(status) {
+  return HR_STAGE_RANK[status] ?? -1;
 }
 
 /* Interview round status */
@@ -148,17 +192,13 @@ export const DOC_STATUS_META = {
 /* Offer status */
 export const OFFER_STATUS = {
   DRAFT: 'DRAFT',
-  PENDING_APPROVAL: 'PENDING_APPROVAL',
-  RETURNED: 'RETURNED',
   ISSUED: 'ISSUED',
   ACCEPTED: 'ACCEPTED',
   DECLINED: 'DECLINED',
 };
 export const OFFER_STATUS_META = {
   DRAFT: { label: 'Draft', tone: 'neutral', icon: 'Pencil' },
-  PENDING_APPROVAL: { label: 'Pending HR Approval', tone: 'warning', icon: 'Clock3' },
-  RETURNED: { label: 'Returned for Correction', tone: 'warning', icon: 'RotateCcw' },
-  ISSUED: { label: 'Issued to Candidate', tone: 'info', icon: 'FileCheck' },
+  ISSUED: { label: 'Sent to Candidate', tone: 'info', icon: 'FileCheck' },
   ACCEPTED: { label: 'Accepted', tone: 'success', icon: 'CheckCircle2' },
   DECLINED: { label: 'Declined', tone: 'error', icon: 'XCircle' },
 };

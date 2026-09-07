@@ -43,3 +43,11 @@ export function groupCounts(items, keyFn) {
   });
   return [...map.entries()].map(([key, count]) => ({ key, count })).sort((a, b) => b.count - a.count);
 }
+
+/** Notice period text ("Immediate" / "30 days") -> days as a number, for sorting/bucketing. */
+export function noticePeriodDays(text) {
+  if (!text) return null;
+  if (/immediate/i.test(text)) return 0;
+  const m = String(text).match(/\d+/);
+  return m ? Number(m[0]) : null;
+}

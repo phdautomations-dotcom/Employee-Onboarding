@@ -18,7 +18,7 @@ import {
   uid,
 } from '../utils/ids.js';
 
-const DATA_KEY = 'talentflow.data.v7';
+const DATA_KEY = 'talentflow.data.v7'; // bumped: new onboarding-verification statuses replace OFFER_PENDING_HR
 const ROLE_KEY = 'talentflow.role.v3';
 
 const AppContext = createContext(null);
@@ -368,54 +368,22 @@ export function AppProvider({ children }) {
             createdAt: new Date().toISOString(),
             issuedAt: null,
             decisionAt: null,
-            returnReason: null,
           };
           draft.offers.push(offer);
         }
         Object.assign(offer, payload);
         if (submitForApproval) {
-          offer.status = OFFER_STATUS.PENDING_APPROVAL;
-          offer.returnReason = null;
-          app.status = APP_STATUS.OFFER_PENDING_HR;
-          logActivity(draft, applicationId, 'offer', 'Offer Submitted for HR Approval', 'TA prepared and submitted the offer.', 'Priya Nair');
-          notify(draft, ROLES.HR, 'Offer awaiting approval', `Offer for ${offer.candidateName} is pending your approval.`);
+          // Offer goes straight to the candidate — HR no longer gates this step.
+          offer.status = OFFER_STATUS.ISSUED;
+          offer.issuedAt = new Date().toISOString();
+          app.status = APP_STATUS.OFFER_ISSUED;
+          logActivity(draft, applicationId, 'offer', 'Offer Sent to Candidate', 'TA prepared and sent the offer.', 'Priya Nair');
+          notify(draft, ROLES.CANDIDATE, 'You have an offer', `Your offer for ${offer.jobTitle} has been sent.`);
         } else {
           offer.status = OFFER_STATUS.DRAFT;
           app.status = APP_STATUS.OFFER_DRAFT;
           logActivity(draft, applicationId, 'offer', 'Offer Draft Saved', 'TA saved a draft of the offer.', 'Priya Nair');
         }
-      });
-    },
-    [mutate]
-  );
-
-  const approveOffer = useCallback(
-    (offerId) => {
-      mutate((draft) => {
-        const offer = draft.offers.find((o) => o.id === offerId);
-        if (!offer) return;
-        offer.status = OFFER_STATUS.ISSUED;
-        offer.issuedAt = new Date().toISOString();
-        const app = draft.applications.find((a) => a.id === offer.applicationId);
-        if (app) app.status = APP_STATUS.OFFER_ISSUED;
-        logActivity(draft, offer.applicationId, 'offer', 'Offer Approved by HR', 'HR approved the offer and it was issued to the candidate.', 'Arjun Mehta');
-        notify(draft, ROLES.CANDIDATE, 'You have an offer', `Your offer for ${offer.jobTitle} has been issued.`);
-      });
-    },
-    [mutate]
-  );
-
-  const returnOffer = useCallback(
-    (offerId, reason) => {
-      mutate((draft) => {
-        const offer = draft.offers.find((o) => o.id === offerId);
-        if (!offer) return;
-        offer.status = OFFER_STATUS.RETURNED;
-        offer.returnReason = reason;
-        const app = draft.applications.find((a) => a.id === offer.applicationId);
-        if (app) app.status = APP_STATUS.OFFER_DRAFT;
-        logActivity(draft, offer.applicationId, 'offer', 'Offer Returned for Correction', reason, 'Arjun Mehta');
-        notify(draft, ROLES.TA, 'Offer returned', `HR returned the offer for ${offer.candidateName}: ${reason}`);
       });
     },
     [mutate]
@@ -429,9 +397,9 @@ export function AppProvider({ children }) {
         offer.status = OFFER_STATUS.ACCEPTED;
         offer.decisionAt = new Date().toISOString();
         const app = draft.applications.find((a) => a.id === offer.applicationId);
-        if (app) app.status = APP_STATUS.JOINING_PENDING;
+        if (app) app.status = APP_STATUS.ONBOARDING_PENDING;
         logActivity(draft, offer.applicationId, 'offer', 'Offer Accepted', 'Candidate accepted the offer.', 'Candidate');
-        notify(draft, ROLES.HR, 'Offer accepted', `${offer.candidateName} accepted the offer. Joining is pending.`);
+        notify(draft, ROLES.CANDIDATE, 'Almost there', 'Please fill in your onboarding details.');
       });
     },
     [mutate]
@@ -448,6 +416,48 @@ export function AppProvider({ children }) {
         if (app) app.status = APP_STATUS.OFFER_DECLINED;
         logActivity(draft, offer.applicationId, 'offer', 'Offer Declined', 'Candidate declined the offer.', 'Candidate');
         notify(draft, ROLES.HR, 'Offer declined', `${offer.candidateName} declined the offer.`);
+      });
+    },
+    [mutate]
+  );
+
+  /* ---------- onboarding forms + HR verification ---------- */
+  const submitOnboardingForms = useCallback(
+    (applicationId, formData) => {
+      mutate((draft) => {
+        const app = draft.applications.find((a) => a.id === applicationId);
+        if (!app) return;
+        app.onboarding = formData;
+        app.status = APP_STATUS.HR_VERIFICATION;
+        logActivity(draft, applicationId, 'onboarding', 'Onboarding Forms Submitted', 'Candidate submitted onboarding details.', 'Candidate');
+        notify(draft, ROLES.HR, 'Onboarding forms submitted', `${app.personal.firstName} ${app.personal.lastName} submitted onboarding details for verification.`);
+      });
+    },
+    [mutate]
+  );
+
+  const verifyOnboarding = useCallback(
+    (applicationId) => {
+      mutate((draft) => {
+        const app = draft.applications.find((a) => a.id === applicationId);
+        if (!app) return;
+        app.status = APP_STATUS.JOINING_PENDING;
+        logActivity(draft, applicationId, 'onboarding', 'Onboarding Verified', 'HR verified the onboarding details.', 'Arjun Mehta');
+        notify(draft, ROLES.CANDIDATE, 'Onboarding verified', 'Your onboarding details have been verified. Joining is pending.');
+      });
+    },
+    [mutate]
+  );
+
+  const rejectOnboarding = useCallback(
+    (applicationId, reason) => {
+      mutate((draft) => {
+        const app = draft.applications.find((a) => a.id === applicationId);
+        if (!app) return;
+        app.status = APP_STATUS.HR_VERIFICATION_REJECTED;
+        app.onboardingRejectReason = reason;
+        logActivity(draft, applicationId, 'onboarding', 'Onboarding Returned by HR', reason, 'Arjun Mehta');
+        notify(draft, ROLES.CANDIDATE, 'Onboarding details returned', reason);
       });
     },
     [mutate]
@@ -574,10 +584,11 @@ export function AppProvider({ children }) {
       verifyDocument,
       rejectDocument,
       saveOffer,
-      approveOffer,
-      returnOffer,
       acceptOffer,
       declineOffer,
+      submitOnboardingForms,
+      verifyOnboarding,
+      rejectOnboarding,
       completeJoining,
       createJob,
       markNotificationsRead,
@@ -603,10 +614,11 @@ export function AppProvider({ children }) {
       verifyDocument,
       rejectDocument,
       saveOffer,
-      approveOffer,
-      returnOffer,
       acceptOffer,
       declineOffer,
+      submitOnboardingForms,
+      verifyOnboarding,
+      rejectOnboarding,
       completeJoining,
       markNotificationsRead,
       resetDemo,
