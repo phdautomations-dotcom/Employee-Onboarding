@@ -26,8 +26,8 @@ export default function LoginPage() {
       <div className="login-split">
         <aside className="login-brand">
           <div className="brand" style={{ color: '#fff' }}>
-            <span className="brand__mark" style={{ background: 'rgba(255,255,255,.16)' }}>TB</span>
-            <span>Talent Blooming</span>
+            <span className="brand__mark" style={{ background: 'rgba(255,255,255,.16)' }}>Cc</span>
+            <span>Ccentrik</span>
           </div>
           <h2>Recruitment &amp; onboarding, from first application to first day.</h2>
           <p>One workspace for candidates, talent acquisition and HR — applications, interviews, documents, offers and onboarding.</p>

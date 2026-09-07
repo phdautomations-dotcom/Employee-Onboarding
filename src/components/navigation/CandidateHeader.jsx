@@ -32,7 +32,7 @@ export default function CandidateHeader() {
             </svg>
           </span>
           <span className="cx-brand__text">
-            <span className="cx-brand__name">Talent Blooming</span>
+            <span className="cx-brand__name">Ccentrik</span>
             <span className="cx-brand__sub">Careers</span>
           </span>
         </NavLink>

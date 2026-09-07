@@ -290,7 +290,7 @@ export default function MyApplicationPage() {
             >
               <p className="ta-cell-mute" style={{ lineHeight: 1.7, marginBottom: 14 }}>
                 Dear {offer.candidateName}, we are pleased to offer you the position of <strong>{offer.jobTitle}</strong> in
-                the {offer.department} team at Talent Blooming, based in {offer.location}.
+                the {offer.department} team at Ccentrik, based in {offer.location}.
               </p>
               <div className="ta-info" style={{ marginBottom: 14 }}>
                 <div className="ta-info__item"><span className="ta-info__label">Joining date</span><span className="ta-info__value">{formatDate(offer.joiningDate)}</span></div>

@@ -44,7 +44,7 @@ export default function HRDashboard() {
     <div className="page-body">
       <div className="dash-head">
         <h1>Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 17 ? 'afternoon' : 'evening'}, Arjun</h1>
-        <p>Approvals, offers and onboarding across Talent Blooming.</p>
+        <p>Approvals, offers and onboarding across Ccentrik.</p>
       </div>
 
       <div className="metric-grid mb-6">

@@ -15,7 +15,7 @@ export default function LandingPage() {
     <div className="cx-page">
       <div className="cx-hero">
         <div>
-          <div className="cx-hero__eyebrow">Talent Blooming Careers</div>
+          <div className="cx-hero__eyebrow">Ccentrik Careers</div>
           <h1>Find your next opportunity</h1>
           <p>{jobs.length} open roles across {f.facets.departments.length} departments. Submit your profile and we'll match you to the right role.</p>
         </div>

@@ -1,14 +1,13 @@
-# TalentFlow — Recruitment & Onboarding (Frontend Prototype)
+# Ccentrik — Recruitment & Onboarding (Frontend Prototype)
 
 A fully interactive **frontend-only** prototype of an enterprise HR recruitment and
 employee-onboarding platform. There is **no backend, no database and no API** — every
 workflow action runs in the browser against mock data and is persisted to
 `localStorage`.
 
-Built with **React + Vite + React Router + Lucide**. The **Talent Acquisition** area
-has a redesigned premium light UI (`src/styles/ta.css`, `src/components/ta/`,
-`src/pages/talentAcquisition/`); the Candidate and HR areas use the original
-SAP-inspired design system.
+Built with **React + Vite + React Router + Lucide**. The **Talent Acquisition** and
+**Candidate** areas share a premium light UI (`src/styles/ta.css`,
+`src/components/ta/`); the HR area still uses the original SAP-inspired design system.
 
 ## Getting started
 
