@@ -252,8 +252,7 @@ export default function MyApplicationPage() {
           </Button>
         </div>
       )}
-      <div className="ta-detail-grid">
-        <div className="ta-stack">
+      <div className="ta-stack">
           <Card id="sec-progress" title="Recruitment progress">
             <div className="cx-steps-scroll">
               <ol className="cx-steps">
@@ -287,6 +286,24 @@ export default function MyApplicationPage() {
               <div className="cx-nextline">
                 <Icon name={hint.icon} size={15} />
                 <span><strong>What's next:</strong> {hint.text}</span>
+              </div>
+            )}
+
+            {activities.length > 0 && (
+              <div className="cx-actlog">
+                <div className="cx-actlog__label">Activity</div>
+                <ol className="ta-timeline">
+                  {activities.slice(0, 12).map((a) => (
+                    <li key={a.id}>
+                      <span className="ta-timeline__dot" />
+                      <button type="button" className="cx-actitem" onClick={() => jumpToActivity(a, documents)}>
+                        <div className="ta-cell-strong">{a.title}</div>
+                        <div className="ta-cell-sub">{a.description}</div>
+                        <div className="ta-cell-sub">{formatDate(a.at)} · {a.actor}</div>
+                      </button>
+                    </li>
+                  ))}
+                </ol>
               </div>
             )}
           </Card>
@@ -393,28 +410,6 @@ export default function MyApplicationPage() {
               </div>
             </Card>
           )}
-        </div>
-
-        <div className="ta-stack">
-          <Card title="Activity">
-            {activities.length === 0 ? (
-              <p className="ta-cell-mute">No activity yet.</p>
-            ) : (
-              <ol className="ta-timeline">
-                {activities.slice(0, 12).map((a) => (
-                  <li key={a.id}>
-                    <span className="ta-timeline__dot" />
-                    <button type="button" className="cx-actitem" onClick={() => jumpToActivity(a, documents)}>
-                      <div className="ta-cell-strong">{a.title}</div>
-                      <div className="ta-cell-sub">{a.description}</div>
-                      <div className="ta-cell-sub">{formatDate(a.at)} · {a.actor}</div>
-                    </button>
-                  </li>
-                ))}
-              </ol>
-            )}
-          </Card>
-        </div>
       </div>
 
       <ConfirmDialog

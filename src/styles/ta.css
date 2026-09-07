@@ -767,6 +767,13 @@
 .cx-nextline--stop { background: var(--tag-red-bg); border-color: var(--tag-red-bg); }
 .cx-nextline--stop svg, .cx-nextline--stop strong { color: var(--tag-red-fg); }
 
+/* activity log, folded into the progress card */
+.cx-actlog { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--ta-line); }
+.cx-actlog__label {
+  font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--ta-text-mute); margin-bottom: 14px;
+}
+
 /* candidate id / progress card */
 .cx-idcard {
   background: linear-gradient(135deg, #26429a 0%, #1e326f 100%); color: #fff;
