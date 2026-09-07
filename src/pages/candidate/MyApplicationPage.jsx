@@ -290,21 +290,20 @@ export default function MyApplicationPage() {
             )}
 
             {activities.length > 0 && (
-              <div className="cx-actlog">
-                <div className="cx-actlog__label">Activity</div>
-                <ol className="ta-timeline">
-                  {activities.slice(0, 12).map((a) => (
-                    <li key={a.id}>
-                      <span className="ta-timeline__dot" />
-                      <button type="button" className="cx-actitem" onClick={() => jumpToActivity(a, documents)}>
-                        <div className="ta-cell-strong">{a.title}</div>
-                        <div className="ta-cell-sub">{a.description}</div>
-                        <div className="ta-cell-sub">{formatDate(a.at)} · {a.actor}</div>
-                      </button>
-                    </li>
-                  ))}
-                </ol>
-              </div>
+              <ol className="ta-timeline cx-actlog">
+                {activities.slice(0, 12).map((a) => (
+                  <li key={a.id}>
+                    <span className="ta-timeline__dot" />
+                    <button type="button" className="cx-actitem" onClick={() => jumpToActivity(a, documents)}>
+                      <span className="cx-actitem__main">
+                        <span className="ta-cell-strong">{a.title}</span>
+                        <span className="ta-cell-sub">{a.description}</span>
+                      </span>
+                      <span className="ta-cell-sub cx-actitem__when">{formatDate(a.at)} · {a.actor}</span>
+                    </button>
+                  </li>
+                ))}
+              </ol>
             )}
           </Card>
 

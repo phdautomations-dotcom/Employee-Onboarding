@@ -530,15 +530,6 @@
 .ta-timeline__dot { width: 9px; height: 9px; border-radius: 999px; background: var(--ta-blue); flex-shrink: 0; margin-top: 3px; z-index: 1; }
 .ta-timeline li > div { flex: 1; min-width: 0; }
 
-/* activity rows link to their section on the page */
-.cx-actitem {
-  flex: 1; min-width: 0; display: block; width: 100%; text-align: left; font: inherit; color: inherit;
-  background: none; border: 0; cursor: pointer; padding: 5px 7px; margin: -5px -7px;
-  border-radius: 7px; transition: background 0.12s;
-}
-.cx-actitem:hover { background: var(--ta-bg); }
-.cx-actitem:hover .ta-cell-strong { color: var(--ta-blue-ink); }
-
 /* brief highlight when an activity row jumps you to a card or document */
 @keyframes cxFlash {
   0%, 40% { box-shadow: 0 0 0 3px var(--ta-blue); }
@@ -767,11 +758,20 @@
 .cx-nextline--stop { background: var(--tag-red-bg); border-color: var(--tag-red-bg); }
 .cx-nextline--stop svg, .cx-nextline--stop strong { color: var(--tag-red-fg); }
 
-/* activity log, folded into the progress card */
-.cx-actlog { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--ta-line); }
-.cx-actlog__label {
-  font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;
-  color: var(--ta-text-mute); margin-bottom: 14px;
+/* activity log — flows straight on from the stepper, one continuous section */
+.cx-actlog { margin-top: 16px; }
+.cx-actitem {
+  flex: 1; min-width: 0; display: flex; align-items: baseline; justify-content: space-between; gap: 24px;
+  width: 100%; text-align: left; font: inherit; color: inherit; background: none; border: 0;
+  cursor: pointer; padding: 5px 7px; margin: -5px -7px; border-radius: 7px; transition: background 0.12s;
+}
+.cx-actitem:hover { background: var(--ta-bg); }
+.cx-actitem:hover .ta-cell-strong { color: var(--ta-blue-ink); }
+.cx-actitem__main { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.cx-actitem__when { flex-shrink: 0; white-space: nowrap; }
+@media (max-width: 620px) {
+  .cx-actitem { flex-direction: column; gap: 2px; }
+  .cx-actitem__when { align-self: flex-start; }
 }
 
 /* candidate id / progress card */
