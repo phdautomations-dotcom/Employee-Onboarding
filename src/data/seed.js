@@ -630,6 +630,9 @@ export function buildSeed() {
     notifications,
     jobs: [],
     counters: { candidate: 320, application: 1120, employee: 260, offer: 200, job: 1035 },
-    myApplicationId: null,
+    // The candidate portal follows one application; default to a mid-journey
+    // seeded candidate so "My Application" has something to show on first load.
+    // A real submission via the apply form overwrites this.
+    myApplicationId: a4.id,
   };
 }

@@ -18,7 +18,7 @@ import {
   uid,
 } from '../utils/ids.js';
 
-const DATA_KEY = 'talentflow.data.v6';
+const DATA_KEY = 'talentflow.data.v7';
 const ROLE_KEY = 'talentflow.role.v3';
 
 const AppContext = createContext(null);

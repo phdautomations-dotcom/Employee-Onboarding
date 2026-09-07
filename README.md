@@ -91,7 +91,7 @@ force-directed view, or read `graph/GRAPH.md`.
 - A single `AppContext` holds `applications`, `interviews`, `documents`, `offers`,
   `employees`, `activities`, `notifications` and ID counters.
 - All workflow actions are pure functions over an immutable draft, then persisted to
-  `localStorage` (key `talentflow.data.v6`). Refreshing the page keeps your progress.
+  `localStorage` (key `talentflow.data.v7`). Refreshing the page keeps your progress.
 - **Settings → Reset demo data** restores the original seed.
 
 ## Notes on the simulation
