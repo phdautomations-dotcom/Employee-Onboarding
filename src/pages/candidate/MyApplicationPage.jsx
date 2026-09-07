@@ -29,11 +29,12 @@ const DOC_STAGES = [
 const toneMap = { info: 'blue', success: 'green', error: 'red', warning: 'amber', neutral: 'grey' };
 
 /* Short pipeline steps for the header strip. */
-/* The candidate's own journey — the TA-only "screening" phase is left out. */
-const CANDIDATE_STEPS = ['Applied', 'Interview', 'Documents', 'Offer', 'Joining'];
+/* The candidate's own journey. "In review" stands in for the TA screening phase
+   so the wait reads as active progress, not a stalled step. */
+const CANDIDATE_STEPS = ['Applied', 'In review', 'Interview', 'Documents', 'Offer', 'Joining'];
 /* PIPELINE_STAGES index (0 application, 1 ta_review, 2 interview … 5 onboarding)
    mapped to a CANDIDATE_STEPS index. */
-const PIPELINE_TO_CANDIDATE = [0, 0, 1, 2, 3, 4];
+const PIPELINE_TO_CANDIDATE = [1, 1, 2, 3, 4, 5];
 
 /* Which on-page card an activity entry belongs to. */
 const SECTION_BY_TYPE = {
@@ -143,12 +144,15 @@ export default function MyApplicationPage() {
 
   const stageIdx = stageIndexForStatus(app.status);
   const rejected = app.status === APP_STATUS.REJECTED;
+  const interviewFailed = app.status === APP_STATUS.INTERVIEW_FAILED;
+  const notSelected = rejected || interviewFailed;
 
   /* Where the candidate is in their own journey, and how many steps to show
-     (future steps stay hidden until the application reaches them). */
-  const candIdx = PIPELINE_TO_CANDIDATE[Math.max(0, stageIdx)] ?? 0;
-  const shownCount = rejected ? CANDIDATE_STEPS.length : candIdx + 1;
-  const progress = rejected ? 0 : Math.round(((candIdx + 1) / CANDIDATE_STEPS.length) * 100);
+     (future steps stay hidden until the application reaches them). When the
+     application is closed, the journey stops at the step it reached. */
+  const candIdx = interviewFailed ? 2 : rejected ? 1 : (PIPELINE_TO_CANDIDATE[Math.max(0, stageIdx)] ?? 0);
+  const shownCount = candIdx + 1;
+  const progress = notSelected ? 0 : Math.round(((candIdx + 1) / CANDIDATE_STEPS.length) * 100);
 
   const showDocuments = DOC_STAGES.includes(app.status);
   const verifiedCount = documents.filter((d) => d.status === DOC_STATUS.VERIFIED).length;
@@ -157,7 +161,7 @@ export default function MyApplicationPage() {
 
   const steps = CANDIDATE_STEPS.slice(0, shownCount).map((label, i) => ({
     label,
-    state: rejected ? (i === 0 ? 'done' : 'pending') : i < candIdx ? 'done' : 'active',
+    state: i < candIdx ? 'done' : notSelected ? 'failed' : 'active',
   }));
 
   return (
@@ -185,20 +189,19 @@ export default function MyApplicationPage() {
               <circle className="cx-donut-track" cx="21" cy="21" r="15.9" pathLength="100" />
               <circle
                 className="cx-donut-arc" cx="21" cy="21" r="15.9" pathLength="100"
-                strokeDasharray={`${rejected ? 100 : progress} 100`}
+                strokeDasharray={`${notSelected ? 0 : progress} 100`}
               />
               <defs>
                 <linearGradient id="cxDonut" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#5eead4" />
-                  <stop offset="50%" stopColor="#38bdf8" />
-                  <stop offset="100%" stopColor="#a78bfa" />
+                  <stop offset="0%" stopColor="#4ade80" />
+                  <stop offset="100%" stopColor="#22d3ee" />
                 </linearGradient>
               </defs>
             </svg>
-            <span className="cx-idcard__donutnum">{rejected ? '—' : `${progress}%`}</span>
+            <span className="cx-idcard__donutnum">{notSelected ? '—' : `${progress}%`}</span>
           </div>
           <div className="cx-idcard__pmeta">
-            <span className="cx-idcard__plabel">{rejected ? 'Application status' : 'Progress'}</span>
+            <span className="cx-idcard__plabel">{notSelected ? 'Application status' : 'Progress'}</span>
             <div className="cx-idcard__tag"><Tag tone={badge.tone}>{badge.label}</Tag></div>
           </div>
         </div>
@@ -214,30 +217,38 @@ export default function MyApplicationPage() {
           </Button>
         </div>
       )}
-      {rejected && (
-        <div className="ta-note ta-note--err">
-          <Icon name="XCircle" size={15} />
-          {app.rejectReason || 'Thank you for your interest. We encourage you to apply for other roles in the future.'}
-        </div>
-      )}
-
       <div className="ta-detail-grid">
         <div className="ta-stack">
           <Card id="sec-progress" title="Recruitment progress">
-            {!rejected && (
-              <div className="cx-steps-scroll">
-                <ol className="cx-steps">
-                  {steps.map((s, i) => (
-                    <li key={s.label} className={`cx-step${s.state === 'done' ? ' cx-step--done' : ' cx-step--active'}`}>
-                      <span className="cx-step__dot">{s.state === 'done' ? <Icon name="Check" size={12} /> : i + 1}</span>
-                      <span>{s.label}</span>
-                      {i < steps.length - 1 && <span className="cx-step__line" />}
-                    </li>
-                  ))}
-                </ol>
+            <div className="cx-steps-scroll">
+              <ol className="cx-steps">
+                {steps.map((s, i) => (
+                  <li
+                    key={s.label}
+                    className={`cx-step${s.state === 'done' ? ' cx-step--done' : s.state === 'failed' ? ' cx-step--failed' : ' cx-step--active'}`}
+                  >
+                    <span className="cx-step__dot">
+                      {s.state === 'done' ? <Icon name="Check" size={12} /> : s.state === 'failed' ? <Icon name="X" size={12} /> : i + 1}
+                    </span>
+                    <span>{s.label}</span>
+                    {i < steps.length - 1 && <span className="cx-step__line" />}
+                  </li>
+                ))}
+              </ol>
+            </div>
+            {notSelected ? (
+              <div className="cx-nextline cx-nextline--stop">
+                <Icon name="XCircle" size={15} />
+                <span>
+                  <strong>Not selected:</strong>{' '}
+                  {app.rejectReason
+                    || (interviewFailed
+                      ? 'After the interview the team decided not to move forward this time.'
+                      : 'After reviewing your application the team decided not to move forward this time.')}
+                  {' '}We appreciate your interest and encourage you to apply for future roles.
+                </span>
               </div>
-            )}
-            {hint && app.status !== APP_STATUS.RETURNED && (
+            ) : hint && app.status !== APP_STATUS.RETURNED && (
               <div className="cx-nextline">
                 <Icon name={hint.icon} size={15} />
                 <span><strong>What's next:</strong> {hint.text}</span>

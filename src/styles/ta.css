@@ -737,10 +737,12 @@
 }
 .cx-step--done .cx-step__dot { background: var(--ta-blue); border-color: var(--ta-blue); color: #fff; }
 .cx-step--active .cx-step__dot { border-color: var(--ta-blue); color: var(--ta-blue); background: var(--ta-blue-wash); }
+.cx-step--failed { color: var(--tag-red-fg); }
+.cx-step--failed .cx-step__dot { background: var(--tag-red-fg); border-color: var(--tag-red-fg); color: #fff; }
 .cx-step__line { flex: 1; min-width: 24px; height: 2px; border-radius: 2px; background: var(--ta-line); margin: 0 8px; }
 .cx-step--done .cx-step__line { background: var(--ta-blue); }
 
-/* what's-next hint inside the progress card */
+/* what's-next / status line inside the progress card */
 .cx-nextline {
   display: flex; align-items: flex-start; gap: 9px;
   padding: 10px 12px; border-radius: 9px;
@@ -749,6 +751,8 @@
 }
 .cx-nextline svg { flex-shrink: 0; margin-top: 1px; color: var(--ta-blue); }
 .cx-nextline strong { font-weight: 600; color: var(--ta-blue-ink); }
+.cx-nextline--stop { background: var(--tag-red-bg); border-color: var(--tag-red-bg); }
+.cx-nextline--stop svg, .cx-nextline--stop strong { color: var(--tag-red-fg); }
 
 /* candidate id / progress card */
 .cx-idcard {
@@ -764,18 +768,23 @@
 }
 .cx-idcard h2 { color: #fff; font-size: 15px; }
 .cx-idcard__meta { font-size: 12px; color: rgba(255,255,255,0.7); margin-top: 1px; }
-.cx-idcard__progress { flex-shrink: 0; display: flex; align-items: center; gap: 13px; }
-.cx-idcard__donut { position: relative; width: 60px; height: 60px; flex-shrink: 0; }
+.cx-idcard__progress { flex-shrink: 0; display: flex; align-items: center; gap: 14px; }
+.cx-idcard__donut { position: relative; width: 62px; height: 62px; flex-shrink: 0; }
 .cx-idcard__donut svg { width: 100%; height: 100%; transform: rotate(-90deg); }
-.cx-donut-track { fill: none; stroke: rgba(255, 255, 255, 0.16); stroke-width: 4; }
-.cx-donut-arc { fill: none; stroke: url(#cxDonut); stroke-width: 4; stroke-linecap: round; transition: stroke-dasharray 0.6s ease; }
+.cx-donut-track { fill: none; stroke: rgba(255, 255, 255, 0.14); stroke-width: 3.5; }
+.cx-donut-arc { fill: none; stroke: url(#cxDonut); stroke-width: 3.5; stroke-linecap: round; transition: stroke-dasharray 0.6s ease; }
 .cx-idcard__donutnum {
   position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-  font-size: 12.5px; font-weight: 700; color: #fff;
+  font-size: 13.5px; font-weight: 700; letter-spacing: -0.01em; color: #fff;
+  font-variant-numeric: tabular-nums;
 }
-.cx-idcard__pmeta { display: flex; flex-direction: column; gap: 8px; }
-.cx-idcard__plabel { font-size: 11px; color: rgba(255, 255, 255, 0.8); text-transform: uppercase; letter-spacing: 0.04em; }
+.cx-idcard__pmeta { display: flex; flex-direction: column; gap: 9px; }
+.cx-idcard__plabel { font-size: 12px; font-weight: 600; color: rgba(255, 255, 255, 0.85); letter-spacing: 0.01em; }
 .cx-idcard__tag { margin: 0; }
+.cx-idcard__tag .ta-tag {
+  background: rgba(255, 255, 255, 0.16); color: #fff;
+  font-size: 12px; font-weight: 600; padding: 4px 11px;
+}
 .cx-idcard__facts {
   flex: 1 1 300px; display: flex; flex-wrap: wrap; gap: 12px 28px; margin: 0;
   padding-left: 28px; border-left: 1px solid rgba(255,255,255,0.16);
