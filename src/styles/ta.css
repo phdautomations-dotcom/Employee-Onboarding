@@ -729,23 +729,6 @@
   padding: 2px 4px; border-radius: 6px;
 }
 
-/* steps strip — lives inside the Recruitment progress card */
-.cx-steps-scroll { overflow-x: auto; margin-bottom: 16px; padding-bottom: 2px; }
-.cx-steps { display: flex; align-items: center; margin: 0; padding: 0; list-style: none; width: 100%; min-width: 360px; }
-.cx-step { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--ta-text); font-weight: 600; white-space: nowrap; flex: 1; }
-.cx-step:last-child { flex: 0 0 auto; }
-.cx-step__dot {
-  width: 21px; height: 21px; border-radius: 999px; flex-shrink: 0;
-  border: 1.5px solid var(--ta-line); display: flex; align-items: center; justify-content: center;
-  font-size: 10.5px; font-weight: 700;
-}
-.cx-step--done .cx-step__dot { background: var(--ta-blue); border-color: var(--ta-blue); color: #fff; }
-.cx-step--active .cx-step__dot { border-color: var(--ta-blue); color: var(--ta-blue); background: var(--ta-blue-wash); }
-.cx-step--failed { color: var(--tag-red-fg); }
-.cx-step--failed .cx-step__dot { background: var(--tag-red-fg); border-color: var(--tag-red-fg); color: #fff; }
-.cx-step__line { flex: 1; min-width: 24px; height: 2px; border-radius: 2px; background: var(--ta-line); margin: 0 8px; }
-.cx-step--done .cx-step__line { background: var(--ta-blue); }
-
 /* what's-next / status line inside the progress card */
 .cx-nextline {
   display: flex; align-items: flex-start; gap: 9px;
@@ -758,8 +741,9 @@
 .cx-nextline--stop { background: var(--tag-red-bg); border-color: var(--tag-red-bg); }
 .cx-nextline--stop svg, .cx-nextline--stop strong { color: var(--tag-red-fg); }
 
-/* activity log — flows straight on from the stepper, one continuous section */
+/* activity log — the body of the progress card */
 .cx-actlog { margin-top: 16px; }
+.cx-actlog:first-child { margin-top: 0; }
 .cx-actitem {
   flex: 1; min-width: 0; display: flex; align-items: baseline; justify-content: space-between; gap: 24px;
   width: 100%; text-align: left; font: inherit; color: inherit; background: none; border: 0;

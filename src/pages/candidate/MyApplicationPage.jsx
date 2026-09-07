@@ -40,9 +40,7 @@ const PREVIEW_OPTIONS = [
   { label: 'Not selected — after interview', value: APP_STATUS.INTERVIEW_FAILED },
 ];
 
-/* Short pipeline steps for the header strip. */
-/* The candidate's own journey. "In review" stands in for the TA screening phase
-   so the wait reads as active progress, not a stalled step. */
+/* The candidate's own journey — used to size the progress donut. */
 const CANDIDATE_STEPS = ['Applied', 'In review', 'Interview', 'Documents', 'Offer', 'Joining'];
 /* PIPELINE_STAGES index (0 application, 1 ta_review, 2 interview … 5 onboarding)
    mapped to a CANDIDATE_STEPS index. */
@@ -163,22 +161,14 @@ export default function MyApplicationPage() {
   const interviewFailed = status === APP_STATUS.INTERVIEW_FAILED;
   const notSelected = rejected || interviewFailed;
 
-  /* Where the candidate is in their own journey, and how many steps to show
-     (future steps stay hidden until the application reaches them). When the
-     application is closed, the journey stops at the step it reached. */
+  /* How far along the candidate's own journey the application is, for the donut. */
   const candIdx = interviewFailed ? 2 : rejected ? 1 : (PIPELINE_TO_CANDIDATE[Math.max(0, stageIdx)] ?? 0);
-  const shownCount = candIdx + 1;
   const progress = notSelected ? 0 : Math.round(((candIdx + 1) / CANDIDATE_STEPS.length) * 100);
 
   const showDocuments = DOC_STAGES.includes(status);
   const verifiedCount = documents.filter((d) => d.status === DOC_STATUS.VERIFIED).length;
   const pendingDocs = documents.filter((d) => [DOC_STATUS.PENDING, DOC_STATUS.REJECTED].includes(d.status)).length;
   const hint = nextStep(status, pendingDocs);
-
-  const steps = CANDIDATE_STEPS.slice(0, shownCount).map((label, i) => ({
-    label,
-    state: i < candIdx ? 'done' : notSelected ? 'failed' : 'active',
-  }));
 
   return (
     <div className="cx-page">
@@ -254,22 +244,6 @@ export default function MyApplicationPage() {
       )}
       <div className="ta-stack">
           <Card id="sec-progress" title="Recruitment progress">
-            <div className="cx-steps-scroll">
-              <ol className="cx-steps">
-                {steps.map((s, i) => (
-                  <li
-                    key={s.label}
-                    className={`cx-step${s.state === 'done' ? ' cx-step--done' : s.state === 'failed' ? ' cx-step--failed' : ' cx-step--active'}`}
-                  >
-                    <span className="cx-step__dot">
-                      {s.state === 'done' ? <Icon name="Check" size={12} /> : s.state === 'failed' ? <Icon name="X" size={12} /> : i + 1}
-                    </span>
-                    <span>{s.label}</span>
-                    {i < steps.length - 1 && <span className="cx-step__line" />}
-                  </li>
-                ))}
-              </ol>
-            </div>
             {notSelected ? (
               <div className="cx-nextline cx-nextline--stop">
                 <Icon name="XCircle" size={15} />
