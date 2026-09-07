@@ -110,15 +110,18 @@ await run(() => ctx.saveOffer(appId, {
   candidateName: 'Test Candidate', jobTitle: 'SAP Consultant', department: 'Enterprise Solutions', location: 'Bengaluru, India',
   joiningDate: '2026-11-01', employmentType: 'Full-time', compensation: '2400000', benefits: 'Health', reportingManager: 'Latha', probationPeriod: '6 months',
 }, true));
-check('Offer submitted -> OFFER_PENDING_HR', ctx.getApplication(appId)?.status === 'OFFER_PENDING_HR');
+check('Offer sent -> OFFER_ISSUED', ctx.getApplication(appId)?.status === 'OFFER_ISSUED');
 const offer = ctx.offerFor(appId);
-check('Offer status PENDING_APPROVAL', offer?.status === 'PENDING_APPROVAL');
-
-await run(() => ctx.approveOffer(offer.id));
-check('HR approve -> OFFER_ISSUED', ctx.getApplication(appId)?.status === 'OFFER_ISSUED' && ctx.offerFor(appId).status === 'ISSUED');
+check('Offer status ISSUED', offer?.status === 'ISSUED');
 
 await run(() => ctx.acceptOffer(offer.id));
-check('Candidate accept -> JOINING_PENDING', ctx.getApplication(appId)?.status === 'JOINING_PENDING' && ctx.offerFor(appId).status === 'ACCEPTED');
+check('Candidate accept -> ONBOARDING_PENDING', ctx.getApplication(appId)?.status === 'ONBOARDING_PENDING' && ctx.offerFor(appId).status === 'ACCEPTED');
+
+await run(() => ctx.submitOnboardingForms(appId, { tenth: { school: 'Test School' }, twelfth: { school: 'Test School' } }));
+check('Forms submitted -> HR_VERIFICATION', ctx.getApplication(appId)?.status === 'HR_VERIFICATION');
+
+await run(() => ctx.verifyOnboarding(appId));
+check('HR verify -> JOINING_PENDING', ctx.getApplication(appId)?.status === 'JOINING_PENDING');
 
 await run(() => ctx.completeJoining(appId));
 const emp = ctx.employeeFor(appId);

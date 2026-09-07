@@ -6,6 +6,7 @@ import Card from '../../components/ta/Card.jsx';
 import Tag from '../../components/ta/Tag.jsx';
 import EmptyState from '../../components/ta/EmptyState.jsx';
 import { ConfirmDialog } from '../../components/common/Modal.jsx';
+import { Field, Input } from '../../components/common/Field.jsx';
 import { useApp } from '../../context/AppContext.jsx';
 import { useToast } from '../../context/ToastContext.jsx';
 import { initialsOf, formatDate, formatCurrencyINR } from '../../utils/format.js';
@@ -25,8 +26,9 @@ import {
 } from '../../constants/statuses.js';
 
 const DOC_STAGES = [
-  APP_STATUS.DOC_VERIFICATION, APP_STATUS.DOCS_VERIFIED, APP_STATUS.OFFER_DRAFT, APP_STATUS.OFFER_PENDING_HR,
-  APP_STATUS.OFFER_ISSUED, APP_STATUS.OFFER_ACCEPTED, APP_STATUS.JOINING_PENDING, APP_STATUS.EMPLOYEE,
+  APP_STATUS.DOC_VERIFICATION, APP_STATUS.DOCS_VERIFIED, APP_STATUS.OFFER_DRAFT,
+  APP_STATUS.OFFER_ISSUED, APP_STATUS.OFFER_ACCEPTED, APP_STATUS.ONBOARDING_PENDING,
+  APP_STATUS.HR_VERIFICATION, APP_STATUS.HR_VERIFICATION_REJECTED, APP_STATUS.JOINING_PENDING, APP_STATUS.EMPLOYEE,
 ];
 const toneMap = { info: 'blue', success: 'green', error: 'red', warning: 'amber', neutral: 'grey' };
 
@@ -50,12 +52,63 @@ function DocUpload({ label, onFile }) {
   );
 }
 
+const emptyOnboardingForm = () => ({
+  tenth: { school: '', board: '', year: '', percentage: '' },
+  twelfth: { school: '', board: '', year: '', percentage: '' },
+  address: { line1: '', line2: '', city: '', state: '', postalCode: '' },
+  emergencyContact: { name: '', phone: '' },
+});
+
+/* Onboarding details form — 10th / 12th / address / emergency contact.
+   Pre-fills from a previous submission so a rejected candidate doesn't retype everything. */
+function OnboardingForm({ initial, onSubmit }) {
+  const [f, setF] = useState(() => ({ ...emptyOnboardingForm(), ...initial }));
+  const setSection = (section, patch) => setF((prev) => ({ ...prev, [section]: { ...prev[section], ...patch } }));
+
+  return (
+    <>
+      <div className="ta-info__label" style={{ marginBottom: 8 }}>10th Details</div>
+      <div className="form-grid" style={{ marginBottom: 16 }}>
+        <Field label="School"><Input value={f.tenth.school} onChange={(e) => setSection('tenth', { school: e.target.value })} /></Field>
+        <Field label="Board"><Input value={f.tenth.board} onChange={(e) => setSection('tenth', { board: e.target.value })} /></Field>
+        <Field label="Year of passing"><Input value={f.tenth.year} onChange={(e) => setSection('tenth', { year: e.target.value })} /></Field>
+        <Field label="Percentage"><Input value={f.tenth.percentage} onChange={(e) => setSection('tenth', { percentage: e.target.value })} /></Field>
+      </div>
+
+      <div className="ta-info__label" style={{ marginBottom: 8 }}>12th Details</div>
+      <div className="form-grid" style={{ marginBottom: 16 }}>
+        <Field label="School"><Input value={f.twelfth.school} onChange={(e) => setSection('twelfth', { school: e.target.value })} /></Field>
+        <Field label="Board"><Input value={f.twelfth.board} onChange={(e) => setSection('twelfth', { board: e.target.value })} /></Field>
+        <Field label="Year of passing"><Input value={f.twelfth.year} onChange={(e) => setSection('twelfth', { year: e.target.value })} /></Field>
+        <Field label="Percentage"><Input value={f.twelfth.percentage} onChange={(e) => setSection('twelfth', { percentage: e.target.value })} /></Field>
+      </div>
+
+      <div className="ta-info__label" style={{ marginBottom: 8 }}>Permanent Address</div>
+      <div className="form-grid" style={{ marginBottom: 16 }}>
+        <Field label="Address line 1" full><Input value={f.address.line1} onChange={(e) => setSection('address', { line1: e.target.value })} /></Field>
+        <Field label="Address line 2" full><Input value={f.address.line2} onChange={(e) => setSection('address', { line2: e.target.value })} /></Field>
+        <Field label="City"><Input value={f.address.city} onChange={(e) => setSection('address', { city: e.target.value })} /></Field>
+        <Field label="State"><Input value={f.address.state} onChange={(e) => setSection('address', { state: e.target.value })} /></Field>
+        <Field label="Postal code"><Input value={f.address.postalCode} onChange={(e) => setSection('address', { postalCode: e.target.value })} /></Field>
+      </div>
+
+      <div className="ta-info__label" style={{ marginBottom: 8 }}>Emergency Contact</div>
+      <div className="form-grid" style={{ marginBottom: 16 }}>
+        <Field label="Name"><Input value={f.emergencyContact.name} onChange={(e) => setSection('emergencyContact', { name: e.target.value })} /></Field>
+        <Field label="Phone"><Input value={f.emergencyContact.phone} onChange={(e) => setSection('emergencyContact', { phone: e.target.value })} /></Field>
+      </div>
+
+      <Button icon="Send" onClick={() => onSubmit(f)}>Submit onboarding details</Button>
+    </>
+  );
+}
+
 export default function MyApplicationPage() {
   const navigate = useNavigate();
   const toast = useToast();
   const {
     data, getApplication, interviewsFor, documentsFor, offerFor, employeeFor, activitiesFor,
-    resubmitApplication, uploadDocument, acceptOffer, declineOffer,
+    resubmitApplication, uploadDocument, acceptOffer, declineOffer, submitOnboardingForms,
   } = useApp();
   const [declineOpen, setDeclineOpen] = useState(false);
 
@@ -246,6 +299,31 @@ export default function MyApplicationPage() {
               {offer.status === OFFER_STATUS.ACCEPTED && (
                 <div className="ta-note ta-note--ok"><Icon name="CheckCircle2" size={15} /> You accepted this offer. HR will reach out with joining formalities.</div>
               )}
+            </Card>
+          )}
+
+          {(app.status === APP_STATUS.ONBOARDING_PENDING || app.status === APP_STATUS.HR_VERIFICATION_REJECTED) && (
+            <Card title="Onboarding Details">
+              {app.status === APP_STATUS.HR_VERIFICATION_REJECTED && app.onboardingRejectReason && (
+                <div className="ta-note ta-note--warn" style={{ marginBottom: 14 }}>
+                  <Icon name="RotateCcw" size={15} /> HR sent this back: {app.onboardingRejectReason}
+                </div>
+              )}
+              <OnboardingForm
+                initial={app.onboarding}
+                onSubmit={(formData) => { submitOnboardingForms(app.id, formData); toast.success('Onboarding details submitted for HR verification.'); }}
+              />
+            </Card>
+          )}
+
+          {app.onboarding && [APP_STATUS.HR_VERIFICATION, APP_STATUS.JOINING_PENDING, APP_STATUS.EMPLOYEE].includes(app.status) && (
+            <Card title="Onboarding Details" action={app.status === APP_STATUS.HR_VERIFICATION ? <Tag tone="amber">Under HR review</Tag> : <Tag tone="green">Verified</Tag>}>
+              <div className="ta-info">
+                <div className="ta-info__item"><span className="ta-info__label">10th school</span><span className="ta-info__value">{app.onboarding.tenth?.school || '—'}</span></div>
+                <div className="ta-info__item"><span className="ta-info__label">12th school</span><span className="ta-info__value">{app.onboarding.twelfth?.school || '—'}</span></div>
+                <div className="ta-info__item"><span className="ta-info__label">Address</span><span className="ta-info__value">{app.onboarding.address?.city || '—'}</span></div>
+                <div className="ta-info__item"><span className="ta-info__label">Emergency contact</span><span className="ta-info__value">{app.onboarding.emergencyContact?.name || '—'}</span></div>
+              </div>
             </Card>
           )}
 

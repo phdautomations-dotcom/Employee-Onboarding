@@ -112,9 +112,10 @@ const ALL_NOTICE_PERIODS = NOTICE_WEIGHTS.map(([label]) => label);
 const STAGE_PLAN = [
   [APP_STATUS.SUBMITTED, 20], [APP_STATUS.TA_REVIEW, 13], [APP_STATUS.INTERVIEW_PLANNING, 7],
   [APP_STATUS.INTERVIEW_IN_PROGRESS, 10], [APP_STATUS.INTERVIEW_PASSED, 4], [APP_STATUS.INTERVIEW_FAILED, 4],
-  [APP_STATUS.DOC_VERIFICATION, 6], [APP_STATUS.DOCS_VERIFIED, 3], [APP_STATUS.OFFER_PENDING_HR, 3],
-  [APP_STATUS.OFFER_ISSUED, 4], [APP_STATUS.OFFER_ACCEPTED, 3], [APP_STATUS.JOINING_PENDING, 2],
-  [APP_STATUS.EMPLOYEE, 6], [APP_STATUS.REJECTED, 12],
+  [APP_STATUS.DOC_VERIFICATION, 6], [APP_STATUS.DOCS_VERIFIED, 3],
+  [APP_STATUS.OFFER_ISSUED, 4], [APP_STATUS.OFFER_ACCEPTED, 3],
+  [APP_STATUS.ONBOARDING_PENDING, 2], [APP_STATUS.HR_VERIFICATION, 2], [APP_STATUS.HR_VERIFICATION_REJECTED, 1],
+  [APP_STATUS.JOINING_PENDING, 2], [APP_STATUS.EMPLOYEE, 6], [APP_STATUS.REJECTED, 12],
 ];
 const JOB_IDS = ['JOB-1024', 'JOB-1025', 'JOB-1026', 'JOB-1027', 'JOB-1028', 'JOB-1029', 'JOB-1030', 'JOB-1031', 'JOB-1032', 'JOB-1033', 'JOB-1034', 'JOB-1035'];
 
@@ -138,7 +139,11 @@ function weightedPick(rng, pairs) {
 
 function docStateForStatus(status, uploadedAt) {
   const reached = (list) => list.includes(status);
-  const afterDocs = reached([APP_STATUS.DOCS_VERIFIED, APP_STATUS.OFFER_PENDING_HR, APP_STATUS.OFFER_ISSUED, APP_STATUS.OFFER_ACCEPTED, APP_STATUS.JOINING_PENDING, APP_STATUS.EMPLOYEE]);
+  const afterDocs = reached([
+    APP_STATUS.DOCS_VERIFIED, APP_STATUS.OFFER_ISSUED, APP_STATUS.OFFER_ACCEPTED,
+    APP_STATUS.ONBOARDING_PENDING, APP_STATUS.HR_VERIFICATION, APP_STATUS.HR_VERIFICATION_REJECTED,
+    APP_STATUS.JOINING_PENDING, APP_STATUS.EMPLOYEE,
+  ]);
   if (afterDocs) {
     return Object.fromEntries(REQUIRED_DOCUMENTS.map((d) => [d.key, { status: DOC_STATUS.VERIFIED, fileName: `${d.key}.pdf`, uploadedAt, verifiedAt: uploadedAt }]));
   }
@@ -181,7 +186,12 @@ function buildSyntheticCandidates(startSeq) {
     out.documents.push(...docsFor(app.id, docStateForStatus(status, submittedAt)));
     out.activities.push({ id: uid('act'), applicationId: app.id, type: 'application', title: 'Application Submitted', description: `${first} ${last} applied for ${app.jobTitle}.`, at: submittedAt, actor: `${first} ${last}` });
 
-    const inOrPastInterview = [APP_STATUS.INTERVIEW_IN_PROGRESS, APP_STATUS.INTERVIEW_PASSED, APP_STATUS.INTERVIEW_FAILED, APP_STATUS.DOC_VERIFICATION, APP_STATUS.DOCS_VERIFIED, APP_STATUS.OFFER_PENDING_HR, APP_STATUS.OFFER_ISSUED, APP_STATUS.OFFER_ACCEPTED, APP_STATUS.JOINING_PENDING, APP_STATUS.EMPLOYEE].includes(status);
+    const inOrPastInterview = [
+      APP_STATUS.INTERVIEW_IN_PROGRESS, APP_STATUS.INTERVIEW_PASSED, APP_STATUS.INTERVIEW_FAILED,
+      APP_STATUS.DOC_VERIFICATION, APP_STATUS.DOCS_VERIFIED, APP_STATUS.OFFER_ISSUED, APP_STATUS.OFFER_ACCEPTED,
+      APP_STATUS.ONBOARDING_PENDING, APP_STATUS.HR_VERIFICATION, APP_STATUS.HR_VERIFICATION_REJECTED,
+      APP_STATUS.JOINING_PENDING, APP_STATUS.EMPLOYEE,
+    ].includes(status);
     if (inOrPastInterview) {
       const done = status !== APP_STATUS.INTERVIEW_IN_PROGRESS;
       out.interviews.push({
@@ -194,10 +204,12 @@ function buildSyntheticCandidates(startSeq) {
       });
     }
 
-    const hasOffer = [APP_STATUS.OFFER_PENDING_HR, APP_STATUS.OFFER_ISSUED, APP_STATUS.OFFER_ACCEPTED, APP_STATUS.JOINING_PENDING, APP_STATUS.EMPLOYEE].includes(status);
+    const hasOffer = [
+      APP_STATUS.OFFER_ISSUED, APP_STATUS.OFFER_ACCEPTED, APP_STATUS.ONBOARDING_PENDING,
+      APP_STATUS.HR_VERIFICATION, APP_STATUS.HR_VERIFICATION_REJECTED, APP_STATUS.JOINING_PENDING, APP_STATUS.EMPLOYEE,
+    ].includes(status);
     if (hasOffer) {
-      const offerStatus = status === APP_STATUS.OFFER_PENDING_HR ? OFFER_STATUS.PENDING_APPROVAL
-        : status === APP_STATUS.OFFER_ISSUED ? OFFER_STATUS.ISSUED : OFFER_STATUS.ACCEPTED;
+      const offerStatus = status === APP_STATUS.OFFER_ISSUED ? OFFER_STATUS.ISSUED : OFFER_STATUS.ACCEPTED;
       const createdAt = new Date(Date.now() - (daysAgo - 15) * 86400000).toISOString();
       out.offers.push({
         id: makeOfferId(offerSeq++), applicationId: app.id, candidateName: `${first} ${last}`,
@@ -205,9 +217,31 @@ function buildSyntheticCandidates(startSeq) {
         joiningDate: new Date(Date.now() + 20 * 86400000).toISOString().slice(0, 10), employmentType: 'Full-time',
         compensation: String(1600000 + Math.floor(rng() * 1800000)), benefits: 'Health insurance, learning budget',
         reportingManager: 'Priya Nair', probationPeriod: '6 months',
-        status: offerStatus, returnReason: null, createdAt,
-        issuedAt: offerStatus === OFFER_STATUS.PENDING_APPROVAL ? null : createdAt,
+        status: offerStatus, createdAt,
+        issuedAt: createdAt,
         decisionAt: offerStatus === OFFER_STATUS.ACCEPTED ? createdAt : null,
+      });
+    }
+
+    // Sample onboarding-form payload for anyone past the "fill the forms" step,
+    // so the HR verification queue and candidate view both have real data to show.
+    const hasOnboarding = [
+      APP_STATUS.HR_VERIFICATION, APP_STATUS.HR_VERIFICATION_REJECTED, APP_STATUS.JOINING_PENDING, APP_STATUS.EMPLOYEE,
+    ].includes(status);
+    if (hasOnboarding) {
+      app.onboarding = {
+        tenth: { school: `${last} Public School`, board: 'CBSE', year: String(2026 - totalExp - 10), percentage: String(70 + Math.floor(rng() * 25)) },
+        twelfth: { school: `${last} Senior Secondary School`, board: 'CBSE', year: String(2026 - totalExp - 8), percentage: String(70 + Math.floor(rng() * 25)) },
+        address: { line1: `${1 + Math.floor(rng() * 200)}, MG Road`, line2: '', city: 'Bengaluru', state: 'Karnataka', postalCode: '560001' },
+        emergencyContact: { name: `${FIRST_NAMES[Math.floor(rng() * FIRST_NAMES.length)]} ${last}`, phone: `+91 9${Math.floor(1000000000 + rng() * 8999999999)}`.slice(0, 14) },
+      };
+      if (status === APP_STATUS.HR_VERIFICATION_REJECTED) {
+        app.onboardingRejectReason = 'Address proof does not match the submitted address — please re-check the postal code.';
+      }
+      const onboardingSubmittedAt = new Date(Date.now() - Math.max(0, daysAgo - 20) * 86400000).toISOString();
+      out.activities.push({
+        id: uid('act'), applicationId: app.id, type: 'onboarding', title: 'Onboarding Forms Submitted',
+        description: 'Candidate submitted onboarding details.', at: onboardingSubmittedAt, actor: `${first} ${last}`,
       });
     }
 
@@ -385,11 +419,11 @@ export function buildSeed() {
   addActivity(a4.id, 'documents', 'Moved to Document Verification', 'All interview rounds passed.', '2026-08-18T12:10:00', 'Priya Nair');
   addActivity(a4.id, 'documents', 'Document Rejected', 'Experience Certificate rejected: unclear copy.', '2026-08-20T10:10:00', 'Priya Nair');
 
-  // 5. Offer pending HR approval
+  // 5. Onboarding forms submitted, pending HR verification
   const a5 = baseApplication({
     seq: 122,
     jobId: 'JOB-1029',
-    status: APP_STATUS.OFFER_PENDING_HR,
+    status: APP_STATUS.HR_VERIFICATION,
     submittedAt: '2026-07-28T08:30:00',
     first: 'Sameer',
     last: 'Khan',
@@ -440,17 +474,24 @@ export function buildSeed() {
     benefits: 'Health insurance, Certification support, Hybrid work',
     reportingManager: 'Latha Suresh',
     probationPeriod: '6 months',
-    status: OFFER_STATUS.PENDING_APPROVAL,
-    returnReason: null,
+    status: OFFER_STATUS.ACCEPTED,
     createdAt: '2026-08-08T11:00:00',
-    issuedAt: null,
-    decisionAt: null,
+    issuedAt: '2026-08-08T11:00:00',
+    decisionAt: '2026-08-10T09:00:00',
   });
+  a5.onboarding = {
+    tenth: { school: 'Delhi Public School', board: 'CBSE', year: '2012', percentage: '88' },
+    twelfth: { school: 'Delhi Public School', board: 'CBSE', year: '2014', percentage: '84' },
+    address: { line1: '221, Sector 12', line2: '', city: 'Pune', state: 'Maharashtra', postalCode: '411001' },
+    emergencyContact: { name: 'Farhan Khan', phone: '+91 98333 71299' },
+  };
   addActivity(a5.id, 'application', 'Application Submitted', 'Candidate submitted application.', a5.submittedAt, 'Sameer Khan');
   addActivity(a5.id, 'approve', 'Application Approved', 'TA approved the candidate for interviews.', '2026-07-30T09:00:00', 'Priya Nair');
   addActivity(a5.id, 'interview', 'Technical Interview Passed', 'Round 1 result recorded: Pass.', '2026-08-02T16:00:00', 'Priya Nair');
   addActivity(a5.id, 'documents', 'Documents Verified', 'All mandatory documents verified.', '2026-08-06T10:30:00', 'Priya Nair');
-  addActivity(a5.id, 'offer', 'Offer Submitted for HR Approval', 'TA prepared and submitted the offer.', '2026-08-08T11:00:00', 'Priya Nair');
+  addActivity(a5.id, 'offer', 'Offer Sent to Candidate', 'TA prepared and sent the offer.', '2026-08-08T11:00:00', 'Priya Nair');
+  addActivity(a5.id, 'offer', 'Offer Accepted', 'Candidate accepted the offer.', '2026-08-10T09:00:00', 'Sameer Khan');
+  addActivity(a5.id, 'onboarding', 'Onboarding Forms Submitted', 'Candidate submitted onboarding details.', '2026-08-11T10:00:00', 'Sameer Khan');
 
   // 6. Offer issued, awaiting candidate
   const a6 = baseApplication({
@@ -494,14 +535,12 @@ export function buildSeed() {
     reportingManager: 'Nikhil Verma',
     probationPeriod: '3 months',
     status: OFFER_STATUS.ISSUED,
-    returnReason: null,
     createdAt: '2026-07-28T11:00:00',
     issuedAt: '2026-07-30T09:00:00',
     decisionAt: null,
   });
   addActivity(a6.id, 'application', 'Application Submitted', 'Candidate submitted application.', a6.submittedAt, 'Divya Menon');
-  addActivity(a6.id, 'offer', 'Offer Approved by HR', 'HR approved the offer.', '2026-07-29T15:00:00', 'Arjun Mehta');
-  addActivity(a6.id, 'offer', 'Offer Issued', 'Offer issued to the candidate.', '2026-07-30T09:00:00', 'Arjun Mehta');
+  addActivity(a6.id, 'offer', 'Offer Sent to Candidate', 'TA prepared and sent the offer.', '2026-07-30T09:00:00', 'Priya Nair');
 
   // 7. Onboarded employee
   const a7 = baseApplication({
@@ -545,11 +584,16 @@ export function buildSeed() {
     reportingManager: 'Ramesh Pillai',
     probationPeriod: '6 months',
     status: OFFER_STATUS.ACCEPTED,
-    returnReason: null,
     createdAt: '2026-06-20T11:00:00',
     issuedAt: '2026-06-22T09:00:00',
     decisionAt: '2026-06-24T12:00:00',
   });
+  a7.onboarding = {
+    tenth: { school: 'St. Xavier\'s School', board: 'CBSE', year: '2010', percentage: '91' },
+    twelfth: { school: 'St. Xavier\'s School', board: 'CBSE', year: '2012', percentage: '89' },
+    address: { line1: '14, Anna Nagar', line2: '', city: 'Chennai', state: 'Tamil Nadu', postalCode: '600040' },
+    emergencyContact: { name: 'Reema Bhatia', phone: '+91 98555 33499' },
+  };
   employees.push({
     id: makeEmployeeId(124),
     applicationId: a7.id,
@@ -561,6 +605,8 @@ export function buildSeed() {
   });
   addActivity(a7.id, 'application', 'Application Submitted', 'Candidate submitted application.', a7.submittedAt, 'Karan Bhatia');
   addActivity(a7.id, 'offer', 'Offer Accepted', 'Candidate accepted the offer.', '2026-06-24T12:00:00', 'Karan Bhatia');
+  addActivity(a7.id, 'onboarding', 'Onboarding Forms Submitted', 'Candidate submitted onboarding details.', '2026-06-25T10:00:00', 'Karan Bhatia');
+  addActivity(a7.id, 'onboarding', 'Onboarding Verified', 'HR verified the onboarding details.', '2026-06-26T11:00:00', 'Arjun Mehta');
   addActivity(a7.id, 'onboarding', 'Joining Completed', 'HR marked joining as completed.', '2026-07-15T09:30:00', 'Arjun Mehta');
   addActivity(a7.id, 'onboarding', 'Employee Created', 'Employee record EMP-2026-00124 created.', '2026-07-15T09:31:00', 'System');
 
@@ -608,13 +654,20 @@ export function buildSeed() {
     reportingManager: 'Nikhil Verma',
     probationPeriod: '6 months',
     status: OFFER_STATUS.ACCEPTED,
-    returnReason: null,
     createdAt: '2026-08-01T11:00:00',
     issuedAt: '2026-08-03T09:00:00',
     decisionAt: '2026-08-06T14:00:00',
   });
+  a8.onboarding = {
+    tenth: { school: 'Nasr School', board: 'ICSE', year: '2009', percentage: '86' },
+    twelfth: { school: 'Nasr School', board: 'ISC', year: '2011', percentage: '85' },
+    address: { line1: '77, Koramangala 5th Block', line2: '', city: 'Bengaluru', state: 'Karnataka', postalCode: '560095' },
+    emergencyContact: { name: 'Arjun Reddy', phone: '+91 98666 22199' },
+  };
   addActivity(a8.id, 'application', 'Application Submitted', 'Candidate submitted application.', a8.submittedAt, 'Neha Reddy');
   addActivity(a8.id, 'offer', 'Offer Accepted', 'Candidate accepted the offer.', '2026-08-06T14:00:00', 'Neha Reddy');
+  addActivity(a8.id, 'onboarding', 'Onboarding Forms Submitted', 'Candidate submitted onboarding details.', '2026-08-07T10:00:00', 'Neha Reddy');
+  addActivity(a8.id, 'onboarding', 'Onboarding Verified', 'HR verified the onboarding details.', '2026-08-08T11:00:00', 'Arjun Mehta');
 
   // Fill out the pipeline with synthetic candidates.
   const extra = buildSyntheticCandidates(200);
@@ -630,7 +683,7 @@ export function buildSeed() {
   const notifications = [
     { id: uid('ntf'), role: 'ta', title: 'New application received', body: 'Meera Krishnan applied for Senior Frontend Engineer.', at: a1.submittedAt, read: false },
     { id: uid('ntf'), role: 'ta', title: 'Interview coming up', body: 'Technical Interview with Rahul Sharma on 04 Sep 2026.', at: '2026-08-26T10:00:00', read: false },
-    { id: uid('ntf'), role: 'hr', title: 'Offer awaiting approval', body: 'Offer for Sameer Khan is pending your approval.', at: '2026-08-08T11:00:00', read: false },
+    { id: uid('ntf'), role: 'hr', title: 'Onboarding forms submitted', body: 'Sameer Khan submitted onboarding details for verification.', at: '2026-08-11T10:00:00', read: false },
     { id: uid('ntf'), role: 'candidate', title: 'You have an offer', body: 'Divya, your offer for QA Automation Engineer has been issued.', at: '2026-07-30T09:00:00', read: false },
   ];
 
