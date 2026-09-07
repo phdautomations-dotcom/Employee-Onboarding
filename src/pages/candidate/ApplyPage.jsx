@@ -184,23 +184,45 @@ export default function ApplyPage() {
   const totalRequired = REQUIRED.length + 1;
   const pct = Math.round((filledRequired / totalRequired) * 100);
 
+  const completion = (
+    <div className="cx-jobinfo__progress">
+      <div className="cx-jobinfo__progress-top"><span>Completion</span><span>{filledRequired} / {totalRequired}</span></div>
+      <div className="cx-progress"><div style={{ width: `${pct}%` }} /></div>
+    </div>
+  );
+
   return (
-    <div className="cx-page">
+    <div className="cx-page cx-page--form">
       <button className="ta-link" onClick={() => navigate(job ? `/candidate/jobs/${job.id}` : '/candidate/jobs')} style={{ marginBottom: 14 }}>
         <Icon name="ArrowLeft" size={14} /> {job ? 'Back to job' : 'Back to jobs'}
       </button>
 
       <div className="cx-page__head">
-        <h1 className="cx-page__title">Apply for this opportunity</h1>
+        <h1 className="cx-page__title">{job ? 'Apply for this opportunity' : 'Submit your application'}</h1>
         <p className="cx-page__sub">
           {job
-            ? <><strong>{job.title}</strong> · {job.department} · {job.location} · {job.employmentType}</>
-            : <><strong>General application</strong> — submit your profile and we'll consider you for future roles.</>}
+            ? 'Complete the details below. Fields marked * are required.'
+            : "Submit your profile and we'll consider you for current and future roles. Fields marked * are required."}
         </p>
       </div>
 
-      <div className="cx-apply-grid">
-        <div>
+      {job ? (
+        <div className="cx-jobinfo">
+          <div className="cx-jobinfo__item"><span className="cx-jobinfo__label">Position</span><span className="cx-jobinfo__value">{job.title}</span></div>
+          <div className="cx-jobinfo__item"><span className="cx-jobinfo__label">Department</span><span className="cx-jobinfo__value">{job.department}</span></div>
+          <div className="cx-jobinfo__item"><span className="cx-jobinfo__label">Location</span><span className="cx-jobinfo__value">{job.location}</span></div>
+          <div className="cx-jobinfo__item"><span className="cx-jobinfo__label">Employment</span><span className="cx-jobinfo__value">{job.employmentType} · {job.workMode}</span></div>
+          <div className="cx-jobinfo__item"><span className="cx-jobinfo__label">Experience</span><span className="cx-jobinfo__value">{job.experience}</span></div>
+          {completion}
+        </div>
+      ) : (
+        <div className="cx-jobinfo">
+          <span className="cx-jobinfo__note">General application — not tied to a specific role.</span>
+          {completion}
+        </div>
+      )}
+
+      <div>
           {/* Resume upload */}
           <div className="cx-upload" style={{ marginBottom: 14 }}>
             <span className="cx-upload__icon"><Icon name="UploadCloud" size={17} /></span>
@@ -315,39 +337,15 @@ export default function ApplyPage() {
             </Card>
           </div>
 
-          <Card bodyStyle={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+          <div className="cx-formbar">
+            <span className="cx-formbar__note">By submitting, you confirm that the information provided is accurate.</span>
+            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
               <Button variant="ghost" icon="Save" onClick={saveDraft}>Save draft</Button>
               <Button iconRight="ArrowRight" onClick={submit} disabled={submitting || parsing}>
                 {submitting ? 'Submitting…' : 'Submit application'}
               </Button>
             </div>
-            <p className="ta-cell-sub">By submitting, you confirm that the information provided is accurate.</p>
-          </Card>
-        </div>
-
-        <aside className="cx-summary">
-          <Card title="Application summary">
-            <div className="cx-summary__body">
-              <div className="cx-summary__row"><span className="k">Position</span><span className="v">{job ? job.title : 'General application'}</span></div>
-              <div className="cx-summary__row"><span className="k">Department</span><span className="v">{job ? job.department : '—'}</span></div>
-              <div className="cx-summary__row"><span className="k">Location</span><span className="v">{job ? job.location : '—'}</span></div>
-              <div className="cx-summary__row"><span className="k">Employment</span><span className="v">{job ? job.employmentType : '—'}</span></div>
-              <div className="cx-summary__row"><span className="k">Experience</span><span className="v">{job ? job.experience : '—'}</span></div>
-              <div style={{ marginTop: 14 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11.5, color: 'var(--ta-text-soft)', marginBottom: 4 }}>
-                  <span>Completion</span><span>{filledRequired} / {totalRequired}</span>
-                </div>
-                <div className="cx-progress"><div style={{ width: `${pct}%` }} /></div>
-              </div>
-              {job && (
-                <Button variant="ghost" icon="ArrowLeft" onClick={() => navigate(`/candidate/jobs/${job.id}`)} style={{ width: '100%', marginTop: 12 }}>
-                  View full job description
-                </Button>
-              )}
-            </div>
-          </Card>
-        </aside>
+          </div>
       </div>
     </div>
   );

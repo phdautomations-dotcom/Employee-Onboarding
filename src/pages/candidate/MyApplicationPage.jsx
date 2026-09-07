@@ -30,6 +30,39 @@ const DOC_STAGES = [
 ];
 const toneMap = { info: 'blue', success: 'green', error: 'red', warning: 'amber', neutral: 'grey' };
 
+/* Short pipeline steps for the header strip. */
+const STEPS = ['Applied', 'Screening', 'Interview', 'Documents', 'Offer', 'Joining'];
+
+/* One friendly line telling the candidate what happens next. */
+function nextStep(status, pendingDocs) {
+  switch (status) {
+    case APP_STATUS.SUBMITTED:
+    case APP_STATUS.TA_REVIEW:
+      return { icon: 'Eye', text: 'Your application is being reviewed by our talent acquisition team.' };
+    case APP_STATUS.INTERVIEW_PLANNING:
+      return { icon: 'CalendarDays', text: "Interview scheduling is in progress — you'll be notified with the details." };
+    case APP_STATUS.INTERVIEW_IN_PROGRESS:
+      return { icon: 'CalendarClock', text: 'You have interview rounds scheduled. See the Interviews section below.' };
+    case APP_STATUS.INTERVIEW_PASSED:
+      return { icon: 'CheckCircle2', text: "You've cleared the interviews. Document verification is next." };
+    case APP_STATUS.DOC_VERIFICATION:
+      return { icon: 'Upload', text: pendingDocs > 0 ? `Please upload your remaining ${pendingDocs} document${pendingDocs > 1 ? 's' : ''} below.` : 'Your documents are under verification.' };
+    case APP_STATUS.DOCS_VERIFIED:
+    case APP_STATUS.OFFER_DRAFT:
+    case APP_STATUS.OFFER_PENDING_HR:
+      return { icon: 'FileCheck', text: 'All documents verified. Your offer is being prepared.' };
+    case APP_STATUS.OFFER_ISSUED:
+      return { icon: 'FileCheck', text: 'You have an offer! Review and respond in the offer section below.' };
+    case APP_STATUS.OFFER_ACCEPTED:
+    case APP_STATUS.JOINING_PENDING:
+      return { icon: 'Rocket', text: 'Offer accepted. HR will reach out with your joining formalities.' };
+    case APP_STATUS.EMPLOYEE:
+      return { icon: 'UserRoundCheck', text: 'Welcome aboard! Your employee record is now active.' };
+    default:
+      return null;
+  }
+}
+
 /* Small inline upload button — keeps only file metadata, like the rest of the app. */
 function DocUpload({ label, onFile }) {
   const ref = useRef(null);
@@ -93,6 +126,13 @@ export default function MyApplicationPage() {
 
   const showDocuments = DOC_STAGES.includes(app.status);
   const verifiedCount = documents.filter((d) => d.status === DOC_STATUS.VERIFIED).length;
+  const pendingDocs = documents.filter((d) => [DOC_STATUS.PENDING, DOC_STATUS.REJECTED].includes(d.status)).length;
+  const hint = nextStep(app.status, pendingDocs);
+
+  const steps = STEPS.map((label, i) => ({
+    label,
+    state: rejected ? (i === 0 ? 'done' : 'pending') : i < stageIdx ? 'done' : i === stageIdx ? 'active' : 'pending',
+  }));
 
   return (
     <div className="cx-page">
@@ -119,6 +159,30 @@ export default function MyApplicationPage() {
       <div className="ta-cell-sub" style={{ marginBottom: 14 }}>
         {app.id} · Submitted {formatDate(app.submittedAt)} · Assigned to {app.assignedTo}
       </div>
+
+      {!rejected && (
+        <div className="cx-steps-card">
+          <ol className="cx-steps">
+            {steps.map((s, i) => (
+              <li key={s.label} className={`cx-step${s.state === 'done' ? ' cx-step--done' : s.state === 'active' ? ' cx-step--active' : ''}`}>
+                <span className="cx-step__dot">{s.state === 'done' ? <Icon name="Check" size={12} /> : i + 1}</span>
+                <span>{s.label}</span>
+                {i < steps.length - 1 && <span className="cx-step__line" />}
+              </li>
+            ))}
+          </ol>
+        </div>
+      )}
+
+      {hint && app.status !== APP_STATUS.RETURNED && (
+        <div className="cx-next">
+          <span className="cx-next__icon"><Icon name={hint.icon} size={16} /></span>
+          <div>
+            <div className="cx-next__label">What's next</div>
+            <div className="cx-next__text">{hint.text}</div>
+          </div>
+        </div>
+      )}
 
       {app.status === APP_STATUS.RETURNED && (
         <div className="ta-note ta-note--warn" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 6 }}>
