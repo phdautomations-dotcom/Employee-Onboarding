@@ -8,7 +8,6 @@ import Toolbar from '../../components/ta/Toolbar.jsx';
 import Tag from '../../components/ta/Tag.jsx';
 import { useApp } from '../../context/AppContext.jsx';
 import { useCollectionView } from '../../hooks/useCollectionView.js';
-import { useLoadMore } from '../../hooks/useLoadMore.js';
 import { APP_STATUS, DOC_STATUS, OFFER_STATUS_META, HR_FUNNEL_STAGES, hrStageRank, stageBadgeForStatus } from '../../constants/statuses.js';
 import { formatDate } from '../../utils/format.js';
 
@@ -45,6 +44,7 @@ export default function HRCandidatesPage() {
             hrStatus: a.status,
             hrRank: hrStageRank(a.status),
             docsIssue: rejected > 0,
+            docsState: rejected ? 'rejected' : (docs.length && verified === docs.length ? 'verified' : 'pending'),
             docs: rejected ? { tone: 'red', text: `${rejected} rejected` }
               : docs.length && verified === docs.length ? { tone: 'green', text: 'All verified' }
               : verified ? { tone: 'amber', text: `${verified}/${docs.length} verified` }
@@ -64,6 +64,7 @@ export default function HRCandidatesPage() {
 
   const view = useCollectionView(rows, {
     searchFields: ['name', 'candidateId'],
+    pageSize: 30,
     initialSort: { key: 'name', dir: 'asc' },
     initialFilters: {
       ...(stageParam !== 'all'
@@ -73,7 +74,18 @@ export default function HRCandidatesPage() {
     },
   });
 
-  const list = useLoadMore(view.allFiltered, 30);
+  const deptOptions = useMemo(
+    () => [...new Set(rows.map((r) => r.department).filter(Boolean))].sort().map((d) => ({ value: d, label: d })),
+    [rows]
+  );
+  const activeDept = typeof view.filters.department === 'string' ? view.filters.department : 'all';
+  const activeDocs = typeof view.filters.docsState === 'string' ? view.filters.docsState : 'all';
+
+  const [joined, setJoinedKey] = useState('all');
+  const setJoined = (key) => {
+    setJoinedKey(key);
+    view.setFilter('joiningDate', key === 'all' ? 'all' : key === 'set' ? (r) => !!r.joiningDate : (r) => !r.joiningDate);
+  };
 
   const setStage = (key) => {
     setStageKey(key);
@@ -87,15 +99,20 @@ export default function HRCandidatesPage() {
   };
 
   const clearAll = () => {
-    view.setQuery('');
     setStage('all');
     setOffer('all');
+    setJoined('all');
+    view.setFilter('department', 'all');
+    view.setFilter('docsState', 'all');
   };
 
+  const DOCS_LABEL = { verified: 'All verified', rejected: 'Has rejection', pending: 'Docs pending' };
   const chips = [
     stage !== 'all' && { key: 'stage', label: HR_FUNNEL_STAGES.find((s) => s.key === stage)?.label, onRemove: () => setStage('all') },
     offer !== 'all' && { key: 'offer', label: OFFER_STATUS_META[offer]?.label, onRemove: () => setOffer('all') },
-    view.query && { key: 'q', label: `“${view.query}”`, onRemove: () => view.setQuery('') },
+    activeDept !== 'all' && { key: 'dept', label: activeDept, onRemove: () => view.setFilter('department', 'all') },
+    activeDocs !== 'all' && { key: 'docs', label: DOCS_LABEL[activeDocs], onRemove: () => view.setFilter('docsState', 'all') },
+    joined !== 'all' && { key: 'join', label: joined === 'set' ? 'Joining date set' : 'No joining date', onRemove: () => setJoined('all') },
   ].filter(Boolean);
 
   const apps = data.applications || [];
@@ -126,6 +143,26 @@ export default function HRCandidatesPage() {
             onChange: setOffer,
             options: Object.entries(OFFER_STATUS_META).map(([value, m]) => ({ value, label: m.label })),
           },
+          { label: 'Department', value: activeDept, onChange: (v) => view.setFilter('department', v), options: deptOptions },
+          {
+            label: 'Documents',
+            value: activeDocs,
+            onChange: (v) => view.setFilter('docsState', v),
+            options: [
+              { value: 'verified', label: 'All verified' },
+              { value: 'rejected', label: 'Has rejection' },
+              { value: 'pending', label: 'Pending' },
+            ],
+          },
+          {
+            label: 'Joining date',
+            value: joined,
+            onChange: setJoined,
+            options: [
+              { value: 'set', label: 'Date set' },
+              { value: 'unset', label: 'Not set' },
+            ],
+          },
         ]}
         chips={chips}
         onClearAll={chips.length > 1 ? clearAll : undefined}
@@ -133,10 +170,10 @@ export default function HRCandidatesPage() {
 
       <DataGrid
         columns={COLUMNS}
-        rows={list.rows}
+        rows={view.rows}
         sort={view.sort}
         onSort={view.onSort}
-        more={list}
+        pager={{ page: view.page, pageSize: view.pageSize, total: view.total, onPage: view.setPage }}
         empty={{ icon: 'Users', title: 'No candidates at the HR stage yet', message: 'Candidates appear here once their documents are verified.' }}
         renderRow={(r) => {
           const hrBadge = stageBadgeForStatus(r.hrStatus);

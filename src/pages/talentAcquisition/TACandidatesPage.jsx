@@ -4,11 +4,9 @@ import Icon from '../../components/common/Icon.jsx';
 import TAHeader from '../../components/ta/TAHeader.jsx';
 import DataGrid from '../../components/ta/DataGrid.jsx';
 import Toolbar from '../../components/ta/Toolbar.jsx';
-import Avatar from '../../components/ta/Avatar.jsx';
 import Tag from '../../components/ta/Tag.jsx';
 import { useApp } from '../../context/AppContext.jsx';
 import { useCollectionView } from '../../hooks/useCollectionView.js';
-import { useLoadMore } from '../../hooks/useLoadMore.js';
 import { APP_STATUS, DOC_STATUS, stageBadgeForStatus } from '../../constants/statuses.js';
 import { formatDate } from '../../utils/format.js';
 
@@ -99,10 +97,10 @@ export default function TACandidatesPage() {
 
   const view = useCollectionView(rows, {
     searchFields: ['name', 'email', 'candidateId', 'job'],
+    pageSize: 30,
     initialSort: { key: 'submittedAt', dir: 'desc' },
     initialFilters: Object.keys(initialFilters).length ? initialFilters : undefined,
   });
-  const list = useLoadMore(view.allFiltered, 30);
 
   const jobOptions = useMemo(
     () => [...new Set(rows.map((r) => r.job))].sort().map((j) => ({ value: j, label: j })),
@@ -158,23 +156,18 @@ export default function TACandidatesPage() {
 
       <DataGrid
         columns={COLUMNS}
-        rows={list.rows}
+        rows={view.rows}
         sort={view.sort}
         onSort={view.onSort}
-        more={list}
+        pager={{ page: view.page, pageSize: view.pageSize, total: view.total, onPage: view.setPage }}
         empty={{ icon: 'Users', title: 'No candidates match', message: 'Try changing the filters or search.' }}
         renderRow={(r) => {
           const badge = stageBadgeForStatus(r.status);
           return (
             <tr key={r.id} onClick={() => navigate(`/ta/candidates/${r.candidateId}`)} style={{ cursor: 'pointer' }}>
               <td>
-                <span className="ta-cell-cand">
-                  <Avatar name={r.name} />
-                  <span>
-                    <span className="ta-cell-cand__name">{r.name}</span><br />
-                    <span className="ta-cell-cand__sub">{r.email}</span>
-                  </span>
-                </span>
+                <span className="ta-cell-cand__name">{r.name}</span><br />
+                <span className="ta-cell-cand__sub">{r.email}</span>
               </td>
               <td>
                 <span className="ta-cell-strong">{r.job}</span><br />

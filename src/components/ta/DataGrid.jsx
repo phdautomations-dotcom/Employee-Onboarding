@@ -8,10 +8,15 @@ import Pager from './Pager.jsx';
    - `renderRow`: (row) => <tr>...</tr>
    - `sort`,`onSort` : optional sorting ({ key, dir })
    - `title`, `action` : optional card header
-   - `pager`    : optional { page, pageSize, total, onPage }
-   - `more`     : optional "load more" state from useLoadMore
+   - `pager`    : optional { page, pageSize, total, onPage } — shown above the table
    - `empty`    : props for EmptyState when there are no rows */
-export default function DataGrid({ columns, rows, renderRow, sort, onSort, title, action, pager, more, empty }) {
+export default function DataGrid({ columns, rows, renderRow, sort, onSort, title, action, pager, empty }) {
+  // Jump to the top of the page whenever the page number changes.
+  const pagerProps = pager && {
+    ...pager,
+    onPage: (p) => { pager.onPage(p); window.scrollTo({ top: 0, behavior: 'smooth' }); },
+  };
+
   return (
     <div className="ta-table-card">
       {(title || action) && (
@@ -20,6 +25,8 @@ export default function DataGrid({ columns, rows, renderRow, sort, onSort, title
           {action}
         </div>
       )}
+
+      {pagerProps && rows.length > 0 && <Pager {...pagerProps} place="top" />}
 
       {rows.length === 0 ? (
         <EmptyState {...(empty || { title: 'Nothing to show', message: 'Try changing the filters or search.' })} />
@@ -46,19 +53,6 @@ export default function DataGrid({ columns, rows, renderRow, sort, onSort, title
             </thead>
             <tbody>{rows.map(renderRow)}</tbody>
           </table>
-        </div>
-      )}
-
-      {pager && rows.length > 0 && <Pager {...pager} />}
-
-      {more && rows.length > 0 && (more.hasMore || more.total > more.step) && (
-        <div className="ta-loadmore">
-          <span>Showing {more.shown} of {more.total}</span>
-          {more.hasMore && (
-            <button type="button" className="ta-btn ta-btn--ghost" onClick={more.loadMore}>
-              Load {Math.min(more.step, more.total - more.shown)} more
-            </button>
-          )}
         </div>
       )}
     </div>

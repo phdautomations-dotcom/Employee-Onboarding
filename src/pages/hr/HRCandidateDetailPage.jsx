@@ -8,6 +8,7 @@ import Tag from '../../components/ta/Tag.jsx';
 import EmptyState from '../../components/ta/EmptyState.jsx';
 import Avatar from '../../components/ta/Avatar.jsx';
 import ReasonModal from '../../components/workflow/ReasonModal.jsx';
+import AssignRoleModal from '../../components/workflow/AssignRoleModal.jsx';
 import { useApp } from '../../context/AppContext.jsx';
 import { useToast } from '../../context/ToastContext.jsx';
 import {
@@ -46,6 +47,7 @@ export default function HRCandidateDetailPage() {
   const app = getApplicationByCandidate(candidateId);
   const [rejectingOnboarding, setRejectingOnboarding] = useState(false);
   const [rejectDoc, setRejectDoc] = useState(null);
+  const [joining, setJoining] = useState(false);
 
   if (!app) {
     return (
@@ -67,9 +69,10 @@ export default function HRCandidateDetailPage() {
   const progress = Math.round(((stageIdx + 1) / PIPELINE_STAGES.length) * 100);
 
   const act = (fn, msg) => { fn(); toast.success(msg); };
-  const markJoined = () => {
-    const employeeId = completeJoining(app.id);
-    toast.success(`Joining completed — employee ID ${employeeId}.`);
+  const markJoined = (teamRole) => {
+    const employeeId = completeJoining(app.id, teamRole);
+    toast.success(`Joining completed — employee ID ${employeeId}${teamRole ? ` · ${teamRole}` : ''}.`);
+    setJoining(false);
   };
 
   return (
@@ -97,7 +100,7 @@ export default function HRCandidateDetailPage() {
             </>
           )}
           {app.status === APP_STATUS.JOINING_PENDING && (
-            <Button icon="UserRoundCheck" onClick={markJoined}>Mark joining completed</Button>
+            <Button icon="UserRoundCheck" onClick={() => setJoining(true)}>Mark joining completed</Button>
           )}
           <a className="ta-btn ta-btn--ghost" href={`mailto:${p.email}`}><Icon name="Mail" size={15} /> Contact</a>
         </div>
@@ -189,6 +192,7 @@ export default function HRCandidateDetailPage() {
                 <Info label="Employee ID" value={employee.id} />
                 <Info label="Position" value={employee.position} />
                 <Info label="Department" value={employee.department} />
+                <Info label="Team role" value={employee.teamRole} />
                 <Info label="Joining date" value={formatDate(employee.joiningDate)} />
               </div>
             </Card>
@@ -235,6 +239,15 @@ export default function HRCandidateDetailPage() {
         open={!!rejectDoc} onClose={() => setRejectDoc(null)}
         title={`Reject ${rejectDoc?.label || 'document'}`} label="What is wrong with it?" confirmLabel="Reject document" tone="danger"
         onSubmit={(reason) => { rejectDocument(rejectDoc.id, reason); setRejectDoc(null); toast.success('Document rejected — candidate notified.'); }}
+      />
+      <AssignRoleModal
+        open={joining}
+        name={name}
+        title={`Complete joining — ${name}`}
+        hint="This becomes the employee's team role. You can change it later from the Employees page."
+        confirmLabel="Complete joining"
+        onClose={() => setJoining(false)}
+        onSave={markJoined}
       />
     </>
   );

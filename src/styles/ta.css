@@ -379,6 +379,33 @@
 .hr-joiners__text .ta-cell-sub { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .hr-joined { display: inline-flex; align-items: center; gap: 5px; }
 
+/* team-role cell in the employees table */
+.hr-role {
+  display: inline-flex; align-items: center; gap: 6px;
+  font: inherit; cursor: pointer; border-radius: 999px;
+  border: 1px solid transparent; background: transparent; padding: 3px 4px;
+  color: var(--ta-text-mute);
+}
+.hr-role--set { color: var(--ta-text); }
+.hr-role--set svg { color: var(--ta-text-mute); opacity: 0; transition: opacity 0.12s; }
+.hr-role:hover svg { opacity: 1; }
+.hr-role--add {
+  font-size: 12px; font-weight: 500; padding: 5px 11px;
+  border-color: var(--ta-line); background: var(--ta-surface); color: var(--ta-text-soft);
+}
+.hr-role--add:hover { border-color: var(--ta-blue); color: var(--ta-blue); }
+
+/* suggestion chips inside the assign-role modal */
+.assign-role__chips { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 12px; }
+.assign-role__chip {
+  font: inherit; font-size: 12px; font-weight: 500; cursor: pointer;
+  padding: 6px 12px; border-radius: 999px;
+  border: 1px solid var(--ta-line); background: var(--ta-bg); color: var(--ta-text-soft);
+  transition: all 0.12s;
+}
+.assign-role__chip:hover { border-color: var(--ta-blue); color: var(--ta-blue); }
+.assign-role__chip.is-on { background: var(--ta-blue); border-color: var(--ta-blue); color: #fff; }
+
 /* ---------- Notice period ---------- */
 /* "Reach out now" callout below the donut — a plain button styled as a highlight strip */
 .ta-notice-callout {
@@ -499,18 +526,17 @@
 .ta-pager__btn:disabled { opacity: 0.4; cursor: not-allowed; }
 .ta-pager__btn--active { background: var(--ta-blue); color: #fff; border-color: var(--ta-blue); }
 
-/* "Load 30 more" footer — used under tables and the job list */
-.ta-loadmore {
+/* Pager shown at the top of a table reads as a header, not a footer. */
+.ta-pager--top { border-top: 0; border-bottom: 1px solid var(--ta-line-soft); }
+
+/* Pager for the candidate job list — it's not inside a card, so give it one. */
+.cx-jobpager {
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
-  flex-wrap: wrap;
-  padding: 12px 18px; font-size: 12px; color: var(--ta-text-mute);
-  border-top: 1px solid var(--ta-line-soft);
+  flex-wrap: wrap; margin: 10px 0;
+  border: 1px solid var(--ta-line); border-radius: var(--ta-radius);
+  background: var(--ta-surface); box-shadow: var(--ta-shadow);
 }
-.cx-joblist + .ta-loadmore {
-  margin-top: 10px; border: 1px solid var(--ta-line);
-  border-radius: var(--ta-radius); background: var(--ta-surface);
-  padding: 12px 16px; box-shadow: var(--ta-shadow);
-}
+.cx-jobpager .ta-pager { border: 0; width: 100%; }
 
 /* ---------- Form controls ---------- */
 .ta-field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px; }

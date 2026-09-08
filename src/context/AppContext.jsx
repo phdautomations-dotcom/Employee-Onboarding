@@ -464,8 +464,9 @@ export function AppProvider({ children }) {
   );
 
   const completeJoining = useCallback(
-    (applicationId) => {
+    (applicationId, teamRole) => {
       const employeeId = makeEmployeeId((state.counters?.employee || 0) + 1);
+      const role = (teamRole || '').trim();
       mutate((draft) => {
         const app = draft.applications.find((a) => a.id === applicationId);
         if (!app) return;
@@ -478,16 +479,38 @@ export function AppProvider({ children }) {
           name: `${app.personal.firstName} ${app.personal.lastName}`,
           position: app.jobTitle,
           department: offer?.department || '—',
+          teamRole: role || null,
           joiningDate: offer?.joiningDate || null,
           createdAt: new Date().toISOString(),
         });
-        logActivity(draft, applicationId, 'onboarding', 'Joining Completed', 'HR marked joining as completed.', 'Anisha Rawat');
+        const joined = role
+          ? `HR marked joining as completed and assigned the ${role} team role.`
+          : 'HR marked joining as completed.';
+        logActivity(draft, applicationId, 'onboarding', 'Joining Completed', joined, 'Anisha Rawat');
         logActivity(draft, applicationId, 'onboarding', 'Employee Created', `Employee record ${employeeId} created.`, 'System');
         notify(draft, ROLES.CANDIDATE, 'Welcome aboard', `Your employee ID is ${employeeId}.`);
       });
       return employeeId;
     },
     [mutate, state.counters]
+  );
+
+  /* ---------- HR: assign a team role to an employee ---------- */
+  const assignEmployeeRole = useCallback(
+    (employeeId, teamRole) => {
+      const clean = (teamRole || '').trim();
+      mutate((draft) => {
+        const emp = draft.employees.find((e) => e.id === employeeId);
+        if (!emp) return;
+        const previous = emp.teamRole || null;
+        emp.teamRole = clean || null;
+        const desc = clean
+          ? `${emp.name} assigned to ${clean}${previous && previous !== clean ? ` (was ${previous})` : ''}.`
+          : `${emp.name}'s team role was cleared.`;
+        logActivity(draft, emp.applicationId, 'onboarding', 'Team Role Assigned', desc, 'Anisha Rawat');
+      });
+    },
+    [mutate]
   );
 
   const markNotificationsRead = useCallback(
@@ -590,6 +613,7 @@ export function AppProvider({ children }) {
       verifyOnboarding,
       rejectOnboarding,
       completeJoining,
+      assignEmployeeRole,
       createJob,
       markNotificationsRead,
       resetDemo,
@@ -620,6 +644,7 @@ export function AppProvider({ children }) {
       verifyOnboarding,
       rejectOnboarding,
       completeJoining,
+      assignEmployeeRole,
       markNotificationsRead,
       resetDemo,
     ]

@@ -16,6 +16,12 @@ const SCOPE_TYPES = {
   ta: ['application', 'review', 'approve', 'return', 'reject', 'interview', 'documents', 'offer', 'onboarding'],
 };
 
+const WHEN = {
+  today: { label: 'Today', days: 1 },
+  week: { label: 'Last 7 days', days: 7 },
+  month: { label: 'Last 30 days', days: 30 },
+};
+
 /* Pick a vivid icon + colour from the wording of the event, so the feed reads
    at a glance (green = went well, red = blocked, violet = joining). */
 function eventMeta(title = '') {
@@ -46,6 +52,8 @@ export default function ActivityFeed({ base = '/hr', scope = 'hr' }) {
   const navigate = useNavigate();
   const { data, getApplication } = useApp();
   const [type, setType] = useState('all');
+  const [when, setWhen] = useState('all');
+  const [actor, setActor] = useState('all');
 
   const scopeTypes = SCOPE_TYPES[scope] || SCOPE_TYPES.ta;
   const apps = data.applications || [];
@@ -61,9 +69,20 @@ export default function ActivityFeed({ base = '/hr', scope = 'hr' }) {
     [data.activities, scopeTypes, getApplication]
   );
 
+  const actors = useMemo(
+    () => [...new Set(all.map((a) => a.actor).filter(Boolean))].sort(),
+    [all]
+  );
+
   const items = useMemo(
-    () => all.filter((a) => type === 'all' || a.type === type),
-    [all, type]
+    () =>
+      all.filter((a) => {
+        if (type !== 'all' && a.type !== type) return false;
+        if (actor !== 'all' && a.actor !== actor) return false;
+        if (when !== 'all' && new Date(a.at).getTime() < Date.now() - WHEN[when].days * 86400000) return false;
+        return true;
+      }),
+    [all, type, actor, when]
   );
 
   const groups = useMemo(() => {
@@ -93,7 +112,11 @@ export default function ActivityFeed({ base = '/hr', scope = 'hr' }) {
 
   const chips = [
     type !== 'all' && { key: 'type', label: cap(type), onRemove: () => setType('all') },
+    when !== 'all' && { key: 'when', label: WHEN[when].label, onRemove: () => setWhen('all') },
+    actor !== 'all' && { key: 'actor', label: actor, onRemove: () => setActor('all') },
   ].filter(Boolean);
+
+  const clearAll = () => { setType('all'); setWhen('all'); setActor('all'); };
 
   const open = (it) => {
     const app = getApplication(it.applicationId);
@@ -112,9 +135,13 @@ export default function ActivityFeed({ base = '/hr', scope = 'hr' }) {
       <StatBar items={stats} />
 
       <Toolbar
-        filters={[{ label: 'Type', value: type, onChange: setType, options: scopeTypes.map((s) => ({ value: s, label: cap(s) })) }]}
+        filters={[
+          { label: 'Type', value: type, onChange: setType, options: scopeTypes.map((s) => ({ value: s, label: cap(s) })) },
+          { label: 'When', value: when, onChange: setWhen, options: Object.entries(WHEN).map(([value, w]) => ({ value, label: w.label })) },
+          { label: 'Person', value: actor, onChange: setActor, options: actors.map((p) => ({ value: p, label: p })) },
+        ]}
         chips={chips}
-        onClearAll={chips.length ? () => setType('all') : undefined}
+        onClearAll={chips.length ? clearAll : undefined}
       />
 
       {items.length === 0 ? (

@@ -1,15 +1,34 @@
+import { useEffect, useState } from 'react';
 import Icon from './common/Icon.jsx';
 import Button from './ta/Button.jsx';
 import EmptyState from './ta/EmptyState.jsx';
+import Pager from './ta/Pager.jsx';
 import JobCard from './JobCard.jsx';
 import JobFilters from './JobFilters.jsx';
-import { useLoadMore } from '../hooks/useLoadMore.js';
+
+const PAGE_SIZE = 30;
 
 /* Job browser: one search bar on top, then the list on the left and the filter
    panel on the right. Shared by the careers landing page and the jobs page.
-   The list shows 30 roles at a time behind a "Load more" button. */
+   The list is paginated — 30 roles per page, numbered pager above the list. */
 export default function JobBrowser({ f }) {
-  const list = useLoadMore(f.filtered, 30);
+  const [page, setPage] = useState(1);
+
+  // Back to page 1 whenever the filters change the result set.
+  useEffect(() => {
+    setPage(1);
+  }, [f.q, f.dept, f.mode, f.type, f.exp]);
+
+  const total = f.filtered.length;
+  const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const safePage = Math.min(page, pages);
+  const pageJobs = f.filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+
+  const goPage = (p) => {
+    setPage(p);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
     <>
       <div className="cx-jobsearch">
@@ -28,7 +47,7 @@ export default function JobBrowser({ f }) {
 
       <div className="cx-jobs-grid">
         <div className="cx-jobs-grid__main">
-          {f.filtered.length === 0 ? (
+          {total === 0 ? (
             <EmptyState
               icon="SearchX"
               title="No roles match your filters"
@@ -37,17 +56,14 @@ export default function JobBrowser({ f }) {
             />
           ) : (
             <>
-              <div className="cx-joblist">
-                {list.rows.map((job) => <JobCard key={job.id} job={job} />)}
-              </div>
-              {list.hasMore && (
-                <div className="ta-loadmore">
-                  <span>Showing {list.shown} of {list.total}</span>
-                  <Button variant="ghost" onClick={list.loadMore}>
-                    Load {Math.min(list.step, list.total - list.shown)} more
-                  </Button>
+              {total > PAGE_SIZE && (
+                <div className="cx-jobpager">
+                  <Pager page={safePage} pageSize={PAGE_SIZE} total={total} onPage={goPage} />
                 </div>
               )}
+              <div className="cx-joblist">
+                {pageJobs.map((job) => <JobCard key={job.id} job={job} />)}
+              </div>
             </>
           )}
         </div>

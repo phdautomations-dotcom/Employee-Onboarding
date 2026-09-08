@@ -8,15 +8,17 @@ import DataGrid from '../../components/ta/DataGrid.jsx';
 import Toolbar from '../../components/ta/Toolbar.jsx';
 import Tag from '../../components/ta/Tag.jsx';
 import { useApp } from '../../context/AppContext.jsx';
+import { useToast } from '../../context/ToastContext.jsx';
 import { useCollectionView } from '../../hooks/useCollectionView.js';
-import { useLoadMore } from '../../hooks/useLoadMore.js';
 import { APP_STATUS } from '../../constants/statuses.js';
 import { formatDate } from '../../utils/format.js';
+import AssignRoleModal from '../../components/workflow/AssignRoleModal.jsx';
 
 const COLUMNS = [
   { key: 'name', label: 'Employee', sortable: true },
   { key: 'position', label: 'Position', sortable: true },
   { key: 'department', label: 'Department', sortable: true },
+  { key: 'teamRole', label: 'Team Role', sortable: true },
   { key: 'joiningDate', label: 'Joined', sortable: true },
   { key: 'actions', label: 'Actions' },
 ];
@@ -37,7 +39,9 @@ function daysUntil(dateStr) {
 
 export default function HREmployeesPage() {
   const navigate = useNavigate();
-  const { data, offerFor, getApplication } = useApp();
+  const toast = useToast();
+  const { data, offerFor, getApplication, assignEmployeeRole } = useApp();
+  const [roleEditing, setRoleEditing] = useState(null);
 
   const employees = data.employees || [];
 
@@ -61,19 +65,43 @@ export default function HREmployeesPage() {
 
   const view = useCollectionView(employees, {
     searchFields: ['name', 'id', 'position'],
+    pageSize: 30,
     initialSort: { key: 'joiningDate', dir: 'desc' },
   });
-  const list = useLoadMore(view.allFiltered, 30);
 
   const departments = useMemo(
     () => [...new Set(employees.map((e) => e.department).filter(Boolean))].sort(),
     [employees]
   );
+  const positions = useMemo(
+    () => [...new Set(employees.map((e) => e.position).filter(Boolean))].sort(),
+    [employees]
+  );
+  const teamRoles = useMemo(
+    () => [...new Set(employees.map((e) => e.teamRole).filter(Boolean))].sort(),
+    [employees]
+  );
+  const rolesAssigned = employees.filter((e) => e.teamRole).length;
+
   const [dept, setDept] = useState('all');
+  const [position, setPosition] = useState('all');
   const [period, setPeriod] = useState('all');
+  const [teamRole, setTeamRole] = useState('all');
   const PERIOD_LABEL = { month: 'This month', q90: 'Last 90 days', year: 'This year' };
 
   const applyDept = (v) => { setDept(v); view.setFilter('department', v); };
+  const applyPosition = (v) => { setPosition(v); view.setFilter('position', v); };
+  const applyTeamRole = (v) => {
+    setTeamRole(v);
+    if (v === 'assigned') view.setFilter('teamRole', (e) => !!e.teamRole);
+    else if (v === 'unassigned') view.setFilter('teamRole', (e) => !e.teamRole);
+    else view.setFilter('teamRole', v);
+  };
+
+  const saveRole = (employeeId, value) => {
+    assignEmployeeRole(employeeId, value);
+    toast.success(value ? `Team role set to ${value}.` : 'Team role cleared.');
+  };
   const applyPeriod = (v) => {
     setPeriod(v);
     const now = Date.now();
@@ -85,15 +113,22 @@ export default function HREmployeesPage() {
     view.setFilter('joinedPeriod', v === 'all' ? 'all' : preds[v]);
   };
 
+  const TEAM_ROLE_LABEL = { assigned: 'Role assigned', unassigned: 'No role yet' };
   const empChips = [
     dept !== 'all' && { key: 'dept', label: dept, onRemove: () => applyDept('all') },
+    position !== 'all' && { key: 'position', label: position, onRemove: () => applyPosition('all') },
+    teamRole !== 'all' && { key: 'role', label: TEAM_ROLE_LABEL[teamRole] || teamRole, onRemove: () => applyTeamRole('all') },
     period !== 'all' && { key: 'period', label: PERIOD_LABEL[period], onRemove: () => applyPeriod('all') },
   ].filter(Boolean);
 
   const kpis = [
     { icon: 'UserRoundCheck', accent: 'green', label: 'Onboarded', value: employees.length },
     { icon: 'CalendarClock', accent: 'amber', label: 'Joining soon', value: joiningPending.length },
-    { icon: 'Sparkles', accent: 'blue', label: 'Joined this month', value: joinedThisMonth },
+    {
+      icon: 'BadgeCheck', accent: 'blue', label: 'Team roles assigned',
+      value: `${rolesAssigned}/${employees.length}`,
+      onClick: () => applyTeamRole('unassigned'),
+    },
     { icon: 'Building2', accent: 'violet', label: 'Departments', value: departmentCount },
   ];
 
@@ -137,6 +172,12 @@ export default function HREmployeesPage() {
       <Toolbar
         filters={[
           { label: 'Department', value: dept, onChange: applyDept, options: departments.map((d) => ({ value: d, label: d })) },
+          { label: 'Position', value: position, onChange: applyPosition, options: positions.map((p) => ({ value: p, label: p })) },
+          { label: 'Team role', value: teamRole, onChange: applyTeamRole, options: [
+            { value: 'assigned', label: 'Role assigned' },
+            { value: 'unassigned', label: 'No role yet' },
+            ...teamRoles.map((r) => ({ value: r, label: r })),
+          ] },
           { label: 'Joined', value: period, onChange: applyPeriod, options: [
             { value: 'month', label: 'This month' },
             { value: 'q90', label: 'Last 90 days' },
@@ -144,15 +185,15 @@ export default function HREmployeesPage() {
           ] },
         ]}
         chips={empChips}
-        onClearAll={empChips.length > 1 ? () => { applyDept('all'); applyPeriod('all'); } : undefined}
+        onClearAll={empChips.length > 1 ? () => { applyDept('all'); applyPosition('all'); applyTeamRole('all'); applyPeriod('all'); } : undefined}
       />
 
       <DataGrid
         columns={COLUMNS}
-        rows={list.rows}
+        rows={view.rows}
         sort={view.sort}
         onSort={view.onSort}
-        more={list}
+        pager={{ page: view.page, pageSize: view.pageSize, total: view.total, onPage: view.setPage }}
         empty={{ icon: 'UserRoundCheck', title: 'No employees onboarded yet', message: 'Employees appear here once joining is marked complete.' }}
         renderRow={(e) => {
           const app = getApplication(e.applicationId);
@@ -168,6 +209,11 @@ export default function HREmployeesPage() {
               </td>
               <td className="ta-cell-strong">{e.position}</td>
               <td>{e.department ? <Tag tone={deptTone(e.department)}>{e.department}</Tag> : <span className="ta-cell-mute">—</span>}</td>
+              <td onClick={(ev) => { ev.stopPropagation(); setRoleEditing(e); }}>
+                {e.teamRole
+                  ? <button type="button" className="hr-role hr-role--set"><Tag tone="blue">{e.teamRole}</Tag><Icon name="Pencil" size={12} /></button>
+                  : <button type="button" className="hr-role hr-role--add"><Icon name="Plus" size={13} /> Assign role</button>}
+              </td>
               <td className="ta-cell-mute">
                 <span className="hr-joined"><Icon name="CalendarCheck" size={13} /> {formatDate(e.joiningDate)}</span>
               </td>
@@ -183,6 +229,14 @@ export default function HREmployeesPage() {
             </tr>
           );
         }}
+      />
+
+      <AssignRoleModal
+        open={!!roleEditing}
+        name={roleEditing?.name}
+        initialRole={roleEditing?.teamRole || ''}
+        onClose={() => setRoleEditing(null)}
+        onSave={(v) => saveRole(roleEditing.id, v)}
       />
     </>
   );
