@@ -15,7 +15,6 @@ export default function HRDashboard() {
   const navigate = useNavigate();
   const { data, offerFor, activitiesFor } = useApp();
   const user = DEMO_USERS[ROLES.HR];
-  const taName = DEMO_USERS[ROLES.TA].name;
 
   // ----- DATA -----
   const apps = data.applications || [];
@@ -115,47 +114,37 @@ export default function HRDashboard() {
         {kpis.map((k) => <KpiCard key={k.label} {...k} />)}
       </div>
 
-      <Card
-        id="hr-handover"
-        title="New HR Handover"
-        action={<Tag tone="blue">Offer accepted · HR action required</Tag>}
-        bodyStyle={{ justifyContent: 'flex-start' }}
-      >
+      <section className="ta-card hr-handover">
+        <div className="hr-handover__bar">
+          <span className="hr-handover__title">
+            <span className="hr-handover__dot"><Icon name="CheckCircle2" size={14} /></span>
+            New HR Handover
+          </span>
+          {handovers.length > 0
+            ? <Tag tone="blue">{handovers.length} accepted · from Talent Acquisition</Tag>
+            : <span className="ta-cell-mute">All caught up</span>}
+        </div>
         {handovers.length === 0 ? (
-          <p className="ta-cell-mute">No new handovers from Talent Acquisition — every accepted offer is already being onboarded.</p>
+          <p className="hr-handover__empty">No new handovers from Talent Acquisition — every accepted offer is already in onboarding.</p>
         ) : (
-          <>
-            <p className="ta-cell-sub" style={{ marginBottom: 12 }}>
-              Talent Acquisition passed {handovers.length} accepted candidate{handovers.length === 1 ? '' : 's'} to HR. Send the joining-document link to begin onboarding.
-            </p>
-            <div className="ta-pipe">
-              {handovers.map((a) => {
-                const acceptedAt = offerFor(a.id)?.decisionAt
-                  || activitiesFor(a.id).find((x) => x.title === 'Offer Accepted')?.at;
-                return (
-                  <button
-                    key={a.id}
-                    className="ta-pipe__row"
-                    onClick={() => navigate(`/hr/candidates/${a.candidateId}`)}
-                  >
-                    <span className="ta-pipe__icon" style={{ '--p-bg': 'var(--tag-green-bg)', '--p-fg': 'var(--tag-green-fg)' }}>
-                      <Icon name="CheckCircle2" size={15} />
-                    </span>
-                    <span className="ta-pipe__label">
-                      {a.personal.firstName} {a.personal.lastName}
-                      <br />
-                      <span className="ta-cell-sub">
-                        {a.jobTitle} · {a.candidateId} · from {taName}{acceptedAt ? ` · accepted ${timeAgo(acceptedAt)}` : ''}
-                      </span>
-                    </span>
-                    <span className="hr-handover__cta">Start onboarding <Icon name="ArrowRight" size={14} /></span>
-                  </button>
-                );
-              })}
-            </div>
-          </>
+          <div className="hr-handover__list">
+            {handovers.map((a) => (
+              <button
+                key={a.id}
+                type="button"
+                className="hr-handover__row"
+                onClick={() => navigate(`/hr/candidates/${a.candidateId}`)}
+              >
+                <span className="hr-handover__who">
+                  <strong>{a.personal.firstName} {a.personal.lastName}</strong>
+                  <span className="ta-cell-sub">{a.jobTitle}</span>
+                </span>
+                <span className="hr-handover__go">Start onboarding <Icon name="ArrowRight" size={13} /></span>
+              </button>
+            ))}
+          </div>
         )}
-      </Card>
+      </section>
 
       <div className="ta-bento">
         <Card
