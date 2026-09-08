@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import TAHeader from '../../components/ta/TAHeader.jsx';
 import Card from '../../components/ta/Card.jsx';
 import KpiCard from '../../components/ta/KpiCard.jsx';
-import StageFunnel from '../../components/ta/StageFunnel.jsx';
+import StageBreakdown from '../../components/ta/StageBreakdown.jsx';
 import DonutChart from '../../components/ta/DonutChart.jsx';
 import Tag from '../../components/ta/Tag.jsx';
 import Icon from '../../components/common/Icon.jsx';
@@ -247,13 +247,13 @@ export default function HRDashboard() {
       <div className="ta-bento">
         <Card
           title="HR Onboarding Progress"
-          action={<span className="ta-cell-sub">{accepted.length} in onboarding</span>}
+          action={<span className="ta-cell-sub"><strong>{accepted.length}</strong> total in onboarding</span>}
         >
-          <StageFunnel stages={funnelStages} />
+          <StageBreakdown stages={funnelStages} total={accepted.length} />
           {inDocsPhase > 0 && (
-            <p className="ta-sfunnel__insight">
+            <p className="hr-insight">
               <Icon name="Info" size={13} />
-              {inDocsPhase} candidate{inDocsPhase === 1 ? '' : 's'} in the document phase — send links and verify.
+              {inDocsPhase} of {accepted.length} ({Math.round((inDocsPhase / accepted.length) * 100)}%) still in the document phase.
             </p>
           )}
         </Card>
