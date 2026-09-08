@@ -1,6 +1,5 @@
 import Icon from '../common/Icon.jsx';
 import EmptyState from './EmptyState.jsx';
-import Pager from './Pager.jsx';
 
 /* Premium data table inside a card.
    - `columns`  : [{ key, label, sortable }]
@@ -8,15 +7,9 @@ import Pager from './Pager.jsx';
    - `renderRow`: (row) => <tr>...</tr>
    - `sort`,`onSort` : optional sorting ({ key, dir })
    - `title`, `action` : optional card header
-   - `pager`    : optional { page, pageSize, total, onPage } — shown above the table
-   - `empty`    : props for EmptyState when there are no rows */
-export default function DataGrid({ columns, rows, renderRow, sort, onSort, title, action, pager, empty }) {
-  // Jump to the top of the page whenever the page number changes.
-  const pagerProps = pager && {
-    ...pager,
-    onPage: (p) => { pager.onPage(p); window.scrollTo({ top: 0, behavior: 'smooth' }); },
-  };
-
+   - `empty`    : props for EmptyState when there are no rows
+   Pagination lives on the Toolbar row now, not here. */
+export default function DataGrid({ columns, rows, renderRow, sort, onSort, title, action, empty }) {
   return (
     <div className="ta-table-card">
       {(title || action) && (
@@ -25,8 +18,6 @@ export default function DataGrid({ columns, rows, renderRow, sort, onSort, title
           {action}
         </div>
       )}
-
-      {pagerProps && rows.length > 0 && <Pager {...pagerProps} place="top" />}
 
       {rows.length === 0 ? (
         <EmptyState {...(empty || { title: 'Nothing to show', message: 'Try changing the filters or search.' })} />

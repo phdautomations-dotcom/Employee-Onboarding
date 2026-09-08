@@ -166,6 +166,7 @@ export default function HRCandidatesPage() {
         ]}
         chips={chips}
         onClearAll={chips.length > 1 ? clearAll : undefined}
+        pager={{ page: view.page, pageSize: view.pageSize, total: view.total, onPage: view.setPage }}
       />
 
       <DataGrid
@@ -173,7 +174,6 @@ export default function HRCandidatesPage() {
         rows={view.rows}
         sort={view.sort}
         onSort={view.onSort}
-        pager={{ page: view.page, pageSize: view.pageSize, total: view.total, onPage: view.setPage }}
         empty={{ icon: 'Users', title: 'No candidates at the HR stage yet', message: 'Candidates appear here once their documents are verified.' }}
         renderRow={(r) => {
           const hrBadge = stageBadgeForStatus(r.hrStatus);
@@ -190,7 +190,7 @@ export default function HRCandidatesPage() {
               </td>
               <td>
                 <Tag tone={hrBadge.tone}>{hrBadge.label}</Tag>
-                <div className="ta-cell-sub" style={{ marginTop: 3 }}>
+                <div className="ta-cell-sub" style={{ marginTop: 1 }}>
                   {r.docsIssue
                     ? <span style={{ color: 'var(--tag-red-fg)' }}>Document rejected</span>
                     : offerMeta ? offerMeta.label : 'Offer not prepared'}

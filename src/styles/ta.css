@@ -307,11 +307,11 @@
   display: flex; flex-wrap: wrap;
   background: var(--ta-surface); border: 1px solid var(--ta-line);
   border-radius: var(--ta-radius); box-shadow: var(--ta-shadow);
-  padding: 6px 4px; margin-bottom: 16px;
+  padding: 4px 4px; margin-bottom: 10px;
 }
 .ta-statbar__item {
-  flex: 1 1 170px; display: flex; align-items: center; gap: 11px;
-  padding: 8px 18px; margin: 0;
+  flex: 1 1 170px; display: flex; align-items: center; gap: 10px;
+  padding: 7px 16px; margin: 0;
   border: 0; border-left: 1px solid var(--ta-line);
   background: none; font: inherit; color: inherit; text-align: left;
 }
@@ -321,7 +321,7 @@
 .ta-statbar__item--link:first-child { border-radius: 12px 0 0 12px; }
 .ta-statbar__item--link:last-child { border-radius: 0 12px 12px 0; }
 .ta-statbar__icon {
-  width: 34px; height: 34px; border-radius: 10px; flex-shrink: 0;
+  width: 30px; height: 30px; border-radius: 9px; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
 }
 .ta-statbar__icon--blue { background: var(--tag-blue-bg); color: var(--tag-blue-fg); }
@@ -331,7 +331,7 @@
 .ta-statbar__icon--green { background: var(--tag-green-bg); color: var(--tag-green-fg); }
 .ta-statbar__icon--red { background: var(--tag-red-bg); color: var(--tag-red-fg); }
 .ta-statbar__text { display: flex; flex-direction: column; line-height: 1.15; min-width: 0; }
-.ta-statbar__num { font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.ta-statbar__num { font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; }
 .ta-statbar__label { font-size: 11.5px; color: var(--ta-text-mute); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 @media (max-width: 720px) {
   .ta-statbar__item { flex-basis: 45%; border-left: 0; }
@@ -382,7 +382,7 @@
 /* compact "who's joining soon" strip on the Employees page */
 .hr-upnext {
   display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
-  padding: 9px 14px; margin-bottom: 14px;
+  padding: 7px 14px; margin-bottom: 10px;
   background: var(--ta-surface); border: 1px solid var(--ta-line);
   border-radius: var(--ta-radius); box-shadow: var(--ta-shadow);
 }
@@ -478,13 +478,13 @@
 .ta-table-scroll { overflow-x: auto; }
 .ta-table { width: 100%; min-width: 640px; border-collapse: collapse; font-size: 12.5px; }
 .ta-table th {
-  text-align: left; padding: 9px 18px; white-space: nowrap;
+  text-align: left; padding: 7px 16px; white-space: nowrap;
   font-size: 11px; font-weight: 600; color: var(--ta-text-mute); text-transform: uppercase; letter-spacing: 0.02em;
-  border-top: 1px solid var(--ta-line-soft); border-bottom: 1px solid var(--ta-line-soft);
+  border-bottom: 1px solid var(--ta-line-soft);
 }
 .ta-table th.sortable { cursor: pointer; user-select: none; }
 .ta-table th.sortable:hover { color: var(--ta-text-soft); }
-.ta-table td { padding: 11px 18px; border-bottom: 1px solid var(--ta-line-soft); vertical-align: middle; }
+.ta-table td { padding: 6px 16px; border-bottom: 1px solid var(--ta-line-soft); vertical-align: middle; line-height: 1.3; }
 .ta-table tbody tr:last-child td { border-bottom: 0; }
 .ta-table tbody tr { transition: background 0.15s; }
 .ta-table tbody tr:hover { background: #fafbfc; }
@@ -534,6 +534,7 @@
   border: 1px solid var(--ta-line); background: var(--ta-surface);
   border-radius: 8px; font-size: 12px; font-weight: 600; color: var(--ta-text-soft);
   cursor: pointer; transition: background 0.15s, border-color 0.15s;
+  display: inline-flex; align-items: center; justify-content: center;
 }
 .ta-pager__btn:hover:not(:disabled) { background: var(--ta-bg); }
 .ta-pager__btn:disabled { opacity: 0.4; cursor: not-allowed; }
@@ -541,6 +542,10 @@
 
 /* Pager shown at the top of a table reads as a header, not a footer. */
 .ta-pager--top { border-top: 0; border-bottom: 1px solid var(--ta-line-soft); }
+
+/* Compact pager — sits inside the filter row, no chrome of its own. */
+.ta-pager--compact { padding: 0; border: 0; gap: 0; }
+.ta-pager--compact .ta-pager__btn { min-width: 34px; height: 34px; border-radius: 999px; }
 
 /* Pager for the candidate job list — it's not inside a card, so give it one. */
 .cx-jobpager {
@@ -590,9 +595,12 @@
 .ta-check input { margin-top: 1px; width: 15px; height: 15px; accent-color: var(--ta-blue); flex-shrink: 0; }
 
 /* ---------- Toolbar / filters ---------- */
-.ta-toolbar { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; margin-bottom: 12px; }
+.ta-toolbar { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; margin-bottom: 10px; }
 .ta-card + .ta-toolbar { margin-top: 14px; }
-.ta-toolbar__action { margin-left: auto; }
+.ta-toolbar__end { margin-left: auto; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+@media (max-width: 700px) {
+  .ta-toolbar__end { margin-left: 0; width: 100%; justify-content: flex-end; }
+}
 .ta-search--wide { width: 320px; max-width: 100%; }
 .ta-select {
   appearance: none; -webkit-appearance: none;

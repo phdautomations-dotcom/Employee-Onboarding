@@ -148,6 +148,7 @@ export default function HREmployeesPage() {
         ]}
         chips={empChips}
         onClearAll={empChips.length > 1 ? () => { applyDept('all'); applyPosition('all'); applyPeriod('all'); } : undefined}
+        pager={{ page: view.page, pageSize: view.pageSize, total: view.total, onPage: view.setPage }}
       />
 
       <DataGrid
@@ -155,7 +156,6 @@ export default function HREmployeesPage() {
         rows={view.rows}
         sort={view.sort}
         onSort={view.onSort}
-        pager={{ page: view.page, pageSize: view.pageSize, total: view.total, onPage: view.setPage }}
         empty={{ icon: 'UserRoundCheck', title: 'No employees onboarded yet', message: 'Employees appear here once joining is marked complete.' }}
         renderRow={(e) => {
           const app = getApplication(e.applicationId);

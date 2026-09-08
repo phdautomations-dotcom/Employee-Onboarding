@@ -1,10 +1,14 @@
 import Icon from '../common/Icon.jsx';
+import Pager from './Pager.jsx';
 
-/* Search box + filter selects in one row, with the active-filter chips below it.
-   - `search`: { value, onChange, placeholder }
+/* Filter selects in one row, with the active-filter chips below it.
+   - `search`: { value, onChange, placeholder }   (optional)
    - `filters`: [{ label, value, onChange, options: [{value,label}] }]
-   - `chips`: [{ key, label, onRemove }]  + `onClearAll` */
-export default function Toolbar({ search, filters = [], chips = [], onClearAll, action }) {
+   - `chips`: [{ key, label, onRemove }]  + `onClearAll`
+   - `action`: element pinned to the right of the row
+   - `pager`: { page, pageSize, total, onPage } — compact controls, far right */
+export default function Toolbar({ search, filters = [], chips = [], onClearAll, action, pager }) {
+  const hasEnd = action || pager;
   return (
     <>
       <div className="ta-toolbar">
@@ -24,7 +28,12 @@ export default function Toolbar({ search, filters = [], chips = [], onClearAll, 
             {f.options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
           </select>
         ))}
-        {action && <span className="ta-toolbar__action">{action}</span>}
+        {hasEnd && (
+          <div className="ta-toolbar__end">
+            {action}
+            {pager && <Pager {...pager} compact />}
+          </div>
+        )}
       </div>
 
       {chips.length > 0 && (

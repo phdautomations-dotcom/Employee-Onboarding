@@ -1,11 +1,12 @@
 import Icon from '../common/Icon.jsx';
 
-/* Numbered pagination: "Showing 1–30 of 248" + a sliding window of 5 page
-   buttons (1–5, then 6–10, …). The « / » arrows step one page; the …
-   buttons jump to the previous / next window. */
+/* Numbered pagination with a sliding window of 5 page buttons (1–5, then
+   6–10, …). The « / » arrows step one page; the … buttons jump a window.
+   - default: a full row with "Showing 1–30 of 248" on the left.
+   - `compact`: just the controls, for sitting inside the filter row. */
 const WINDOW = 5;
 
-export default function Pager({ page, pageSize, total, onPage, place }) {
+export default function Pager({ page, pageSize, total, onPage, place, compact }) {
   const pages = Math.max(1, Math.ceil(total / pageSize));
   const from = total === 0 ? 0 : (page - 1) * pageSize + 1;
   const to = Math.min(total, page * pageSize);
@@ -18,8 +19,8 @@ export default function Pager({ page, pageSize, total, onPage, place }) {
   const go = (p) => onPage(Math.min(pages, Math.max(1, p)));
 
   return (
-    <div className={`ta-pager${place === 'top' ? ' ta-pager--top' : ''}`}>
-      <span>Showing {from}–{to} of {total}</span>
+    <div className={`ta-pager${compact ? ' ta-pager--compact' : ''}${place === 'top' ? ' ta-pager--top' : ''}`}>
+      {!compact && <span>Showing {from}–{to} of {total}</span>}
       <div className="ta-pager__nums">
         <button className="ta-pager__btn" onClick={() => go(page - 1)} disabled={page <= 1} aria-label="Previous page">
           <Icon name="ChevronLeft" size={14} />

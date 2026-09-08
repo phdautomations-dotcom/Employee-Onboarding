@@ -152,6 +152,7 @@ export default function TACandidatesPage() {
         ]}
         chips={chips}
         onClearAll={chips.length > 1 ? clearAll : undefined}
+        pager={{ page: view.page, pageSize: view.pageSize, total: view.total, onPage: view.setPage }}
       />
 
       <DataGrid
@@ -159,7 +160,6 @@ export default function TACandidatesPage() {
         rows={view.rows}
         sort={view.sort}
         onSort={view.onSort}
-        pager={{ page: view.page, pageSize: view.pageSize, total: view.total, onPage: view.setPage }}
         empty={{ icon: 'Users', title: 'No candidates match', message: 'Try changing the filters or search.' }}
         renderRow={(r) => {
           const badge = stageBadgeForStatus(r.status);

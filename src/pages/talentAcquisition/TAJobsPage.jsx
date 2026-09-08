@@ -112,6 +112,7 @@ export default function TAJobsPage() {
         chips={chips}
         onClearAll={chips.length > 1 ? clearAll : undefined}
         action={<Button icon="Plus" onClick={() => setOpen(true)}>Create Job</Button>}
+        pager={{ page: view.page, pageSize: view.pageSize, total: view.total, onPage: view.setPage }}
       />
 
       <DataGrid
@@ -119,7 +120,6 @@ export default function TAJobsPage() {
         rows={view.rows}
         sort={view.sort}
         onSort={view.onSort}
-        pager={{ page: view.page, pageSize: view.pageSize, total: view.total, onPage: view.setPage }}
         empty={{ icon: 'Briefcase', title: 'No jobs found', message: 'Try a different search, or create a new job.' }}
         renderRow={(j) => (
           <tr key={j.id} onClick={() => navigate(`/ta/jobs/${j.id}`)} style={{ cursor: 'pointer' }}>
