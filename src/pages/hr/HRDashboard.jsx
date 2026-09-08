@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import TAHeader from '../../components/ta/TAHeader.jsx';
 import Card from '../../components/ta/Card.jsx';
@@ -11,10 +12,13 @@ import { DEMO_USERS, ROLES } from '../../constants/roles.js';
 import { APP_STATUS, OFFER_STATUS, hrStageRank } from '../../constants/statuses.js';
 import { timeAgo, formatDate } from '../../utils/format.js';
 
+const HANDOVER_PREVIEW = 3;
+
 export default function HRDashboard() {
   const navigate = useNavigate();
   const { data, offerFor, activitiesFor } = useApp();
   const user = DEMO_USERS[ROLES.HR];
+  const [handoversOpen, setHandoversOpen] = useState(false);
 
   // ----- DATA -----
   const apps = data.applications || [];
@@ -120,15 +124,27 @@ export default function HRDashboard() {
             <span className="hr-handover__dot"><Icon name="CheckCircle2" size={14} /></span>
             New HR Handover
           </span>
-          {handovers.length > 0
-            ? <Tag tone="blue">{handovers.length} accepted · from Talent Acquisition</Tag>
-            : <span className="ta-cell-mute">All caught up</span>}
+          <span className="hr-handover__baraside">
+            {handovers.length > 0
+              ? <Tag tone="blue">{handovers.length} accepted · from Talent Acquisition</Tag>
+              : <span className="ta-cell-mute">All caught up</span>}
+            {handovers.length > HANDOVER_PREVIEW && (
+              <button
+                type="button"
+                className="hr-handover__toggle"
+                onClick={() => setHandoversOpen((v) => !v)}
+                aria-label={handoversOpen ? 'Show fewer handovers' : 'Show all handovers'}
+              >
+                <Icon name={handoversOpen ? 'ChevronUp' : 'ChevronDown'} size={16} />
+              </button>
+            )}
+          </span>
         </div>
         {handovers.length === 0 ? (
           <p className="hr-handover__empty">No new handovers from Talent Acquisition — every accepted offer is already in onboarding.</p>
         ) : (
           <div className="hr-handover__list">
-            {handovers.map((a) => (
+            {(handoversOpen ? handovers : handovers.slice(0, HANDOVER_PREVIEW)).map((a) => (
               <button
                 key={a.id}
                 type="button"
@@ -142,6 +158,12 @@ export default function HRDashboard() {
                 <span className="hr-handover__go">Start onboarding <Icon name="ArrowRight" size={13} /></span>
               </button>
             ))}
+            {handovers.length > HANDOVER_PREVIEW && (
+              <button type="button" className="hr-handover__more" onClick={() => setHandoversOpen((v) => !v)}>
+                {handoversOpen ? 'Show less' : `Show all ${handovers.length}`}
+                <Icon name={handoversOpen ? 'ChevronUp' : 'ChevronDown'} size={14} />
+              </button>
+            )}
           </div>
         )}
       </section>
