@@ -8,6 +8,7 @@ import Toolbar from '../../components/ta/Toolbar.jsx';
 import Tag from '../../components/ta/Tag.jsx';
 import { useApp } from '../../context/AppContext.jsx';
 import { useCollectionView } from '../../hooks/useCollectionView.js';
+import { useLoadMore } from '../../hooks/useLoadMore.js';
 import { APP_STATUS, DOC_STATUS, OFFER_STATUS_META, HR_FUNNEL_STAGES, hrStageRank, stageBadgeForStatus } from '../../constants/statuses.js';
 import { formatDate } from '../../utils/format.js';
 
@@ -63,7 +64,6 @@ export default function HRCandidatesPage() {
 
   const view = useCollectionView(rows, {
     searchFields: ['name', 'candidateId'],
-    pageSize: 12,
     initialSort: { key: 'name', dir: 'asc' },
     initialFilters: {
       ...(stageParam !== 'all'
@@ -72,6 +72,8 @@ export default function HRCandidatesPage() {
       ...(offerParam !== 'all' ? { offerStatus: offerParam } : {}),
     },
   });
+
+  const list = useLoadMore(view.allFiltered, 30);
 
   const setStage = (key) => {
     setStageKey(key);
@@ -131,10 +133,10 @@ export default function HRCandidatesPage() {
 
       <DataGrid
         columns={COLUMNS}
-        rows={view.rows}
+        rows={list.rows}
         sort={view.sort}
         onSort={view.onSort}
-        pager={{ page: view.page, pageSize: view.pageSize, total: view.total, onPage: view.setPage }}
+        more={list}
         empty={{ icon: 'Users', title: 'No candidates at the HR stage yet', message: 'Candidates appear here once their documents are verified.' }}
         renderRow={(r) => {
           const hrBadge = stageBadgeForStatus(r.hrStatus);

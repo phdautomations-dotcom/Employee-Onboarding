@@ -499,6 +499,19 @@
 .ta-pager__btn:disabled { opacity: 0.4; cursor: not-allowed; }
 .ta-pager__btn--active { background: var(--ta-blue); color: #fff; border-color: var(--ta-blue); }
 
+/* "Load 30 more" footer — used under tables and the job list */
+.ta-loadmore {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  flex-wrap: wrap;
+  padding: 12px 18px; font-size: 12px; color: var(--ta-text-mute);
+  border-top: 1px solid var(--ta-line-soft);
+}
+.cx-joblist + .ta-loadmore {
+  margin-top: 10px; border: 1px solid var(--ta-line);
+  border-radius: var(--ta-radius); background: var(--ta-surface);
+  padding: 12px 16px; box-shadow: var(--ta-shadow);
+}
+
 /* ---------- Form controls ---------- */
 .ta-field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px; }
 .ta-field--full { grid-column: 1 / -1; }

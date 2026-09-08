@@ -8,6 +8,7 @@ import Avatar from '../../components/ta/Avatar.jsx';
 import Tag from '../../components/ta/Tag.jsx';
 import { useApp } from '../../context/AppContext.jsx';
 import { useCollectionView } from '../../hooks/useCollectionView.js';
+import { useLoadMore } from '../../hooks/useLoadMore.js';
 import { APP_STATUS, DOC_STATUS, stageBadgeForStatus } from '../../constants/statuses.js';
 import { formatDate } from '../../utils/format.js';
 
@@ -98,10 +99,10 @@ export default function TACandidatesPage() {
 
   const view = useCollectionView(rows, {
     searchFields: ['name', 'email', 'candidateId', 'job'],
-    pageSize: 12,
     initialSort: { key: 'submittedAt', dir: 'desc' },
     initialFilters: Object.keys(initialFilters).length ? initialFilters : undefined,
   });
+  const list = useLoadMore(view.allFiltered, 30);
 
   const jobOptions = useMemo(
     () => [...new Set(rows.map((r) => r.job))].sort().map((j) => ({ value: j, label: j })),
@@ -157,10 +158,10 @@ export default function TACandidatesPage() {
 
       <DataGrid
         columns={COLUMNS}
-        rows={view.rows}
+        rows={list.rows}
         sort={view.sort}
         onSort={view.onSort}
-        pager={{ page: view.page, pageSize: view.pageSize, total: view.total, onPage: view.setPage }}
+        more={list}
         empty={{ icon: 'Users', title: 'No candidates match', message: 'Try changing the filters or search.' }}
         renderRow={(r) => {
           const badge = stageBadgeForStatus(r.status);

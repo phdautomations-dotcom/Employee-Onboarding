@@ -9,8 +9,9 @@ import Pager from './Pager.jsx';
    - `sort`,`onSort` : optional sorting ({ key, dir })
    - `title`, `action` : optional card header
    - `pager`    : optional { page, pageSize, total, onPage }
+   - `more`     : optional "load more" state from useLoadMore
    - `empty`    : props for EmptyState when there are no rows */
-export default function DataGrid({ columns, rows, renderRow, sort, onSort, title, action, pager, empty }) {
+export default function DataGrid({ columns, rows, renderRow, sort, onSort, title, action, pager, more, empty }) {
   return (
     <div className="ta-table-card">
       {(title || action) && (
@@ -49,6 +50,17 @@ export default function DataGrid({ columns, rows, renderRow, sort, onSort, title
       )}
 
       {pager && rows.length > 0 && <Pager {...pager} />}
+
+      {more && rows.length > 0 && (more.hasMore || more.total > more.step) && (
+        <div className="ta-loadmore">
+          <span>Showing {more.shown} of {more.total}</span>
+          {more.hasMore && (
+            <button type="button" className="ta-btn ta-btn--ghost" onClick={more.loadMore}>
+              Load {Math.min(more.step, more.total - more.shown)} more
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

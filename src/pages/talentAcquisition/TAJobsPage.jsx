@@ -10,6 +10,7 @@ import CreateJobDrawer from '../../components/workflow/CreateJobDrawer.jsx';
 import { useApp } from '../../context/AppContext.jsx';
 import { useToast } from '../../context/ToastContext.jsx';
 import { useCollectionView } from '../../hooks/useCollectionView.js';
+import { useLoadMore } from '../../hooks/useLoadMore.js';
 import { formatDate } from '../../utils/format.js';
 
 const COLUMNS = [
@@ -35,9 +36,9 @@ export default function TAJobsPage() {
 
   const view = useCollectionView(rows, {
     searchFields: ['title', 'department', 'id', 'location'],
-    pageSize: 12,
     initialSort: { key: 'applicants', dir: 'desc' },
   });
+  const list = useLoadMore(view.allFiltered, 30);
 
   const deptOptions = useMemo(
     () => [...new Set(rows.map((r) => r.department))].sort().map((d) => ({ value: d, label: d })),
@@ -64,10 +65,10 @@ export default function TAJobsPage() {
 
       <DataGrid
         columns={COLUMNS}
-        rows={view.rows}
+        rows={list.rows}
         sort={view.sort}
         onSort={view.onSort}
-        pager={{ page: view.page, pageSize: view.pageSize, total: view.total, onPage: view.setPage }}
+        more={list}
         empty={{ icon: 'Briefcase', title: 'No jobs found', message: 'Try a different search, or create a new job.' }}
         renderRow={(j) => (
           <tr key={j.id} onClick={() => navigate(`/ta/jobs/${j.id}`)} style={{ cursor: 'pointer' }}>

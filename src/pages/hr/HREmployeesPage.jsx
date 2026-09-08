@@ -9,6 +9,7 @@ import Toolbar from '../../components/ta/Toolbar.jsx';
 import Tag from '../../components/ta/Tag.jsx';
 import { useApp } from '../../context/AppContext.jsx';
 import { useCollectionView } from '../../hooks/useCollectionView.js';
+import { useLoadMore } from '../../hooks/useLoadMore.js';
 import { APP_STATUS } from '../../constants/statuses.js';
 import { formatDate } from '../../utils/format.js';
 
@@ -60,9 +61,9 @@ export default function HREmployeesPage() {
 
   const view = useCollectionView(employees, {
     searchFields: ['name', 'id', 'position'],
-    pageSize: 12,
     initialSort: { key: 'joiningDate', dir: 'desc' },
   });
+  const list = useLoadMore(view.allFiltered, 30);
 
   const departments = useMemo(
     () => [...new Set(employees.map((e) => e.department).filter(Boolean))].sort(),
@@ -148,10 +149,10 @@ export default function HREmployeesPage() {
 
       <DataGrid
         columns={COLUMNS}
-        rows={view.rows}
+        rows={list.rows}
         sort={view.sort}
         onSort={view.onSort}
-        pager={{ page: view.page, pageSize: view.pageSize, total: view.total, onPage: view.setPage }}
+        more={list}
         empty={{ icon: 'UserRoundCheck', title: 'No employees onboarded yet', message: 'Employees appear here once joining is marked complete.' }}
         renderRow={(e) => {
           const app = getApplication(e.applicationId);
