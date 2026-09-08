@@ -75,36 +75,46 @@ export default function HRDashboard() {
     },
   ];
 
-  // ===== HR Onboarding Progress — the workflow after the TA → HR handover.
-  // Cumulative: each stage counts everyone who reached it or further, so the
-  // funnel only narrows, and the count matches what its filter shows. =====
+  // ===== Onboarding by stage — how many candidates are sitting at each step of
+  // HR's process right now. Exclusive counts, so clicking a stage shows exactly
+  // those candidates (no one who has already moved past it). =====
   const accepted = apps.filter((a) => hrStageRank(a.status) >= 2);
+  const atStage = (rank) => accepted.filter((a) => hrStageRank(a.status) === rank).length;
   const stages = [
-    { label: 'Offer Accepted', tone: 'violet', value: accepted.length, to: '/hr/candidates?stage=onboarding' },
-    { label: 'Joining Documents', tone: 'blue', value: accepted.filter((a) => a.onboarding).length, to: '/hr/candidates?stage=verification' },
-    { label: 'Documents Verified', tone: 'teal', value: accepted.filter((a) => hrStageRank(a.status) >= 4).length, to: '/hr/candidates?stage=joining' },
-    { label: 'Onboarded', tone: 'green', value: accepted.filter((a) => hrStageRank(a.status) >= 5).length, to: '/hr/candidates?stage=onboarded' },
+    { label: 'Offer Accepted', tone: 'violet', value: atStage(2), to: '/hr/candidates?stage=onboarding' },
+    { label: 'Joining Documents', tone: 'blue', value: atStage(3), to: '/hr/candidates?stage=verification' },
+    { label: 'Documents Verified', tone: 'teal', value: atStage(4), to: '/hr/candidates?stage=joining' },
+    { label: 'Onboarded', tone: 'green', value: atStage(5), to: '/hr/candidates?stage=onboarded' },
   ];
   const funnelStages = stages.map((s) => ({ ...s, onClick: () => navigate(s.to) }));
-  // Small, quiet insight: how much work is still in the document phase.
-  const awaitingDocs = stages[0].value - stages[2].value;
+  const inDocsPhase = stages[1].value + stages[0].value;
 
-  // ===== Upcoming Joiners — merges the joining schedule + the timing donut.
-  // Everyone who accepted and has a target joining date but hasn't joined. =====
+  // ===== Upcoming Joiners — everyone who accepted with a joining date, not
+  // joined yet. Sorted soonest first. =====
   const daysUntil = (dateStr) => (dateStr ? Math.ceil((new Date(dateStr) - Date.now()) / 86400000) : null);
-  const upcomingJoiners = accepted
-    .filter((a) => a.status !== APP_STATUS.EMPLOYEE)
+  const notJoined = accepted.filter((a) => a.status !== APP_STATUS.EMPLOYEE);
+  const upcomingJoiners = notJoined
     .map((a) => ({ a, joiningDate: offerFor(a.id)?.joiningDate }))
     .filter((x) => x.joiningDate)
     .map((x) => ({ ...x, d: daysUntil(x.joiningDate) }))
     .sort((x, y) => x.d - y.d);
-  const inWindow = (lo, hi) => upcomingJoiners.filter((x) => x.d <= hi && (lo == null || x.d > lo)).length;
-  const joinerSlices = [
-    { label: 'Within 7 days', value: inWindow(null, 7), color: '#46c98a' },
-    { label: '8–30 days', value: inWindow(7, 30), color: '#4b7bf7' },
-    { label: '31–60 days', value: inWindow(30, 60), color: '#8b7ff0' },
-    { label: '60+ days', value: upcomingJoiners.filter((x) => x.d > 60).length, color: '#f6a04a' },
-  ];
+  const joiningThisWeek = upcomingJoiners.filter((x) => x.d <= 7).length;
+
+  // ===== Onboarding by Department — which teams the incoming hires are joining,
+  // so HR can line up equipment, access and inductions per team. =====
+  const deptCounts = {};
+  notJoined.forEach((a) => {
+    const dept = offerFor(a.id)?.department || 'Unassigned';
+    deptCounts[dept] = (deptCounts[dept] || 0) + 1;
+  });
+  const DEPT_RAMP = ['#4b7bf7', '#8b7ff0', '#f6a04a', '#46c98a', '#3fbfae', '#f2b705'];
+  let deptSlices = Object.entries(deptCounts)
+    .sort((a, b) => b[1] - a[1])
+    .map(([label, value], i) => ({ label, value, color: DEPT_RAMP[i % DEPT_RAMP.length] }));
+  if (deptSlices.length > 5) {
+    const rest = deptSlices.slice(4).reduce((s, x) => s + x.value, 0);
+    deptSlices = [...deptSlices.slice(0, 4), { label: 'Other', value: rest, color: '#98a2b3' }];
+  }
 
   return (
     <>
@@ -202,50 +212,63 @@ export default function HRDashboard() {
         </Card>
 
         <Card
-          title="HR Onboarding Progress"
-          action={<span className="ta-cell-sub">{accepted.length} in onboarding</span>}
+          title="Upcoming Joiners"
+          action={<span className="ta-cell-sub">{upcomingJoiners.length} expected · {joiningThisWeek} this week</span>}
+          bodyStyle={{ justifyContent: 'flex-start' }}
         >
-          <StageFunnel stages={funnelStages} />
-          {awaitingDocs > 0 && (
-            <p className="ta-sfunnel__insight">
-              <Icon name="Info" size={13} />
-              {awaitingDocs} candidate{awaitingDocs === 1 ? '' : 's'} still awaiting document submission or verification.
-            </p>
-          )}
-        </Card>
-      </div>
-
-      <Card
-        title="Upcoming Joiners"
-        action={<span className="ta-cell-sub">{upcomingJoiners.length} expected · {joinerSlices[0].value} within a week</span>}
-      >
-        {upcomingJoiners.length === 0 ? (
-          <p className="ta-cell-mute">No upcoming joiners yet — they appear once an offer is accepted with a joining date.</p>
-        ) : (
-          <div className="hr-upcoming">
-            <DonutChart slices={joinerSlices} caption="joining" onSliceClick={() => navigate('/hr/employees')} />
+          {upcomingJoiners.length === 0 ? (
+            <p className="ta-cell-mute">No upcoming joiners yet — they appear once an offer is accepted with a joining date.</p>
+          ) : (
             <div className="hr-nextjoin">
-              <div className="hr-nextjoin__head">Next to join</div>
-              {upcomingJoiners.slice(0, 5).map(({ a, d }) => (
+              {upcomingJoiners.slice(0, 6).map(({ a, joiningDate, d }) => (
                 <button
                   key={a.id}
                   type="button"
                   className="hr-nextjoin__row"
                   onClick={() => navigate(`/hr/candidates/${a.candidateId}`)}
                 >
-                  <span className="hr-nextjoin__name">{a.personal.firstName} {a.personal.lastName}</span>
+                  <span className="hr-nextjoin__who">
+                    <span className="hr-nextjoin__name">{a.personal.firstName} {a.personal.lastName}</span>
+                    <span className="ta-cell-sub">joins {formatDate(joiningDate)}</span>
+                  </span>
                   <span className={`hr-nextjoin__d${d <= 7 ? ' is-soon' : ''}`}>{d <= 0 ? 'Due now' : `in ${d}d`}</span>
                 </button>
               ))}
-              {upcomingJoiners.length > 5 && (
+              {upcomingJoiners.length > 6 && (
                 <button className="ta-link hr-nextjoin__all" onClick={() => navigate('/hr/candidates?stage=onboarding')}>
                   View all {upcomingJoiners.length} upcoming joiners
                 </button>
               )}
             </div>
-          </div>
-        )}
-      </Card>
+          )}
+        </Card>
+      </div>
+
+      <div className="ta-bento">
+        <Card
+          title="HR Onboarding Progress"
+          action={<span className="ta-cell-sub">{accepted.length} in onboarding</span>}
+        >
+          <StageFunnel stages={funnelStages} />
+          {inDocsPhase > 0 && (
+            <p className="ta-sfunnel__insight">
+              <Icon name="Info" size={13} />
+              {inDocsPhase} candidate{inDocsPhase === 1 ? '' : 's'} in the document phase — send links and verify.
+            </p>
+          )}
+        </Card>
+
+        <Card
+          title="Onboarding by Department"
+          action={<span className="ta-cell-sub">{notJoined.length} joining across {Object.keys(deptCounts).length} team{Object.keys(deptCounts).length === 1 ? '' : 's'}</span>}
+        >
+          {notJoined.length === 0 ? (
+            <p className="ta-cell-mute">No one is currently in onboarding.</p>
+          ) : (
+            <DonutChart slices={deptSlices} caption="joining" onSliceClick={() => navigate('/hr/candidates?stage=onboarding')} />
+          )}
+        </Card>
+      </div>
     </>
   );
 }

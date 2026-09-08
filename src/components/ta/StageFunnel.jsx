@@ -1,8 +1,8 @@
 import Icon from '../common/Icon.jsx';
 
-/* A plain-language funnel: one band per stage, width tracks the count, the
-   stage name and its single count sit on the band. Bands narrow top → bottom.
-   Clicking a band opens the matching list (via each stage's `onClick`).
+/* Stage bar list: one bar per stage in workflow order, its width tracks the
+   count, the stage name and its single count sit on the bar. Clicking a bar
+   opens the matching list (via each stage's `onClick`).
    `stages` = [{ label, value, tone, onClick? }] in workflow order. */
 export default function StageFunnel({ stages }) {
   const max = Math.max(1, ...stages.map((s) => s.value));

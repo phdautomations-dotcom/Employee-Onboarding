@@ -8,13 +8,13 @@ import Toolbar from '../../components/ta/Toolbar.jsx';
 import Tag from '../../components/ta/Tag.jsx';
 import { useApp } from '../../context/AppContext.jsx';
 import { useCollectionView } from '../../hooks/useCollectionView.js';
-import { APP_STATUS, DOC_STATUS, OFFER_STATUS_META, HR_FUNNEL_STAGES, hrStageRank, stageBadgeForStatus } from '../../constants/statuses.js';
+import { APP_STATUS, DOC_STATUS, OFFER_STATUS_META, HR_FUNNEL_STAGES, hrStageRank, hrStageBadge } from '../../constants/statuses.js';
 import { formatDate } from '../../utils/format.js';
 
 const COLUMNS = [
   { key: 'name', label: 'Candidate', sortable: true },
   { key: 'position', label: 'Position', sortable: true },
-  { key: 'hrStatus', label: 'Onboarding', sortable: true },
+  { key: 'hrStatus', label: 'Onboarding Stage', sortable: true },
   { key: 'joiningDate', label: 'Joining', sortable: true },
   { key: 'actions', label: '' },
 ];
@@ -54,9 +54,9 @@ export default function HRCandidatesPage() {
     [data.applications, offerFor, documentsFor]
   );
 
-  // Stage filter is a bucket ("reached this stage or further"), not an exact status —
-  // this matches the dashboard's funnel exactly, so clicking a funnel stage there
-  // shows exactly the candidates counted in it here.
+  // Stage filter = the candidate's current stage exactly (not "reached this or
+  // further"), so it lines up 1:1 with the dashboard's "Onboarding by stage"
+  // card — clicking a stage there shows only the people sitting in it.
   const stageParam = HR_FUNNEL_STAGES.some((s) => s.key === sp.get('stage')) ? sp.get('stage') : 'all';
   const offerParam = OFFER_STATUS_META[sp.get('offer')] ? sp.get('offer') : 'all';
   const [stage, setStageKey] = useState(stageParam);
@@ -68,7 +68,7 @@ export default function HRCandidatesPage() {
     initialSort: { key: 'name', dir: 'asc' },
     initialFilters: {
       ...(stageParam !== 'all'
-        ? { hrRank: (r) => r.hrRank >= HR_FUNNEL_STAGES.find((s) => s.key === stageParam).rank }
+        ? { hrRank: (r) => r.hrRank === HR_FUNNEL_STAGES.find((s) => s.key === stageParam).rank }
         : {}),
       ...(offerParam !== 'all' ? { offerStatus: offerParam } : {}),
     },
@@ -90,7 +90,7 @@ export default function HRCandidatesPage() {
   const setStage = (key) => {
     setStageKey(key);
     const target = HR_FUNNEL_STAGES.find((s) => s.key === key);
-    view.setFilter('hrRank', key === 'all' ? 'all' : (r) => r.hrRank >= target.rank);
+    view.setFilter('hrRank', key === 'all' ? 'all' : (r) => r.hrRank === target.rank);
   };
 
   const setOffer = (key) => {
@@ -177,8 +177,7 @@ export default function HRCandidatesPage() {
         pager={{ page: view.page, pageSize: view.pageSize, total: view.total, onPage: view.setPage }}
         empty={{ icon: 'Users', title: 'No candidates at the HR stage yet', message: 'Candidates appear here once their documents are verified.' }}
         renderRow={(r) => {
-          const hrBadge = stageBadgeForStatus(r.hrStatus);
-          const offerMeta = r.offerStatus ? OFFER_STATUS_META[r.offerStatus] : null;
+          const hrBadge = hrStageBadge(r.hrStatus);
           return (
             <tr key={r.id} onClick={() => navigate(`/hr/candidates/${r.candidateId}`)} style={{ cursor: 'pointer' }}>
               <td>
@@ -191,11 +190,9 @@ export default function HRCandidatesPage() {
               </td>
               <td>
                 <Tag tone={hrBadge.tone}>{hrBadge.label}</Tag>
-                <div className="ta-cell-sub" style={{ marginTop: 1 }}>
-                  {r.docsIssue
-                    ? <span style={{ color: 'var(--tag-red-fg)' }}>Document rejected</span>
-                    : offerMeta ? offerMeta.label : 'Offer not prepared'}
-                </div>
+                {r.docsIssue && (
+                  <div className="ta-cell-sub" style={{ marginTop: 2, color: 'var(--tag-red-fg)' }}>Document rejected</div>
+                )}
               </td>
               <td className="ta-cell-mute">
                 {r.joiningDate

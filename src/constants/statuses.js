@@ -163,6 +163,15 @@ export function hrStageRank(status) {
   return HR_STAGE_RANK[status] ?? -1;
 }
 
+/* The HR onboarding stage a candidate is sitting in right now — same wording
+   as the dashboard's "HR Onboarding Progress" funnel. For the HR tables. */
+export function hrStageBadge(status) {
+  if (status === APP_STATUS.HR_VERIFICATION_REJECTED) return { label: 'Documents returned', tone: 'red' };
+  const rank = hrStageRank(status);
+  const stage = HR_FUNNEL_STAGES.find((s) => s.rank === rank);
+  return stage ? { label: stage.label, tone: stage.tone } : { label: 'Awaiting offer', tone: 'grey' };
+}
+
 /* Interview round status */
 export const ROUND_STATUS = {
   SCHEDULED: 'SCHEDULED',
