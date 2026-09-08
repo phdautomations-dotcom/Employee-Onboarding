@@ -361,6 +361,30 @@
 .ta-pipe__pct { font-size: 11px; font-weight: 600; color: var(--ta-text-mute); min-width: 30px; text-align: right; }
 .ta-pipe-wrap { display: grid; grid-template-columns: minmax(0, 1fr) 290px; gap: 22px; align-items: center; }
 
+/* Plain-language stage funnel (HR onboarding progress) */
+.ta-sfunnel { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 2px 0; }
+.ta-sfunnel__band {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  min-height: 44px; padding: 7px 18px; border: 0; border-radius: 10px;
+  color: #fff; font: inherit; text-align: left; cursor: pointer;
+  transition: filter 0.12s, transform 0.12s;
+}
+.ta-sfunnel__band:hover { filter: brightness(1.07); transform: scale(1.012); }
+.ta-sfunnel__name { font-size: 12px; font-weight: 600; letter-spacing: 0.01em; }
+.ta-sfunnel__count { font-size: 17px; font-weight: 750; font-variant-numeric: tabular-nums; }
+.ta-sfunnel__insight {
+  display: flex; align-items: center; gap: 7px;
+  margin: 12px 0 0; font-size: 12px; color: var(--ta-text-soft);
+}
+.ta-sfunnel__insight svg { color: var(--ta-text-mute); flex-shrink: 0; }
+
+/* TA → HR handover card */
+.hr-handover__cta {
+  display: inline-flex; align-items: center; gap: 5px; flex-shrink: 0;
+  font-size: 12px; font-weight: 600; color: var(--ta-blue); white-space: nowrap;
+}
+#hr-handover { border-left: 3px solid var(--ta-blue); }
+
 /* joiners list — compact, colour-coded rows (HR dashboard + employees page) */
 .hr-joiners { display: grid; grid-template-columns: repeat(auto-fill, minmax(258px, 1fr)); gap: 6px; }
 .hr-joiners--stack { grid-template-columns: 1fr; gap: 8px; }

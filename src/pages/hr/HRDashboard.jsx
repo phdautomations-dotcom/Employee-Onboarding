@@ -2,29 +2,32 @@ import { useNavigate } from 'react-router-dom';
 import TAHeader from '../../components/ta/TAHeader.jsx';
 import Card from '../../components/ta/Card.jsx';
 import KpiCard from '../../components/ta/KpiCard.jsx';
-import FunnelChart from '../../components/ta/FunnelChart.jsx';
+import StageFunnel from '../../components/ta/StageFunnel.jsx';
 import DonutChart from '../../components/ta/DonutChart.jsx';
 import Tag from '../../components/ta/Tag.jsx';
 import Icon from '../../components/common/Icon.jsx';
 import { useApp } from '../../context/AppContext.jsx';
 import { DEMO_USERS, ROLES } from '../../constants/roles.js';
-import { APP_STATUS, OFFER_STATUS, DOC_STATUS, hrStageRank } from '../../constants/statuses.js';
+import { APP_STATUS, OFFER_STATUS, hrStageRank } from '../../constants/statuses.js';
 import { timeAgo, formatDate } from '../../utils/format.js';
 
 export default function HRDashboard() {
   const navigate = useNavigate();
-  const { data, offerFor, documentsFor, activitiesFor } = useApp();
+  const { data, offerFor, activitiesFor } = useApp();
   const user = DEMO_USERS[ROLES.HR];
+  const taName = DEMO_USERS[ROLES.TA].name;
 
   // ----- DATA -----
   const apps = data.applications || [];
   const offers = data.offers || [];
   const employees = data.employees || [];
-
-  // ----- FILTERING -----
-  const pendingVerification = apps.filter((a) => a.status === APP_STATUS.HR_VERIFICATION);
+  const now = new Date();
 
   // ----- CALCULATIONS -----
+  const pendingVerification = apps.filter((a) => a.status === APP_STATUS.HR_VERIFICATION);
+  // TA has done its part: candidate accepted, HR has not started onboarding yet.
+  const handovers = apps.filter((a) => a.status === APP_STATUS.ONBOARDING_PENDING);
+
   const onboardingStatuses = [
     APP_STATUS.ONBOARDING_PENDING, APP_STATUS.HR_VERIFICATION,
     APP_STATUS.HR_VERIFICATION_REJECTED, APP_STATUS.JOINING_PENDING,
@@ -35,13 +38,11 @@ export default function HRDashboard() {
   const offersOut = issuedCount + acceptedCount;
   const joiningPending = apps.filter((a) => a.status === APP_STATUS.JOINING_PENDING).length;
   const joinedThisMonth = employees.filter((e) => {
-    const d = new Date(e.joiningDate); const n = new Date();
-    return d.getMonth() === n.getMonth() && d.getFullYear() === n.getFullYear();
+    const d = new Date(e.joiningDate);
+    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
   }).length;
   const everReachedHR = apps.filter((a) => hrStageRank(a.status) >= 0).length;
 
-  // Each KPI shows the number in context (a share of a total it belongs to),
-  // so the reader knows whether "3" is a lot or a little.
   const kpis = [
     {
       icon: 'ClipboardCheck', label: 'Awaiting Verification', accent: 'amber', value: pendingVerification.length,
@@ -69,46 +70,31 @@ export default function HRDashboard() {
     },
   ];
 
-  // ===== ANALYTIC 1 — Onboarding Completion =====
-  // Everyone HR owns: they accepted the offer and are somewhere in onboarding.
-  const hrApps = apps.filter((a) => hrStageRank(a.status) >= 2);
-  const reqDocs = (a) => documentsFor(a.id).filter((d) => d.required);
-  const docsSubmitted = (a) => { const d = reqDocs(a); return d.length > 0 && d.every((x) => x.status !== DOC_STATUS.PENDING && x.status !== DOC_STATUS.REJECTED); };
-  const docsVerified = (a) => { const d = reqDocs(a); return d.length > 0 && d.every((x) => x.status === DOC_STATUS.VERIFIED); };
-
-  // Each stage is a subset of the one above it, so the funnel always narrows.
-  const s1 = hrApps;
-  const s2 = s1.filter(docsSubmitted);
-  const s3 = s2.filter(docsVerified);
-  const s4 = s3.filter((a) => hrStageRank(a.status) >= 4);          // HR verified the onboarding forms
-  const s5 = s4.filter((a) => !!offerFor(a.id)?.joiningDate);        // a joining date is locked in
-  const s6 = s5.filter((a) => hrStageRank(a.status) >= 5);          // now an employee
-  const completion = [
-    { label: 'Offer Accepted', icon: 'FileCheck', tone: 'violet', value: s1.length },
-    { label: 'Documents Completed', icon: 'Files', tone: 'blue', value: s2.length },
-    { label: 'Verification Completed', icon: 'CheckCircle2', tone: 'teal', value: s3.length },
-    { label: 'HR Formalities Completed', icon: 'ClipboardCheck', tone: 'amber', value: s4.length },
-    { label: 'Joining Confirmed', icon: 'CalendarCheck', tone: 'blue', value: s5.length },
-    { label: 'Onboarded', icon: 'UserRoundCheck', tone: 'green', value: s6.length },
+  // ===== HR Onboarding Progress — the actual workflow after the TA → HR handover.
+  // Each stage is a subset of the one before it, so the funnel only narrows. =====
+  const accepted = apps.filter((a) => hrStageRank(a.status) >= 2);
+  const stages = [
+    { label: 'Offer Accepted', tone: 'violet', value: accepted.length, to: '/hr/candidates?stage=onboarding' },
+    { label: 'Joining Documents', tone: 'blue', value: accepted.filter((a) => a.onboarding).length, to: '/hr/candidates?stage=verification' },
+    { label: 'Documents Verified', tone: 'teal', value: accepted.filter((a) => hrStageRank(a.status) >= 4).length, to: '/hr/candidates?stage=joining' },
+    { label: 'Employee Created', tone: 'amber', value: employees.length, to: '/hr/employees' },
+    { label: 'Onboarded', tone: 'green', value: employees.filter((e) => new Date(e.joiningDate) <= now).length, to: '/hr/employees' },
   ];
-  // Where does onboarding lose the most people?
-  let drop = { from: '', to: '', n: 0, key: null };
-  for (let i = 1; i < completion.length; i += 1) {
-    const n = completion[i - 1].value - completion[i].value;
-    if (n > drop.n) drop = { from: completion[i - 1].label, to: completion[i].label, n, key: completion[i].label };
-  }
+  const funnelStages = stages.map((s) => ({ ...s, onClick: () => navigate(s.to) }));
+  // Small, quiet insight: how much work is still in the document phase.
+  const awaitingDocs = stages[0].value - stages[2].value;
 
-  // ===== ANALYTIC 2 — Upcoming Joiners (workforce planning) =====
+  // ===== Upcoming Joiners — when is the incoming workforce expected to start? =====
   const daysUntil = (dateStr) => (dateStr ? Math.ceil((new Date(dateStr) - Date.now()) / 86400000) : null);
-  const upcoming = hrApps
+  const upcoming = accepted
     .filter((a) => a.status !== APP_STATUS.EMPLOYEE)
     .map((a) => daysUntil(offerFor(a.id)?.joiningDate))
     .filter((d) => d != null);
-  const inRange = (min, max) => upcoming.filter((d) => d <= max && (min == null || d > min)).length;
+  const between = (lo, hi) => upcoming.filter((d) => d <= hi && (lo == null || d > lo)).length;
   const joinerSlices = [
-    { label: 'Within 7 days', value: inRange(null, 7), color: '#46c98a' },
-    { label: '8–30 days', value: inRange(7, 30), color: '#4b7bf7' },
-    { label: '31–60 days', value: inRange(30, 60), color: '#8b7ff0' },
+    { label: 'Within 7 days', value: between(null, 7), color: '#46c98a' },
+    { label: '8–30 days', value: between(7, 30), color: '#4b7bf7' },
+    { label: '31–60 days', value: between(30, 60), color: '#8b7ff0' },
     { label: '60+ days', value: upcoming.filter((d) => d > 60).length, color: '#f6a04a' },
   ];
   const joiningWithin30 = joinerSlices[0].value + joinerSlices[1].value;
@@ -129,18 +115,60 @@ export default function HRDashboard() {
         {kpis.map((k) => <KpiCard key={k.label} {...k} />)}
       </div>
 
+      <Card
+        id="hr-handover"
+        title="New HR Handover"
+        action={<Tag tone="blue">Offer accepted · HR action required</Tag>}
+        bodyStyle={{ justifyContent: 'flex-start' }}
+      >
+        {handovers.length === 0 ? (
+          <p className="ta-cell-mute">No new handovers from Talent Acquisition — every accepted offer is already being onboarded.</p>
+        ) : (
+          <>
+            <p className="ta-cell-sub" style={{ marginBottom: 12 }}>
+              Talent Acquisition passed {handovers.length} accepted candidate{handovers.length === 1 ? '' : 's'} to HR. Send the joining-document link to begin onboarding.
+            </p>
+            <div className="ta-pipe">
+              {handovers.map((a) => {
+                const acceptedAt = offerFor(a.id)?.decisionAt
+                  || activitiesFor(a.id).find((x) => x.title === 'Offer Accepted')?.at;
+                return (
+                  <button
+                    key={a.id}
+                    className="ta-pipe__row"
+                    onClick={() => navigate(`/hr/candidates/${a.candidateId}`)}
+                  >
+                    <span className="ta-pipe__icon" style={{ '--p-bg': 'var(--tag-green-bg)', '--p-fg': 'var(--tag-green-fg)' }}>
+                      <Icon name="CheckCircle2" size={15} />
+                    </span>
+                    <span className="ta-pipe__label">
+                      {a.personal.firstName} {a.personal.lastName}
+                      <br />
+                      <span className="ta-cell-sub">
+                        {a.jobTitle} · {a.candidateId} · from {taName}{acceptedAt ? ` · accepted ${timeAgo(acceptedAt)}` : ''}
+                      </span>
+                    </span>
+                    <span className="hr-handover__cta">Start onboarding <Icon name="ArrowRight" size={14} /></span>
+                  </button>
+                );
+              })}
+            </div>
+          </>
+        )}
+      </Card>
+
       <div className="ta-bento">
         <Card
-          title="Needs Onboarding Verification"
-          action={<button className="ta-link" onClick={() => navigate('/hr/candidates')}>View all candidates</button>}
+          title="Documents Awaiting Verification"
+          action={<button className="ta-link" onClick={() => navigate('/hr/candidates?stage=verification')}>View all</button>}
           bodyStyle={{ justifyContent: 'flex-start' }}
         >
           {pendingVerification.length === 0 ? (
-            <p className="ta-cell-mute">No candidates waiting on verification — you're all caught up.</p>
+            <p className="ta-cell-mute">No documents waiting on verification — you're all caught up.</p>
           ) : (
             <>
               <p className="ta-cell-sub" style={{ marginBottom: 12 }}>
-                {pendingVerification.length} candidate{pendingVerification.length === 1 ? '' : 's'} submitted onboarding forms and are waiting on your review.
+                {pendingVerification.length} candidate{pendingVerification.length === 1 ? '' : 's'} submitted joining documents and are waiting on your review.
               </p>
               <div className="ta-pipe">
                 {pendingVerification.map((a) => {
@@ -159,7 +187,7 @@ export default function HRDashboard() {
                         <span className="ta-cell-sub">{a.jobTitle} · {department}</span>
                       </span>
                       {submittedActivity && <Tag tone="amber">Submitted {timeAgo(submittedActivity.at)}</Tag>}
-                      <Icon name="ArrowRight" size={15} />
+                      <Icon name="ChevronRight" size={16} />
                     </button>
                   );
                 })}
@@ -174,7 +202,7 @@ export default function HRDashboard() {
           bodyStyle={{ justifyContent: 'flex-start' }}
         >
           {joiningSchedule.length === 0 ? (
-            <p className="ta-cell-mute">No confirmed joining dates yet — they appear here once an offer is accepted.</p>
+            <p className="ta-cell-mute">No confirmed joining dates yet — they appear here once documents are verified.</p>
           ) : (
             <div className="hr-joiners hr-joiners--stack">
               {joiningSchedule.map(({ a, joiningDate }) => {
@@ -200,37 +228,13 @@ export default function HRDashboard() {
       </div>
 
       <div className="ta-bento">
-        <Card title="Onboarding Completion">
-          <div className="ta-pipe-wrap">
-            <div className="ta-pipe">
-              {completion.map((s) => (
-                <button
-                  key={s.label}
-                  type="button"
-                  className={`ta-pipe__row${s.label === drop.key ? ' ta-pipe__row--active' : ''}`}
-                  onClick={() => navigate('/hr/candidates')}
-                >
-                  <span
-                    className="ta-pipe__icon"
-                    style={{ '--p-bg': `var(--tag-${s.tone}-bg)`, '--p-fg': `var(--tag-${s.tone}-fg)` }}
-                  >
-                    <Icon name={s.icon} size={15} />
-                  </span>
-                  <span className="ta-pipe__label">{s.label}</span>
-                  <span className="ta-pipe__count">
-                    {s.value}
-                    <span className="ta-pipe__pct">{completion[0].value ? Math.round((s.value / completion[0].value) * 100) : 0}%</span>
-                  </span>
-                </button>
-              ))}
-            </div>
-            <FunnelChart stages={completion} labelMode="count" />
-          </div>
-          {drop.n > 0 && (
-            <div className="ta-note" style={{ margin: '14px 0 0', background: 'var(--ta-blue-wash)', color: 'var(--ta-text)' }}>
-              <Icon name="ArrowDown" size={15} />
-              <span>Biggest drop-off: <strong>{drop.from} → {drop.to}</strong> ({drop.n} employee{drop.n === 1 ? '' : 's'} not through yet).</span>
-            </div>
+        <Card title="HR Onboarding Progress">
+          <StageFunnel stages={funnelStages} />
+          {awaitingDocs > 0 && (
+            <p className="ta-sfunnel__insight">
+              <Icon name="Info" size={13} />
+              {awaitingDocs} candidate{awaitingDocs === 1 ? '' : 's'} still awaiting document submission or verification.
+            </p>
           )}
         </Card>
 
