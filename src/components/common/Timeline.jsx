@@ -2,7 +2,7 @@ import Icon from './Icon.jsx';
 import { formatDateTime } from '../../utils/format.js';
 
 /* Icon + colour tone per activity type. */
-const TYPE_META = {
+export const TYPE_META = {
   application: { icon: 'FileText', tone: 'blue' },
   review: { icon: 'Eye', tone: 'violet' },
   approve: { icon: 'CheckCircle2', tone: 'green' },

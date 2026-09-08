@@ -640,25 +640,52 @@
 .act-feed__item--link:hover .act-feed__title { color: var(--ta-blue-ink); }
 .act-feed__go { color: var(--ta-text-mute); flex-shrink: 0; }
 .act-feed__icon {
-  width: 27px; height: 27px; border-radius: 8px; flex-shrink: 0;
+  width: 32px; height: 32px; border-radius: 9px; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
 }
-.act-feed__icon--blue { background: var(--tag-blue-bg); color: var(--tag-blue-fg); }
-.act-feed__icon--violet { background: var(--tag-violet-bg); color: var(--tag-violet-fg); }
-.act-feed__icon--green { background: var(--tag-green-bg); color: var(--tag-green-fg); }
-.act-feed__icon--amber { background: var(--tag-amber-bg); color: var(--tag-amber-fg); }
-.act-feed__icon--red { background: var(--tag-red-bg); color: var(--tag-red-fg); }
-.act-feed__icon--teal { background: var(--tag-teal-bg); color: var(--tag-teal-fg); }
+.act-feed__icon--blue { background: color-mix(in srgb, var(--tag-blue-fg) 15%, #fff); color: var(--tag-blue-fg); }
+.act-feed__icon--violet { background: color-mix(in srgb, var(--tag-violet-fg) 15%, #fff); color: var(--tag-violet-fg); }
+.act-feed__icon--green { background: color-mix(in srgb, var(--tag-green-fg) 15%, #fff); color: var(--tag-green-fg); }
+.act-feed__icon--amber { background: color-mix(in srgb, var(--tag-amber-fg) 15%, #fff); color: var(--tag-amber-fg); }
+.act-feed__icon--red { background: color-mix(in srgb, var(--tag-red-fg) 15%, #fff); color: var(--tag-red-fg); }
+.act-feed__icon--teal { background: color-mix(in srgb, var(--tag-teal-fg) 15%, #fff); color: var(--tag-teal-fg); }
 .act-feed__icon--grey { background: var(--tag-grey-bg); color: var(--tag-grey-fg); }
 .act-feed__body { flex: 1; min-width: 0; }
 .act-feed__head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; }
 .act-feed__title { font-size: 13px; font-weight: 600; color: var(--ta-text); }
 .act-feed__when { font-size: 11.5px; color: var(--ta-text-mute); white-space: nowrap; flex-shrink: 0; }
 .act-feed__desc { font-size: 12px; color: var(--ta-text-soft); margin-top: 2px; }
+.act-feed__cand { color: var(--ta-text); font-weight: 600; }
+.act-feed__actor { color: var(--ta-text-mute); }
 @media (max-width: 560px) {
   .act-feed__head { flex-direction: column; gap: 1px; }
   .act-feed__when { align-self: flex-start; }
 }
+
+/* activity page — day groups, sparkline, entrance animation */
+.act-day + .act-day { margin-top: 6px; padding-top: 14px; border-top: 1px solid var(--ta-line); }
+.act-day__label {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em;
+  color: var(--ta-text-mute); margin: 0 2px 6px;
+}
+.act-day__count {
+  font-size: 10px; font-weight: 700; letter-spacing: 0;
+  padding: 1px 7px; border-radius: 999px; background: var(--ta-bg); color: var(--ta-text-soft);
+}
+@keyframes actIn { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: none; } }
+.act-day .act-feed__item { animation: actIn 0.34s cubic-bezier(0.2, 0, 0.2, 1) backwards; }
+@media (prefers-reduced-motion: reduce) { .act-day .act-feed__item { animation: none; } }
+
+.act-spark { display: flex; align-items: flex-end; gap: 4px; height: 48px; }
+.act-spark__col { flex: 1; height: 100%; display: flex; align-items: flex-end; }
+.act-spark__bar {
+  width: 100%; min-height: 3px; border-radius: 4px 4px 0 0;
+  background: color-mix(in srgb, var(--ta-blue) 55%, #fff); transition: background 0.12s;
+}
+.act-spark__col:hover .act-spark__bar { background: var(--ta-blue); }
+.act-spark__col--today .act-spark__bar { background: var(--ta-blue); }
+.act-spark__axis { display: flex; justify-content: space-between; font-size: 10px; color: var(--ta-text-mute); margin-top: 6px; }
 
 /* brief highlight when an activity row jumps you to a card or document */
 @keyframes cxFlash {
