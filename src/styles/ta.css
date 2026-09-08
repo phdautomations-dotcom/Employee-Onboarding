@@ -379,21 +379,34 @@
 .hr-joiners__text .ta-cell-sub { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .hr-joined { display: inline-flex; align-items: center; gap: 5px; }
 
-/* team-role cell in the employees table */
-.hr-role {
-  display: inline-flex; align-items: center; gap: 6px;
-  font: inherit; cursor: pointer; border-radius: 999px;
-  border: 1px solid transparent; background: transparent; padding: 3px 4px;
-  color: var(--ta-text-mute);
+/* compact "who's joining soon" strip on the Employees page */
+.hr-upnext {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  padding: 9px 14px; margin-bottom: 14px;
+  background: var(--ta-surface); border: 1px solid var(--ta-line);
+  border-radius: var(--ta-radius); box-shadow: var(--ta-shadow);
 }
-.hr-role--set { color: var(--ta-text); }
-.hr-role--set svg { color: var(--ta-text-mute); opacity: 0; transition: opacity 0.12s; }
-.hr-role:hover svg { opacity: 1; }
-.hr-role--add {
-  font-size: 12px; font-weight: 500; padding: 5px 11px;
-  border-color: var(--ta-line); background: var(--ta-surface); color: var(--ta-text-soft);
+.hr-upnext__label {
+  display: inline-flex; align-items: center; gap: 6px; flex-shrink: 0;
+  font-size: 11px; font-weight: 700; color: var(--ta-text-mute);
+  text-transform: uppercase; letter-spacing: 0.04em;
 }
-.hr-role--add:hover { border-color: var(--ta-blue); color: var(--ta-blue); }
+.hr-upnext__label svg { color: var(--tag-violet-fg); }
+.hr-upnext__list { display: flex; flex-wrap: wrap; gap: 7px; }
+.hr-upnext__pill {
+  display: inline-flex; align-items: center; gap: 7px;
+  font: inherit; font-size: 12.5px; font-weight: 500; cursor: pointer;
+  padding: 4px 6px 4px 11px; border-radius: 999px;
+  border: 1px solid var(--ta-line); background: var(--ta-bg); color: var(--ta-text);
+  transition: border-color 0.12s, background 0.12s;
+}
+.hr-upnext__pill:hover { border-color: var(--ta-blue); background: var(--ta-surface); }
+.hr-upnext__days {
+  font-size: 11px; font-weight: 700; font-variant-numeric: tabular-nums;
+  padding: 2px 7px; border-radius: 999px;
+  background: var(--tag-blue-bg); color: var(--tag-blue-fg);
+}
+.hr-upnext__days.is-soon { background: var(--tag-green-bg); color: var(--tag-green-fg); }
 
 /* suggestion chips inside the assign-role modal */
 .assign-role__chips { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 12px; }

@@ -41,13 +41,14 @@ export default function HRCandidateDetailPage() {
   const toast = useToast();
   const {
     getApplicationByCandidate, documentsFor, offerFor, employeeFor, activitiesFor,
-    verifyDocument, rejectDocument, verifyOnboarding, rejectOnboarding, completeJoining,
+    verifyDocument, rejectDocument, verifyOnboarding, rejectOnboarding, completeJoining, assignEmployeeRole,
   } = useApp();
 
   const app = getApplicationByCandidate(candidateId);
   const [rejectingOnboarding, setRejectingOnboarding] = useState(false);
   const [rejectDoc, setRejectDoc] = useState(null);
   const [joining, setJoining] = useState(false);
+  const [editingRole, setEditingRole] = useState(false);
 
   if (!app) {
     return (
@@ -73,6 +74,11 @@ export default function HRCandidateDetailPage() {
     const employeeId = completeJoining(app.id, teamRole);
     toast.success(`Joining completed — employee ID ${employeeId}${teamRole ? ` · ${teamRole}` : ''}.`);
     setJoining(false);
+  };
+  const saveRole = (teamRole) => {
+    assignEmployeeRole(employee.id, teamRole);
+    toast.success(teamRole ? `Team role set to ${teamRole}.` : 'Team role cleared.');
+    setEditingRole(false);
   };
 
   return (
@@ -187,7 +193,14 @@ export default function HRCandidateDetailPage() {
           )}
 
           {employee && (
-            <Card title="Employee record">
+            <Card
+              title="Employee record"
+              action={
+                <Button variant="ghost" icon={employee.teamRole ? 'Pencil' : 'Plus'} onClick={() => setEditingRole(true)}>
+                  {employee.teamRole ? 'Change team role' : 'Assign team role'}
+                </Button>
+              }
+            >
               <div className="ta-info">
                 <Info label="Employee ID" value={employee.id} />
                 <Info label="Position" value={employee.position} />
@@ -244,10 +257,18 @@ export default function HRCandidateDetailPage() {
         open={joining}
         name={name}
         title={`Complete joining — ${name}`}
-        hint="This becomes the employee's team role. You can change it later from the Employees page."
+        hint="This becomes the employee's team role. You can change it later from this page."
         confirmLabel="Complete joining"
         onClose={() => setJoining(false)}
         onSave={markJoined}
+      />
+      <AssignRoleModal
+        open={editingRole}
+        name={name}
+        initialRole={employee?.teamRole || ''}
+        title={`Team role — ${name}`}
+        onClose={() => setEditingRole(false)}
+        onSave={saveRole}
       />
     </>
   );
