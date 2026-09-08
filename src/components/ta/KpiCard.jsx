@@ -1,13 +1,14 @@
 import Icon from '../common/Icon.jsx';
 import Sparkline from '../common/Sparkline.jsx';
 
-/* One dashboard KPI: icon + label, big number, then EITHER
-   - a `meter` { value, max, hint } — a proportion bar with a plain-language hint, or
-   - a `trend` / `note` line plus an optional 8-week `spark` sparkline.
-   `accent` picks the icon tint. `onClick` makes the whole card a link. */
+/* One dashboard KPI. Two footer styles:
+   - `meter` { value, max, hint } → a compact progress ring beside the number
+     plus a plain-language hint line.
+   - `trend` / `note` (+ optional 8-week `spark`) → a delta line and sparkline.
+   `accent` is a tag tone (blue | amber | violet | green | teal | red). */
 export default function KpiCard({ icon, label, value, trend, note, spark, meter, accent = 'blue', onClick }) {
-  const wash = `var(--tag-${accent}-bg)`;
   const fg = `var(--tag-${accent}-fg)`;
+  const wash = `var(--tag-${accent}-bg)`;
 
   let footer = <span className="ta-trend ta-trend--flat">{note}</span>;
   if (trend) {
@@ -21,26 +22,35 @@ export default function KpiCard({ icon, label, value, trend, note, spark, meter,
   }
 
   const Tag = onClick ? 'button' : 'div';
-  const pct = meter ? Math.max(4, Math.min(100, Math.round((meter.value / (meter.max || 1)) * 100))) : 0;
+  const pct = meter ? Math.max(3, Math.min(100, Math.round((meter.value / (meter.max || 1)) * 100))) : 0;
 
   return (
     <Tag
       type={onClick ? 'button' : undefined}
       className={`ta-kpi${onClick ? ' ta-kpi--link' : ''}`}
-      style={{ '--k-wash': wash, '--k-fg': fg }}
+      style={{ '--k-fg': fg, '--k-wash': wash }}
       onClick={onClick}
     >
-      <div className="ta-kpi__top">
-        <span className="ta-kpi__icon"><Icon name={icon} size={19} /></span>
+      <div className="ta-kpi__head">
         <span className="ta-kpi__label">{label}</span>
+        <span className="ta-kpi__icon"><Icon name={icon} size={16} /></span>
       </div>
-      <div className="ta-kpi__value">{value}</div>
+
+      <div className="ta-kpi__body">
+        <span className="ta-kpi__value">{value}</span>
+        {meter && (
+          <span className="ta-kpi__ring">
+            <svg viewBox="0 0 40 40" aria-hidden="true">
+              <circle className="ta-kpi__ring-bg" cx="20" cy="20" r="16" pathLength="100" />
+              <circle className="ta-kpi__ring-fg" cx="20" cy="20" r="16" pathLength="100" strokeDasharray={`${pct} 100`} />
+            </svg>
+            <span className="ta-kpi__ring-num">{pct}%</span>
+          </span>
+        )}
+      </div>
 
       {meter ? (
-        <div className="ta-kpi__meter">
-          <div className="ta-kpi__meter-track"><span style={{ width: `${pct}%` }} /></div>
-          <span className="ta-kpi__meter-hint">{meter.hint}</span>
-        </div>
+        <div className="ta-kpi__hint">{meter.hint}</div>
       ) : (
         <div className="ta-kpi__foot">
           {footer}
