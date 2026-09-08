@@ -132,12 +132,16 @@ export function stageBadgeForStatus(status) {
    the candidates table's stage filter, so clicking a funnel stage shows exactly
    the candidates counted in it. Each stage is cumulative ("reached this stage
    or further"), which keeps the funnel monotonically non-increasing. */
+/* HR onboarding stages, in workflow order. `rank` is cumulative — a filter for
+   a stage matches everyone who reached it or further. Labels match the HR
+   dashboard's "HR Onboarding Progress" funnel so a click there lands on the
+   same wording here. */
 export const HR_FUNNEL_STAGES = [
-  { key: 'reached_hr', label: 'Reached HR', icon: 'Files', tone: 'blue', rank: 0 },
-  { key: 'offer_sent', label: 'Offer Sent', icon: 'FileCheck', tone: 'violet', rank: 1 },
-  { key: 'onboarding', label: 'Onboarding', icon: 'ClipboardList', tone: 'amber', rank: 2 },
-  { key: 'verification', label: 'Verification', icon: 'Eye', tone: 'amber', rank: 3 },
-  { key: 'joining', label: 'Joining', icon: 'Clock3', tone: 'teal', rank: 4 },
+  { key: 'reached_hr', label: 'Reached HR', icon: 'Files', tone: 'grey', rank: 0 },
+  { key: 'offer_sent', label: 'Offer Sent', icon: 'Send', tone: 'blue', rank: 1 },
+  { key: 'onboarding', label: 'Offer Accepted', icon: 'FileCheck', tone: 'violet', rank: 2 },
+  { key: 'verification', label: 'Joining Documents', icon: 'Files', tone: 'blue', rank: 3 },
+  { key: 'joining', label: 'Documents Verified', icon: 'CheckCircle2', tone: 'teal', rank: 4 },
   { key: 'onboarded', label: 'Onboarded', icon: 'UserRoundCheck', tone: 'green', rank: 5 },
 ];
 

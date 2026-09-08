@@ -18,7 +18,7 @@ export default function HRDashboard() {
   const navigate = useNavigate();
   const { data, offerFor, activitiesFor } = useApp();
   const user = DEMO_USERS[ROLES.HR];
-  const [handoversOpen, setHandoversOpen] = useState(false);
+  const [handoverAll, setHandoverAll] = useState(false);    // show every row past the preview
 
   // ----- DATA -----
   const apps = data.applications || [];
@@ -118,33 +118,18 @@ export default function HRDashboard() {
         {kpis.map((k) => <KpiCard key={k.label} {...k} />)}
       </div>
 
-      <section className="ta-card hr-handover">
-        <div className="hr-handover__bar">
-          <span className="hr-handover__title">
-            <span className="hr-handover__dot"><Icon name="CheckCircle2" size={14} /></span>
-            New HR Handover
-          </span>
-          <span className="hr-handover__baraside">
-            {handovers.length > 0
-              ? <Tag tone="blue">{handovers.length} accepted · from Talent Acquisition</Tag>
-              : <span className="ta-cell-mute">All caught up</span>}
-            {handovers.length > HANDOVER_PREVIEW && (
-              <button
-                type="button"
-                className="hr-handover__toggle"
-                onClick={() => setHandoversOpen((v) => !v)}
-                aria-label={handoversOpen ? 'Show fewer handovers' : 'Show all handovers'}
-              >
-                <Icon name={handoversOpen ? 'ChevronUp' : 'ChevronDown'} size={16} />
-              </button>
-            )}
-          </span>
-        </div>
-        {handovers.length === 0 ? (
-          <p className="hr-handover__empty">No new handovers from Talent Acquisition — every accepted offer is already in onboarding.</p>
-        ) : (
+      {handovers.length > 0 && (
+        <section className="hr-handover">
+          <div className="hr-handover__head">
+            <span className="hr-handover__lead">
+              <Icon name="CheckCircle2" size={15} />
+              <strong>New HR Handover</strong>
+              <span className="hr-handover__count">{handovers.length}</span>
+            </span>
+            <span className="hr-handover__from">Accepted offers passed from Talent Acquisition</span>
+          </div>
           <div className="hr-handover__list">
-            {(handoversOpen ? handovers : handovers.slice(0, HANDOVER_PREVIEW)).map((a) => (
+            {(handoverAll ? handovers : handovers.slice(0, HANDOVER_PREVIEW)).map((a) => (
               <button
                 key={a.id}
                 type="button"
@@ -158,15 +143,15 @@ export default function HRDashboard() {
                 <span className="hr-handover__go">Start onboarding <Icon name="ArrowRight" size={13} /></span>
               </button>
             ))}
-            {handovers.length > HANDOVER_PREVIEW && (
-              <button type="button" className="hr-handover__more" onClick={() => setHandoversOpen((v) => !v)}>
-                {handoversOpen ? 'Show less' : `Show all ${handovers.length}`}
-                <Icon name={handoversOpen ? 'ChevronUp' : 'ChevronDown'} size={14} />
-              </button>
-            )}
           </div>
-        )}
-      </section>
+          {handovers.length > HANDOVER_PREVIEW && (
+            <button type="button" className="hr-handover__more" onClick={() => setHandoverAll((v) => !v)}>
+              {handoverAll ? 'Show fewer' : `Show all ${handovers.length}`}
+              <Icon name={handoverAll ? 'ChevronUp' : 'ChevronDown'} size={14} />
+            </button>
+          )}
+        </section>
+      )}
 
       <div className="ta-bento">
         <Card

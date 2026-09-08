@@ -381,35 +381,26 @@
 }
 .ta-sfunnel__insight svg { color: var(--ta-text-mute); flex-shrink: 0; }
 
-/* TA → HR handover — a slim banner, not a full card */
-.hr-handover { border-left: 3px solid var(--ta-blue); margin-bottom: 14px; }
-.hr-handover__bar {
-  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+/* TA → HR handover — a slim card that lists newly accepted candidates */
+.hr-handover {
+  background: var(--ta-surface); border: 1px solid var(--ta-line);
+  border-radius: var(--ta-radius); box-shadow: var(--ta-shadow);
+  margin-bottom: 14px; overflow: hidden;
+}
+.hr-handover__head {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
   padding: 10px 16px; border-bottom: 1px solid var(--ta-line-soft);
 }
-.hr-handover__title { display: inline-flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 700; }
-.hr-handover__dot {
+.hr-handover__lead { display: inline-flex; align-items: center; gap: 7px; font-size: 13px; }
+.hr-handover__lead svg { color: var(--tag-green-fg); }
+.hr-handover__lead strong { font-weight: 700; }
+.hr-handover__count {
   display: inline-flex; align-items: center; justify-content: center;
-  width: 22px; height: 22px; border-radius: 6px;
-  background: var(--tag-green-bg); color: var(--tag-green-fg);
+  min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px;
+  background: var(--ta-blue); color: #fff; font-size: 11px; font-weight: 700;
 }
-.hr-handover__empty { margin: 0; padding: 10px 16px 12px; font-size: 12.5px; color: var(--ta-text-mute); }
-.hr-handover__baraside { display: inline-flex; align-items: center; gap: 8px; }
-.hr-handover__toggle {
-  display: inline-flex; align-items: center; justify-content: center;
-  width: 26px; height: 26px; border-radius: 7px;
-  border: 1px solid var(--ta-line); background: var(--ta-surface);
-  color: var(--ta-text-soft); cursor: pointer; transition: background 0.12s, color 0.12s;
-}
-.hr-handover__toggle:hover { background: var(--ta-bg); color: var(--ta-text); }
+.hr-handover__from { font-size: 12px; color: var(--ta-text-mute); }
 .hr-handover__list { display: flex; flex-direction: column; }
-.hr-handover__more {
-  display: flex; align-items: center; justify-content: center; gap: 5px;
-  width: 100%; padding: 8px 16px; border: 0; border-top: 1px solid var(--ta-line-soft);
-  background: transparent; font: inherit; font-size: 12px; font-weight: 600;
-  color: var(--ta-blue); cursor: pointer;
-}
-.hr-handover__more:hover { background: var(--ta-bg); }
 .hr-handover__row {
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
   width: 100%; padding: 9px 16px; border: 0; background: transparent;
@@ -423,6 +414,13 @@
   display: inline-flex; align-items: center; gap: 5px; flex-shrink: 0;
   font-size: 12px; font-weight: 600; color: var(--ta-blue); white-space: nowrap;
 }
+.hr-handover__more {
+  display: flex; align-items: center; justify-content: center; gap: 5px;
+  width: 100%; padding: 8px 16px; border: 0; border-top: 1px solid var(--ta-line-soft);
+  background: transparent; font: inherit; font-size: 12px; font-weight: 600;
+  color: var(--ta-blue); cursor: pointer;
+}
+.hr-handover__more:hover { background: var(--ta-bg); }
 
 /* joiners list — compact, colour-coded rows (HR dashboard + employees page) */
 .hr-joiners { display: grid; grid-template-columns: repeat(auto-fill, minmax(258px, 1fr)); gap: 6px; }
