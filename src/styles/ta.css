@@ -273,10 +273,14 @@
 .ta-kpi--link:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--ta-blue-wash); }
 .ta-kpi__top { display: flex; align-items: center; gap: 10px; }
 .ta-kpi__icon {
-  width: 34px; height: 34px; border-radius: 10px; flex-shrink: 0;
+  width: 38px; height: 38px; border-radius: 11px; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
   background: var(--k-wash, var(--ta-blue-wash)); color: var(--k-fg, var(--ta-blue));
 }
+.ta-kpi__meter { display: flex; flex-direction: column; gap: 6px; margin-top: 1px; }
+.ta-kpi__meter-track { height: 6px; border-radius: 999px; background: var(--ta-bg); overflow: hidden; }
+.ta-kpi__meter-track > span { display: block; height: 100%; border-radius: 999px; background: var(--k-fg, var(--ta-blue)); transition: width 0.5s ease; }
+.ta-kpi__meter-hint { font-size: 11px; color: var(--ta-text-mute); }
 .ta-kpi__label { font-size: 12.5px; color: var(--ta-text-soft); font-weight: 500; }
 .ta-kpi__value { font-size: 25px; font-weight: 700; line-height: 1; margin: 1px 0; }
 .ta-kpi__foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; }

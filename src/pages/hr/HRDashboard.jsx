@@ -9,7 +9,6 @@ import Icon from '../../components/common/Icon.jsx';
 import { useApp } from '../../context/AppContext.jsx';
 import { DEMO_USERS, ROLES } from '../../constants/roles.js';
 import { APP_STATUS, OFFER_STATUS, HR_FUNNEL_STAGES, hrStageRank } from '../../constants/statuses.js';
-import { weeklyCounts } from '../../utils/metrics.js';
 import { timeAgo, formatDate } from '../../utils/format.js';
 
 export default function HRDashboard() {
@@ -26,32 +25,42 @@ export default function HRDashboard() {
   const pendingVerification = apps.filter((a) => a.status === APP_STATUS.HR_VERIFICATION);
 
   // ----- CALCULATIONS -----
-  const issuedOffers = offers.filter((o) => o.status === OFFER_STATUS.ISSUED);
-  const acceptedOffers = offers.filter((o) => o.status === OFFER_STATUS.ACCEPTED);
+  const onboardingStatuses = [
+    APP_STATUS.ONBOARDING_PENDING, APP_STATUS.HR_VERIFICATION,
+    APP_STATUS.HR_VERIFICATION_REJECTED, APP_STATUS.JOINING_PENDING,
+  ];
+  const inOnboarding = apps.filter((a) => onboardingStatuses.includes(a.status)).length;
+  const issuedCount = apps.filter((a) => a.status === APP_STATUS.OFFER_ISSUED).length;
+  const acceptedCount = offers.filter((o) => o.status === OFFER_STATUS.ACCEPTED).length;
+  const offersOut = issuedCount + acceptedCount;
+  const joiningPending = apps.filter((a) => a.status === APP_STATUS.JOINING_PENDING).length;
+  const joinedThisMonth = employees.filter((e) => {
+    const d = new Date(e.joiningDate); const n = new Date();
+    return d.getMonth() === n.getMonth() && d.getFullYear() === n.getFullYear();
+  }).length;
+  const everReachedHR = apps.filter((a) => hrStageRank(a.status) >= 0).length;
 
+  // Each KPI shows the number in context (a share of a total it belongs to),
+  // so the reader knows whether "3" is a lot or a little.
   const kpis = [
     {
-      icon: 'Eye', label: 'Onboarding Verification', accent: 'amber', value: pendingVerification.length,
-      note: 'Needs your review',
-      spark: weeklyCounts(acceptedOffers, 'decisionAt', 8),
+      icon: 'ClipboardCheck', label: 'Awaiting Verification', accent: 'amber', value: pendingVerification.length,
+      meter: { value: pendingVerification.length, max: Math.max(1, inOnboarding), hint: `of ${inOnboarding} candidates in onboarding` },
       onClick: () => navigate('/hr/candidates?stage=verification'),
     },
     {
-      icon: 'FileCheck', label: 'Offers Issued', accent: 'blue', value: apps.filter((a) => a.status === APP_STATUS.OFFER_ISSUED).length,
-      note: 'Waiting on candidate',
-      spark: weeklyCounts(issuedOffers, 'issuedAt', 8),
+      icon: 'Send', label: 'Offers Out', accent: 'blue', value: issuedCount,
+      meter: { value: issuedCount, max: Math.max(1, offersOut), hint: `of ${offersOut} extended · ${acceptedCount} accepted` },
       onClick: () => navigate(`/hr/candidates?offer=${OFFER_STATUS.ISSUED}`),
     },
     {
-      icon: 'CalendarClock', label: 'Joining Soon', accent: 'violet', value: apps.filter((a) => a.status === APP_STATUS.JOINING_PENDING).length,
-      note: 'Ready to onboard',
-      spark: weeklyCounts(acceptedOffers, 'decisionAt', 8),
+      icon: 'CalendarClock', label: 'Joining Soon', accent: 'violet', value: joiningPending,
+      meter: { value: joiningPending, max: Math.max(1, joiningPending + employees.length), hint: `${employees.length} already onboarded` },
       onClick: () => navigate('/hr/employees'),
     },
     {
-      icon: 'UserRoundCheck', label: 'Employees Onboarded', accent: 'green', value: employees.length,
-      note: 'All time',
-      spark: weeklyCounts(employees, 'createdAt', 8),
+      icon: 'UserRoundCheck', label: 'Onboarded', accent: 'green', value: employees.length,
+      meter: { value: employees.length, max: Math.max(1, everReachedHR), hint: `of ${everReachedHR} who reached HR${joinedThisMonth > 0 ? ` · ${joinedThisMonth} this month` : ''}` },
       onClick: () => navigate('/hr/employees'),
     },
   ];
