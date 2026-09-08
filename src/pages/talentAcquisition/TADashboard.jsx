@@ -14,7 +14,7 @@ import {
   OFFER_STATUS,
   stageIndexForStatus,
 } from '../../constants/statuses.js';
-import { countInWindow, trendPercent, weeklyCounts, groupCounts, noticePeriodDays } from '../../utils/metrics.js';
+import { countInWindow, trendPercent, groupCounts, noticePeriodDays } from '../../utils/metrics.js';
 
 /* The five pipeline stages shown in the funnel + list, with the index in
    PIPELINE_STAGES a candidate must have reached to be counted. */
@@ -90,8 +90,7 @@ export default function TADashboard() {
     {
       icon: 'Users', label: 'Total Candidates', accent: 'blue', value: apps.length,
       trend: trendPercent(countInWindow(apps, 'submittedAt', 0), countInWindow(apps, 'submittedAt', 1)),
-      note: 'Since the first application',
-      spark: weeklyCounts(apps, 'submittedAt', 8),
+      note: `${activeForNotice.length} still active`,
       onClick: () => navigate('/ta/candidates'),
     },
     {
@@ -104,13 +103,11 @@ export default function TADashboard() {
       value: interviews.filter((i) => i.status === ROUND_STATUS.SCHEDULED).length,
       trend: trendPercent(countInWindow(interviews, 'date', 0), countInWindow(interviews, 'date', 1)),
       note: `${interviewsDone} completed so far`,
-      spark: weeklyCounts(interviews, 'date', 8),
     },
     {
       icon: 'FileCheck', label: 'Offers Extended', accent: 'green', value: extendedOffers.length,
       trend: trendPercent(countInWindow(extendedOffers, 'createdAt', 0), countInWindow(extendedOffers, 'createdAt', 1)),
       note: `${offersAccepted} accepted`,
-      spark: weeklyCounts(extendedOffers, 'createdAt', 8),
     },
   ];
 

@@ -15,8 +15,11 @@ export default function KpiCard({ icon, label, value, trend, note, spark, meter,
     const cls = trend > 0 ? 'ta-trend--up' : 'ta-trend--down';
     const arrow = trend > 0 ? 'ArrowUp' : 'ArrowDown';
     footer = (
-      <span className={`ta-trend ${cls}`}>
-        <Icon name={arrow} size={12} /> {Math.abs(trend)}% <span className="ta-trend__mute">vs last month</span>
+      <span className="ta-kpi__footstack">
+        <span className={`ta-trend ${cls}`}>
+          <Icon name={arrow} size={12} /> {Math.abs(trend)}% <span className="ta-trend__mute">vs last month</span>
+        </span>
+        {note && <span className="ta-kpi__subnote">{note}</span>}
       </span>
     );
   }
