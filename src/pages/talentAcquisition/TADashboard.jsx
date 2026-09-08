@@ -179,7 +179,19 @@ export default function TADashboard() {
           {sourceSlices.length === 0 ? (
             <p className="ta-cell-mute">No applications in this period.</p>
           ) : (
-            <DonutChart slices={sourceSlices} caption="Total" />
+            <>
+              <DonutChart slices={sourceSlices} caption="Total" />
+              {(() => {
+                const total = sourceSlices.reduce((s, x) => s + x.value, 0) || 1;
+                const top = [...sourceSlices].sort((a, b) => b.value - a.value)[0];
+                return (
+                  <div className="ta-donut-note">
+                    <span className="ta-legend__dot" style={{ background: top.color }} />
+                    <span><strong>{top.label}</strong> is the leading channel — {Math.round((top.value / total) * 100)}% of applications in this period.</span>
+                  </div>
+                );
+              })()}
+            </>
           )}
         </Card>
       </div>
