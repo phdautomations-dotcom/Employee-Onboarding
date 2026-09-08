@@ -2,8 +2,8 @@ import Icon from '../common/Icon.jsx';
 import Sparkline from '../common/Sparkline.jsx';
 
 /* One dashboard KPI. Two footer styles:
-   - `meter` { value, max, hint } → a compact progress ring beside the number
-     plus a plain-language hint line.
+   - `meter` { value, max, hint } → the number shown as "value / max" with a
+     short noun hint ("candidates in onboarding").
    - `trend` / `note` (+ optional 8-week `spark`) → a delta line and sparkline.
    `accent` is a tag tone (blue | amber | violet | green | teal | red). */
 export default function KpiCard({ icon, label, value, trend, note, spark, meter, accent = 'blue', onClick }) {
@@ -22,7 +22,6 @@ export default function KpiCard({ icon, label, value, trend, note, spark, meter,
   }
 
   const Tag = onClick ? 'button' : 'div';
-  const pct = meter ? Math.max(3, Math.min(100, Math.round((meter.value / (meter.max || 1)) * 100))) : 0;
 
   return (
     <Tag
@@ -36,17 +35,9 @@ export default function KpiCard({ icon, label, value, trend, note, spark, meter,
         <span className="ta-kpi__icon"><Icon name={icon} size={16} /></span>
       </div>
 
-      <div className="ta-kpi__body">
-        <span className="ta-kpi__value">{value}</span>
-        {meter && (
-          <span className="ta-kpi__ring">
-            <svg viewBox="0 0 40 40" aria-hidden="true">
-              <circle className="ta-kpi__ring-bg" cx="20" cy="20" r="16" pathLength="100" />
-              <circle className="ta-kpi__ring-fg" cx="20" cy="20" r="16" pathLength="100" strokeDasharray={`${pct} 100`} />
-            </svg>
-            <span className="ta-kpi__ring-num">{pct}%</span>
-          </span>
-        )}
+      <div className="ta-kpi__value">
+        {value}
+        {meter && <span className="ta-kpi__of">/ {meter.max}</span>}
       </div>
 
       {meter ? (

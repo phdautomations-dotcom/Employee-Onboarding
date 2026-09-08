@@ -45,22 +45,22 @@ export default function HRDashboard() {
   const kpis = [
     {
       icon: 'ClipboardCheck', label: 'Awaiting Verification', accent: 'amber', value: pendingVerification.length,
-      meter: { value: pendingVerification.length, max: Math.max(1, inOnboarding), hint: `of ${inOnboarding} candidates in onboarding` },
+      meter: { value: pendingVerification.length, max: Math.max(1, inOnboarding), hint: 'candidates currently in onboarding' },
       onClick: () => navigate('/hr/candidates?stage=verification'),
     },
     {
-      icon: 'Send', label: 'Offers Out', accent: 'blue', value: issuedCount,
-      meter: { value: issuedCount, max: Math.max(1, offersOut), hint: `of ${offersOut} extended · ${acceptedCount} accepted` },
+      icon: 'Send', label: 'Offers Awaiting Reply', accent: 'blue', value: issuedCount,
+      meter: { value: issuedCount, max: Math.max(1, offersOut), hint: `offers extended · ${acceptedCount} accepted` },
       onClick: () => navigate(`/hr/candidates?offer=${OFFER_STATUS.ISSUED}`),
     },
     {
       icon: 'CalendarClock', label: 'Joining Soon', accent: 'violet', value: joiningPending,
-      meter: { value: joiningPending, max: Math.max(1, joiningPending + employees.length), hint: `${employees.length} already onboarded` },
+      meter: { value: joiningPending, max: Math.max(1, joiningPending + employees.length), hint: 'in the joining stage or onboarded' },
       onClick: () => navigate('/hr/employees'),
     },
     {
       icon: 'UserRoundCheck', label: 'Onboarded', accent: 'green', value: employees.length,
-      meter: { value: employees.length, max: Math.max(1, everReachedHR), hint: `of ${everReachedHR} who reached HR${joinedThisMonth > 0 ? ` · ${joinedThisMonth} this month` : ''}` },
+      meter: { value: employees.length, max: Math.max(1, everReachedHR), hint: `candidates who reached HR${joinedThisMonth > 0 ? ` · ${joinedThisMonth} this month` : ''}` },
       onClick: () => navigate('/hr/employees'),
     },
   ];
