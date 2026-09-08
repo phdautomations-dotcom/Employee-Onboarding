@@ -3,11 +3,11 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import Icon from '../common/Icon.jsx';
 import { useApp } from '../../context/AppContext.jsx';
 
-/* Topbar search. Scoped to the section you're in: on an Employees page it
-   searches employees, everywhere else it searches candidates/applications.
-   Every result opens the matching candidate/employee detail page. */
+/* Topbar search. Scoped to the page you're on: an Employees page searches
+   employees, a Jobs page searches jobs, a Candidates page searches candidates.
+   The dashboard is the one universal search — it looks across everything. */
 export default function GlobalSearch({ base, variant, placeholder }) {
-  const { data, getApplication } = useApp();
+  const { data, jobs, getApplication } = useApp();
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const [q, setQ] = useState('');
@@ -15,28 +15,42 @@ export default function GlobalSearch({ base, variant, placeholder }) {
   const ref = useRef(null);
   const barClass = variant === 'ta' ? 'ta-search' : 'search-bar';
 
-  const empMode = pathname.includes('/employees');
-  const ph = placeholder || (empMode ? 'Search employees…' : 'Search candidates, IDs, roles…');
+  const dashMode = /^\/(ta|hr)\/?$/.test(pathname) || pathname.includes('/dashboard');
+  const empMode = !dashMode && pathname.includes('/employees');
+  const jobMode = !dashMode && pathname.includes('/jobs') && !empMode;
+  const candMode = !dashMode && !empMode && !jobMode;
+  const ph = placeholder
+    || (empMode ? 'Search employees…'
+      : jobMode ? 'Search jobs…'
+      : candMode ? 'Search candidates…'
+      : 'Search candidates, jobs, IDs…');
 
   const results = useMemo(() => {
     const term = q.trim().toLowerCase();
     if (!term) return [];
-    if (empMode) {
-      return (data.employees || [])
-        .filter((e) =>
-          (e.name || '').toLowerCase().includes(term) ||
-          (e.id || '').toLowerCase().includes(term) ||
-          (e.position || '').toLowerCase().includes(term) ||
-          (e.department || '').toLowerCase().includes(term))
-        .slice(0, 8)
-        .map((e) => ({
-          key: e.id,
-          primary: e.name,
-          secondary: `${e.id} · ${e.position}`,
-          to: `${base}/candidates/${getApplication(e.applicationId)?.candidateId || ''}`,
-        }));
-    }
-    return (data.applications || [])
+
+    const jobHits = (jobs || [])
+      .filter((j) =>
+        (j.title || '').toLowerCase().includes(term) ||
+        (j.id || '').toLowerCase().includes(term) ||
+        (j.department || '').toLowerCase().includes(term) ||
+        (j.location || '').toLowerCase().includes(term))
+      .map((j) => ({ key: j.id, primary: j.title, secondary: `${j.department} · ${j.location}`, to: `${base}/jobs/${j.id}` }));
+
+    const empHits = (data.employees || [])
+      .filter((e) =>
+        (e.name || '').toLowerCase().includes(term) ||
+        (e.id || '').toLowerCase().includes(term) ||
+        (e.position || '').toLowerCase().includes(term) ||
+        (e.department || '').toLowerCase().includes(term))
+      .map((e) => ({
+        key: e.id,
+        primary: e.name,
+        secondary: `${e.id} · ${e.position}`,
+        to: `${base}/candidates/${getApplication(e.applicationId)?.candidateId || ''}`,
+      }));
+
+    const candHits = (data.applications || [])
       .filter((a) => {
         const name = `${a.personal.firstName} ${a.personal.lastName}`.toLowerCase();
         return (
@@ -47,14 +61,18 @@ export default function GlobalSearch({ base, variant, placeholder }) {
           (a.personal.email || '').toLowerCase().includes(term)
         );
       })
-      .slice(0, 8)
       .map((a) => ({
         key: a.id,
         primary: `${a.personal.firstName} ${a.personal.lastName}`,
         secondary: `${a.candidateId} · ${a.jobTitle}`,
         to: `${base}/candidates/${a.candidateId}`,
       }));
-  }, [q, empMode, data.applications, data.employees, base, getApplication]);
+
+    if (jobMode) return jobHits.slice(0, 8);
+    if (empMode) return empHits.slice(0, 8);
+    if (candMode) return candHits.slice(0, 8);
+    return [...candHits.slice(0, 5), ...jobHits.slice(0, 5)];
+  }, [q, empMode, jobMode, candMode, data.applications, data.employees, jobs, base, getApplication]);
 
   return (
     <div className="global-search" ref={ref} style={variant === 'ta' ? undefined : { minWidth: 280 }}>

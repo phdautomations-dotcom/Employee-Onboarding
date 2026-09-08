@@ -22,7 +22,7 @@ export default function TATopbar({ head, onMenu }) {
         {head?.subtitle && <p className="ta-topbar__sub">{head.subtitle}</p>}
       </div>
 
-      <GlobalSearch base="/ta" variant="ta" placeholder="Search candidates, jobs…" />
+      <GlobalSearch base="/ta" variant="ta" />
       <NotificationBell role={ROLES.TA} variant="ta" />
       <span className="ta-avatar-sq" title={user.name}>{user.initials}</span>
     </header>

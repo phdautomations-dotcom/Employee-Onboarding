@@ -11,6 +11,7 @@ export function useJobFilters(jobs) {
 
   const facets = useMemo(
     () => ({
+      total: jobs.length,
       departments: [...new Set(jobs.map((j) => j.department))].sort(),
       modes: [...new Set(jobs.map((j) => j.workMode))].sort(),
       types: [...new Set(jobs.map((j) => j.employmentType))].sort(),

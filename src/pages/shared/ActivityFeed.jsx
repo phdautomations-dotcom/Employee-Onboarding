@@ -45,7 +45,6 @@ const shortTime = (d) =>
 export default function ActivityFeed({ base = '/hr', scope = 'hr' }) {
   const navigate = useNavigate();
   const { data, getApplication } = useApp();
-  const [q, setQ] = useState('');
   const [type, setType] = useState('all');
 
   const scopeTypes = SCOPE_TYPES[scope] || SCOPE_TYPES.ta;
@@ -62,14 +61,10 @@ export default function ActivityFeed({ base = '/hr', scope = 'hr' }) {
     [data.activities, scopeTypes, getApplication]
   );
 
-  const items = useMemo(() => {
-    const t = q.trim().toLowerCase();
-    return all.filter(
-      (a) =>
-        (type === 'all' || a.type === type) &&
-        (!t || a.title.toLowerCase().includes(t) || a.candidate.toLowerCase().includes(t) || (a.description || '').toLowerCase().includes(t))
-    );
-  }, [all, q, type]);
+  const items = useMemo(
+    () => all.filter((a) => type === 'all' || a.type === type),
+    [all, type]
+  );
 
   const groups = useMemo(() => {
     const out = [];
@@ -82,17 +77,6 @@ export default function ActivityFeed({ base = '/hr', scope = 'hr' }) {
     return out;
   }, [items]);
 
-  // Activity by week over the last ~10 weeks.
-  const spark = useMemo(() => {
-    const weeks = [];
-    for (let i = 9; i >= 0; i -= 1) {
-      const end = new Date(); end.setHours(0, 0, 0, 0); end.setDate(end.getDate() - i * 7 + 1);
-      const start = end.getTime() - 7 * 86400000;
-      weeks.push({ end, count: all.filter((a) => { const t = new Date(a.at).getTime(); return t >= start && t < end.getTime(); }).length });
-    }
-    return weeks;
-  }, [all]);
-  const sparkMax = Math.max(1, ...spark.map((d) => d.count));
   const last7 = useMemo(() => {
     const cutoff = Date.now() - 7 * 86400000;
     return all.filter((a) => new Date(a.at).getTime() >= cutoff).length;
@@ -109,7 +93,6 @@ export default function ActivityFeed({ base = '/hr', scope = 'hr' }) {
 
   const chips = [
     type !== 'all' && { key: 'type', label: cap(type), onRemove: () => setType('all') },
-    q && { key: 'q', label: `“${q}”`, onRemove: () => setQ('') },
   ].filter(Boolean);
 
   const open = (it) => {
@@ -128,26 +111,10 @@ export default function ActivityFeed({ base = '/hr', scope = 'hr' }) {
 
       <StatBar items={stats} />
 
-      <Card title="Activity by week" action={<span className="ta-cell-sub">{all.length} events all time</span>}>
-        <div className="act-spark">
-          {spark.map((d, i) => (
-            <div
-              className={`act-spark__col${i === spark.length - 1 ? ' act-spark__col--today' : ''}`}
-              key={i}
-              title={`${d.count} event${d.count === 1 ? '' : 's'} · week of ${new Date(d.end.getTime() - 6 * 86400000).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}`}
-            >
-              <span className="act-spark__bar" style={{ height: `${Math.max(4, (d.count / sparkMax) * 100)}%` }} />
-            </div>
-          ))}
-        </div>
-        <div className="act-spark__axis"><span>10 weeks ago</span><span>this week</span></div>
-      </Card>
-
       <Toolbar
-        search={{ value: q, onChange: setQ, placeholder: 'Search by candidate or action…' }}
         filters={[{ label: 'Type', value: type, onChange: setType, options: scopeTypes.map((s) => ({ value: s, label: cap(s) })) }]}
         chips={chips}
-        onClearAll={chips.length > 1 ? () => { setQ(''); setType('all'); } : undefined}
+        onClearAll={chips.length ? () => setType('all') : undefined}
       />
 
       {items.length === 0 ? (

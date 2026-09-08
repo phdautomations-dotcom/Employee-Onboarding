@@ -47,7 +47,6 @@ export default function TAJobsPage() {
 
   const chips = [
     activeDept !== 'all' && { key: 'dept', label: activeDept, onRemove: () => view.setFilter('department', 'all') },
-    view.query && { key: 'q', label: `“${view.query}”`, onRemove: () => view.setQuery('') },
   ].filter(Boolean);
 
   const totalApplicants = rows.reduce((sum, r) => sum + r.applicants, 0);
@@ -57,10 +56,9 @@ export default function TAJobsPage() {
       <TAHeader title="Jobs" subtitle={`${jobs.length} open positions · ${totalApplicants} applicants in total`} />
 
       <Toolbar
-        search={{ value: view.query, onChange: view.setQuery, placeholder: 'Search jobs by title, department or ID…' }}
         filters={[{ label: 'Department', value: activeDept, onChange: (v) => view.setFilter('department', v), options: deptOptions }]}
         chips={chips}
-        onClearAll={chips.length > 1 ? () => { view.setQuery(''); view.setFilter('department', 'all'); } : undefined}
+        onClearAll={chips.length > 1 ? () => view.setFilter('department', 'all') : undefined}
         action={<Button icon="Plus" onClick={() => setOpen(true)}>Create Job</Button>}
       />
 

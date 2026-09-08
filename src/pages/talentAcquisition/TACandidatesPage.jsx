@@ -144,7 +144,6 @@ export default function TACandidatesPage() {
       <TAHeader title="Candidates" subtitle="Manage and track candidates through the recruitment process." />
 
       <Toolbar
-        search={{ value: view.query, onChange: view.setQuery, placeholder: 'Search candidates by name, email or ID…' }}
         filters={[
           { label: 'Stage', value: stage, onChange: setStage, options: Object.entries(STAGE_GROUPS).map(([value, g]) => ({ value, label: g.label })) },
           { label: 'Job', value: activeJob, onChange: (v) => view.setFilter('job', v), options: jobOptions },
