@@ -18,6 +18,8 @@ export default function HRDashboard() {
   const navigate = useNavigate();
   const { data, offerFor, activitiesFor } = useApp();
   const user = DEMO_USERS[ROLES.HR];
+  const taName = DEMO_USERS[ROLES.TA].name;
+  const [handoverOpen, setHandoverOpen] = useState(true);   // collapse the whole list
   const [handoverAll, setHandoverAll] = useState(false);    // show every row past the preview
 
   // ----- DATA -----
@@ -73,42 +75,36 @@ export default function HRDashboard() {
     },
   ];
 
-  // ===== HR Onboarding Progress — the actual workflow after the TA → HR handover.
-  // Each stage is a subset of the one before it, so the funnel only narrows. =====
+  // ===== HR Onboarding Progress — the workflow after the TA → HR handover.
+  // Cumulative: each stage counts everyone who reached it or further, so the
+  // funnel only narrows, and the count matches what its filter shows. =====
   const accepted = apps.filter((a) => hrStageRank(a.status) >= 2);
   const stages = [
     { label: 'Offer Accepted', tone: 'violet', value: accepted.length, to: '/hr/candidates?stage=onboarding' },
     { label: 'Joining Documents', tone: 'blue', value: accepted.filter((a) => a.onboarding).length, to: '/hr/candidates?stage=verification' },
     { label: 'Documents Verified', tone: 'teal', value: accepted.filter((a) => hrStageRank(a.status) >= 4).length, to: '/hr/candidates?stage=joining' },
-    { label: 'Employee Created', tone: 'amber', value: employees.length, to: '/hr/employees' },
-    { label: 'Onboarded', tone: 'green', value: employees.filter((e) => new Date(e.joiningDate) <= now).length, to: '/hr/employees' },
+    { label: 'Onboarded', tone: 'green', value: accepted.filter((a) => hrStageRank(a.status) >= 5).length, to: '/hr/candidates?stage=onboarded' },
   ];
   const funnelStages = stages.map((s) => ({ ...s, onClick: () => navigate(s.to) }));
   // Small, quiet insight: how much work is still in the document phase.
   const awaitingDocs = stages[0].value - stages[2].value;
 
-  // ===== Upcoming Joiners — when is the incoming workforce expected to start? =====
+  // ===== Upcoming Joiners — merges the joining schedule + the timing donut.
+  // Everyone who accepted and has a target joining date but hasn't joined. =====
   const daysUntil = (dateStr) => (dateStr ? Math.ceil((new Date(dateStr) - Date.now()) / 86400000) : null);
-  const upcoming = accepted
+  const upcomingJoiners = accepted
     .filter((a) => a.status !== APP_STATUS.EMPLOYEE)
-    .map((a) => daysUntil(offerFor(a.id)?.joiningDate))
-    .filter((d) => d != null);
-  const between = (lo, hi) => upcoming.filter((d) => d <= hi && (lo == null || d > lo)).length;
-  const joinerSlices = [
-    { label: 'Within 7 days', value: between(null, 7), color: '#46c98a' },
-    { label: '8–30 days', value: between(7, 30), color: '#4b7bf7' },
-    { label: '31–60 days', value: between(30, 60), color: '#8b7ff0' },
-    { label: '60+ days', value: upcoming.filter((d) => d > 60).length, color: '#f6a04a' },
-  ];
-  const joiningWithin30 = joinerSlices[0].value + joinerSlices[1].value;
-
-  // Confirmed joining dates — HR must plan around these (kit, access, day-1).
-  const joiningSchedule = apps
-    .filter((a) => a.status === APP_STATUS.JOINING_PENDING)
     .map((a) => ({ a, joiningDate: offerFor(a.id)?.joiningDate }))
     .filter((x) => x.joiningDate)
-    .sort((x, y) => new Date(x.joiningDate) - new Date(y.joiningDate))
-    .slice(0, 6);
+    .map((x) => ({ ...x, d: daysUntil(x.joiningDate) }))
+    .sort((x, y) => x.d - y.d);
+  const inWindow = (lo, hi) => upcomingJoiners.filter((x) => x.d <= hi && (lo == null || x.d > lo)).length;
+  const joinerSlices = [
+    { label: 'Within 7 days', value: inWindow(null, 7), color: '#46c98a' },
+    { label: '8–30 days', value: inWindow(7, 30), color: '#4b7bf7' },
+    { label: '31–60 days', value: inWindow(30, 60), color: '#8b7ff0' },
+    { label: '60+ days', value: upcomingJoiners.filter((x) => x.d > 60).length, color: '#f6a04a' },
+  ];
 
   return (
     <>
@@ -127,28 +123,41 @@ export default function HRDashboard() {
               <span className="hr-handover__count">{handovers.length}</span>
             </span>
             <span className="hr-handover__from">Accepted offers passed from Talent Acquisition</span>
-          </div>
-          <div className="hr-handover__list">
-            {(handoverAll ? handovers : handovers.slice(0, HANDOVER_PREVIEW)).map((a) => (
-              <button
-                key={a.id}
-                type="button"
-                className="hr-handover__row"
-                onClick={() => navigate(`/hr/candidates/${a.candidateId}`)}
-              >
-                <span className="hr-handover__who">
-                  <strong>{a.personal.firstName} {a.personal.lastName}</strong>
-                  <span className="ta-cell-sub">{a.jobTitle}</span>
-                </span>
-                <span className="hr-handover__go">Start onboarding <Icon name="ArrowRight" size={13} /></span>
-              </button>
-            ))}
-          </div>
-          {handovers.length > HANDOVER_PREVIEW && (
-            <button type="button" className="hr-handover__more" onClick={() => setHandoverAll((v) => !v)}>
-              {handoverAll ? 'Show fewer' : `Show all ${handovers.length}`}
-              <Icon name={handoverAll ? 'ChevronUp' : 'ChevronDown'} size={14} />
+            <button
+              type="button"
+              className="hr-handover__collapse"
+              onClick={() => setHandoverOpen((v) => !v)}
+              aria-label={handoverOpen ? 'Collapse' : 'Expand'}
+            >
+              <Icon name={handoverOpen ? 'ChevronUp' : 'ChevronDown'} size={16} />
             </button>
+          </div>
+          {handoverOpen && (
+            <>
+              <div className="hr-handover__list">
+                {(handoverAll ? handovers : handovers.slice(0, HANDOVER_PREVIEW)).map((a) => (
+                  <button
+                    key={a.id}
+                    type="button"
+                    className="hr-handover__row"
+                    onClick={() => navigate(`/hr/candidates/${a.candidateId}`)}
+                  >
+                    <span className="hr-handover__who">
+                      <strong>{a.personal.firstName} {a.personal.lastName}</strong>
+                      <span className="ta-cell-sub">{a.jobTitle}</span>
+                    </span>
+                    <span className="hr-handover__taname">{taName}</span>
+                    <span className="hr-handover__go">Start onboarding <Icon name="ArrowRight" size={13} /></span>
+                  </button>
+                ))}
+              </div>
+              {handovers.length > HANDOVER_PREVIEW && (
+                <button type="button" className="hr-handover__more" onClick={() => setHandoverAll((v) => !v)}>
+                  {handoverAll ? 'Show fewer' : `Show all ${handovers.length}`}
+                  <Icon name={handoverAll ? 'ChevronUp' : 'ChevronDown'} size={14} />
+                </button>
+              )}
+            </>
           )}
         </section>
       )}
@@ -193,38 +202,9 @@ export default function HRDashboard() {
         </Card>
 
         <Card
-          title="Joining Schedule"
-          action={<button className="ta-link" onClick={() => navigate('/hr/employees')}>All employees</button>}
-          bodyStyle={{ justifyContent: 'flex-start' }}
+          title="HR Onboarding Progress"
+          action={<span className="ta-cell-sub">{accepted.length} in onboarding</span>}
         >
-          {joiningSchedule.length === 0 ? (
-            <p className="ta-cell-mute">No confirmed joining dates yet — they appear here once documents are verified.</p>
-          ) : (
-            <div className="hr-joiners hr-joiners--stack">
-              {joiningSchedule.map(({ a, joiningDate }) => {
-                const d = Math.round((new Date(joiningDate) - Date.now()) / 86400000);
-                return (
-                  <button
-                    key={a.id}
-                    className="hr-joiners__row"
-                    onClick={() => navigate(`/hr/candidates/${a.candidateId}`)}
-                  >
-                    <span className="hr-joiners__icon"><Icon name="CalendarCheck" size={16} /></span>
-                    <span className="hr-joiners__text">
-                      <span className="ta-cell-strong">{a.personal.firstName} {a.personal.lastName}</span>
-                      <span className="ta-cell-sub">{a.jobTitle} · joins {formatDate(joiningDate)}</span>
-                    </span>
-                    <Tag tone={d <= 7 ? 'green' : 'blue'}>{d <= 0 ? 'Due now' : `in ${d}d`}</Tag>
-                  </button>
-                );
-              })}
-            </div>
-          )}
-        </Card>
-      </div>
-
-      <div className="ta-bento">
-        <Card title="HR Onboarding Progress">
           <StageFunnel stages={funnelStages} />
           {awaitingDocs > 0 && (
             <p className="ta-sfunnel__insight">
@@ -233,19 +213,39 @@ export default function HRDashboard() {
             </p>
           )}
         </Card>
-
-        <Card title="Upcoming Joiners">
-          <DonutChart
-            slices={joinerSlices}
-            caption="joining"
-            onSliceClick={() => navigate('/hr/employees')}
-          />
-          <div className="ta-note" style={{ margin: '12px 0 0', background: 'var(--ta-blue-wash)', color: 'var(--ta-text)' }}>
-            <Icon name="CalendarClock" size={15} />
-            <span><strong>{joiningWithin30} joining in the next 30 days</strong> — {joinerSlices[0].value} within a week.</span>
-          </div>
-        </Card>
       </div>
+
+      <Card
+        title="Upcoming Joiners"
+        action={<span className="ta-cell-sub">{upcomingJoiners.length} expected · {joinerSlices[0].value} within a week</span>}
+      >
+        {upcomingJoiners.length === 0 ? (
+          <p className="ta-cell-mute">No upcoming joiners yet — they appear once an offer is accepted with a joining date.</p>
+        ) : (
+          <div className="hr-upcoming">
+            <DonutChart slices={joinerSlices} caption="joining" onSliceClick={() => navigate('/hr/employees')} />
+            <div className="hr-nextjoin">
+              <div className="hr-nextjoin__head">Next to join</div>
+              {upcomingJoiners.slice(0, 5).map(({ a, d }) => (
+                <button
+                  key={a.id}
+                  type="button"
+                  className="hr-nextjoin__row"
+                  onClick={() => navigate(`/hr/candidates/${a.candidateId}`)}
+                >
+                  <span className="hr-nextjoin__name">{a.personal.firstName} {a.personal.lastName}</span>
+                  <span className={`hr-nextjoin__d${d <= 7 ? ' is-soon' : ''}`}>{d <= 0 ? 'Due now' : `in ${d}d`}</span>
+                </button>
+              ))}
+              {upcomingJoiners.length > 5 && (
+                <button className="ta-link hr-nextjoin__all" onClick={() => navigate('/hr/candidates?stage=onboarding')}>
+                  View all {upcomingJoiners.length} upcoming joiners
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+      </Card>
     </>
   );
 }

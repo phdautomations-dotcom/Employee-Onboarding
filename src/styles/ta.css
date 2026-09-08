@@ -400,9 +400,15 @@
   background: var(--ta-blue); color: #fff; font-size: 11px; font-weight: 700;
 }
 .hr-handover__from { font-size: 12px; color: var(--ta-text-mute); }
+.hr-handover__collapse {
+  margin-left: auto; display: inline-flex; align-items: center; justify-content: center;
+  width: 24px; height: 24px; border-radius: 6px;
+  border: 0; background: transparent; color: var(--ta-text-mute); cursor: pointer;
+}
+.hr-handover__collapse:hover { background: var(--ta-bg); color: var(--ta-text); }
 .hr-handover__list { display: flex; flex-direction: column; }
 .hr-handover__row {
-  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 20px;
   width: 100%; padding: 9px 16px; border: 0; background: transparent;
   font: inherit; text-align: left; cursor: pointer; transition: background 0.12s;
 }
@@ -410,10 +416,13 @@
 .hr-handover__row:hover { background: var(--ta-bg); }
 .hr-handover__who { display: flex; align-items: baseline; gap: 9px; min-width: 0; }
 .hr-handover__who strong { font-size: 13px; font-weight: 600; }
+.hr-handover__who .ta-cell-sub { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hr-handover__taname { font-size: 12.5px; font-weight: 600; color: var(--ta-text); white-space: nowrap; }
 .hr-handover__go {
   display: inline-flex; align-items: center; gap: 5px; flex-shrink: 0;
   font-size: 12px; font-weight: 600; color: var(--ta-blue); white-space: nowrap;
 }
+@media (max-width: 640px) { .hr-handover__taname { display: none; } }
 .hr-handover__more {
   display: flex; align-items: center; justify-content: center; gap: 5px;
   width: 100%; padding: 8px 16px; border: 0; border-top: 1px solid var(--ta-line-soft);
@@ -440,6 +449,32 @@
 .hr-joiners__text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
 .hr-joiners__text .ta-cell-sub { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .hr-joined { display: inline-flex; align-items: center; gap: 5px; }
+
+/* Upcoming Joiners — donut on the left, a short "next to join" list on the right */
+.hr-upcoming { display: grid; grid-template-columns: minmax(0, 430px) 1fr; gap: 32px; align-items: center; }
+.hr-nextjoin { display: flex; flex-direction: column; min-width: 0; }
+.hr-nextjoin__head {
+  font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
+  color: var(--ta-text-mute); padding-bottom: 8px; border-bottom: 1px solid var(--ta-line-soft);
+}
+.hr-nextjoin__row {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  width: 100%; padding: 9px 2px; border: 0; border-bottom: 1px solid var(--ta-line-soft);
+  background: transparent; font: inherit; text-align: left; cursor: pointer; transition: background 0.12s;
+}
+.hr-nextjoin__row:hover { background: var(--ta-bg); }
+.hr-nextjoin__name {
+  font-size: 13px; font-weight: 600; color: var(--ta-text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.hr-nextjoin__d {
+  flex-shrink: 0; font-size: 11.5px; font-weight: 700; font-variant-numeric: tabular-nums;
+  padding: 3px 9px; border-radius: 999px;
+  background: var(--tag-blue-bg); color: var(--tag-blue-fg);
+}
+.hr-nextjoin__d.is-soon { background: var(--tag-green-bg); color: var(--tag-green-fg); }
+.hr-nextjoin__all { align-self: flex-start; margin-top: 10px; }
+@media (max-width: 880px) { .hr-upcoming { grid-template-columns: 1fr; gap: 18px; } }
 
 /* compact "who's joining soon" strip on the Employees page */
 .hr-upnext {
