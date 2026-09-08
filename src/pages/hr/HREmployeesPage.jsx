@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Icon from '../../components/common/Icon.jsx';
 import TAHeader from '../../components/ta/TAHeader.jsx';
@@ -64,6 +64,31 @@ export default function HREmployeesPage() {
     initialSort: { key: 'joiningDate', dir: 'desc' },
   });
 
+  const departments = useMemo(
+    () => [...new Set(employees.map((e) => e.department).filter(Boolean))].sort(),
+    [employees]
+  );
+  const [dept, setDept] = useState('all');
+  const [period, setPeriod] = useState('all');
+  const PERIOD_LABEL = { month: 'This month', q90: 'Last 90 days', year: 'This year' };
+
+  const applyDept = (v) => { setDept(v); view.setFilter('department', v); };
+  const applyPeriod = (v) => {
+    setPeriod(v);
+    const now = Date.now();
+    const preds = {
+      month: (e) => { const d = new Date(e.joiningDate); const n = new Date(); return d.getMonth() === n.getMonth() && d.getFullYear() === n.getFullYear(); },
+      q90: (e) => now - new Date(e.joiningDate) <= 90 * 86400000,
+      year: (e) => new Date(e.joiningDate).getFullYear() === new Date().getFullYear(),
+    };
+    view.setFilter('joinedPeriod', v === 'all' ? 'all' : preds[v]);
+  };
+
+  const empChips = [
+    dept !== 'all' && { key: 'dept', label: dept, onRemove: () => applyDept('all') },
+    period !== 'all' && { key: 'period', label: PERIOD_LABEL[period], onRemove: () => applyPeriod('all') },
+  ].filter(Boolean);
+
   const kpis = [
     { icon: 'UserRoundCheck', accent: 'green', label: 'Onboarded', value: employees.length },
     { icon: 'CalendarClock', accent: 'amber', label: 'Joining soon', value: joiningPending.length },
@@ -108,7 +133,18 @@ export default function HREmployeesPage() {
         </Card>
       )}
 
-      <Toolbar search={{ value: view.query, onChange: view.setQuery, placeholder: 'Search employees by name, ID or position…' }} />
+      <Toolbar
+        filters={[
+          { label: 'Department', value: dept, onChange: applyDept, options: departments.map((d) => ({ value: d, label: d })) },
+          { label: 'Joined', value: period, onChange: applyPeriod, options: [
+            { value: 'month', label: 'This month' },
+            { value: 'q90', label: 'Last 90 days' },
+            { value: 'year', label: 'This year' },
+          ] },
+        ]}
+        chips={empChips}
+        onClearAll={empChips.length > 1 ? () => { applyDept('all'); applyPeriod('all'); } : undefined}
+      />
 
       <DataGrid
         columns={COLUMNS}

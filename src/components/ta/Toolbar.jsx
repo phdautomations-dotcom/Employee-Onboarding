@@ -8,14 +8,16 @@ export default function Toolbar({ search, filters = [], chips = [], onClearAll, 
   return (
     <>
       <div className="ta-toolbar">
-        <div className="ta-search ta-search--wide">
-          <Icon name="Search" size={16} />
-          <input
-            value={search.value}
-            placeholder={search.placeholder || 'Search…'}
-            onChange={(e) => search.onChange(e.target.value)}
-          />
-        </div>
+        {search && (
+          <div className="ta-search ta-search--wide">
+            <Icon name="Search" size={16} />
+            <input
+              value={search.value}
+              placeholder={search.placeholder || 'Search…'}
+              onChange={(e) => search.onChange(e.target.value)}
+            />
+          </div>
+        )}
         {filters.map((f) => (
           <select key={f.label} className="ta-select" value={f.value} onChange={(e) => f.onChange(e.target.value)} aria-label={f.label}>
             <option value="all">{f.label}: All</option>

@@ -3,6 +3,7 @@ import TAHeader from '../../components/ta/TAHeader.jsx';
 import Card from '../../components/ta/Card.jsx';
 import KpiCard from '../../components/ta/KpiCard.jsx';
 import FunnelChart from '../../components/ta/FunnelChart.jsx';
+import DonutChart from '../../components/ta/DonutChart.jsx';
 import Tag from '../../components/ta/Tag.jsx';
 import Icon from '../../components/common/Icon.jsx';
 import { ActivityTimeline } from '../../components/common/Timeline.jsx';
@@ -69,6 +70,17 @@ export default function HRDashboard() {
   const reachedHR = funnelStages[0]?.value || 0;
   const onboardedCount = funnelStages[funnelStages.length - 1]?.value || 0;
   const convRate = reachedHR ? Math.round((onboardedCount / reachedHR) * 100) : 0;
+
+  // Exclusive count per stage (each candidate sits in exactly one) — for the donut.
+  const STAGE_COLOR = {
+    reached_hr: '#4b7bf7', offer_sent: '#8b7ff0', onboarding: '#f6a04a',
+    verification: '#f2b705', joining: '#3fbfae', onboarded: '#46c98a',
+  };
+  const stageSlices = HR_FUNNEL_STAGES.map((s) => ({
+    label: s.label,
+    value: apps.filter((a) => hrStageRank(a.status) === s.rank).length,
+    color: STAGE_COLOR[s.key],
+  }));
 
   // Confirmed joining dates — HR must plan around these (kit, access, day-1).
   const joiningSchedule = apps
@@ -157,48 +169,58 @@ export default function HRDashboard() {
       </div>
 
       <div className="ta-bento">
-        <Card title="Onboarding Pipeline">
-            <div className="ta-pipe-wrap">
-              <div className="ta-pipe">
-                {funnelStages.map((s) => (
-                  <button
-                    key={s.key}
-                    className={`ta-pipe__row${s.key === busiest.key ? ' ta-pipe__row--active' : ''}`}
-                    onClick={() => navigate(`/hr/candidates?stage=${s.key}`)}
+        <Card title="Onboarding Funnel">
+          <div className="ta-pipe-wrap">
+            <div className="ta-pipe">
+              {funnelStages.map((s) => (
+                <button
+                  key={s.key}
+                  className={`ta-pipe__row${s.key === busiest.key ? ' ta-pipe__row--active' : ''}`}
+                  onClick={() => navigate(`/hr/candidates?stage=${s.key}`)}
+                >
+                  <span
+                    className="ta-pipe__icon"
+                    style={{ '--p-bg': `var(--tag-${s.tone}-bg)`, '--p-fg': `var(--tag-${s.tone}-fg)` }}
                   >
-                    <span
-                      className="ta-pipe__icon"
-                      style={{ '--p-bg': `var(--tag-${s.tone}-bg)`, '--p-fg': `var(--tag-${s.tone}-fg)` }}
-                    >
-                      <Icon name={s.icon} size={15} />
-                    </span>
-                    <span className="ta-pipe__label">{s.label}</span>
-                    <span className="ta-pipe__count">{s.value}</span>
-                  </button>
-                ))}
-              </div>
+                    <Icon name={s.icon} size={15} />
+                  </span>
+                  <span className="ta-pipe__label">{s.label}</span>
+                  <span className="ta-pipe__count">{s.value}</span>
+                </button>
+              ))}
+            </div>
             <FunnelChart stages={funnelStages} />
           </div>
-          <div className="ta-note" style={{ margin: '14px 0 0', background: 'var(--ta-blue-wash)', color: 'var(--ta-text)' }}>
+        </Card>
+
+        <Card title="Where Candidates Are">
+          <DonutChart
+            slices={stageSlices}
+            caption="In pipeline"
+            onSliceClick={(label) => {
+              const s = HR_FUNNEL_STAGES.find((x) => x.label === label);
+              if (s) navigate(`/hr/candidates?stage=${s.key}`);
+            }}
+          />
+          <div className="ta-note" style={{ margin: '12px 0 0', background: 'var(--ta-blue-wash)', color: 'var(--ta-text)' }}>
             <Icon name="TrendingUp" size={15} />
             <span><strong>{convRate}% onboarding conversion</strong> — {onboardedCount} of {reachedHR} who reached HR have joined.</span>
           </div>
         </Card>
-
-        <Card
-          title="Recent Activity"
-          action={<button className="ta-link" onClick={() => navigate('/hr/candidates')}>Candidates</button>}
-          bodyStyle={{ justifyContent: 'flex-start' }}
-        >
-          <ActivityTimeline
-            items={(data.activities || []).slice(0, 6)}
-            onSelect={(it) => {
-              const app = getApplication(it.applicationId);
-              navigate(app ? `/hr/candidates/${app.candidateId}` : '/hr/candidates');
-            }}
-          />
-        </Card>
       </div>
+
+      <Card
+        title="Recent Activity"
+        action={<button className="ta-link" onClick={() => navigate('/hr/candidates')}>All candidates</button>}
+      >
+        <ActivityTimeline
+          items={(data.activities || []).slice(0, 8)}
+          onSelect={(it) => {
+            const app = getApplication(it.applicationId);
+            navigate(app ? `/hr/candidates/${app.candidateId}` : '/hr/candidates');
+          }}
+        />
+      </Card>
     </>
   );
 }
