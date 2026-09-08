@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import TAHeader from '../../components/ta/TAHeader.jsx';
 import Card from '../../components/ta/Card.jsx';
 import KpiCard from '../../components/ta/KpiCard.jsx';
-import StageBreakdown from '../../components/ta/StageBreakdown.jsx';
+import Funnel from '../../components/ta/Funnel.jsx';
 import DonutChart from '../../components/ta/DonutChart.jsx';
 import Tag from '../../components/ta/Tag.jsx';
 import Icon from '../../components/common/Icon.jsx';
@@ -75,19 +75,19 @@ export default function HRDashboard() {
     },
   ];
 
-  // ===== Onboarding by stage — how many candidates are sitting at each step of
-  // HR's process right now. Exclusive counts, so clicking a stage shows exactly
-  // those candidates (no one who has already moved past it). =====
+  // ===== HR Onboarding funnel — cumulative: each stage counts everyone who
+  // reached it or further, so it always narrows and a band's count is exactly
+  // what its filter shows on the candidates page. =====
   const accepted = apps.filter((a) => hrStageRank(a.status) >= 2);
-  const atStage = (rank) => accepted.filter((a) => hrStageRank(a.status) === rank).length;
+  const reached = (rank) => accepted.filter((a) => hrStageRank(a.status) >= rank).length;
   const stages = [
-    { label: 'Offer Accepted', tone: 'violet', value: atStage(2), to: '/hr/candidates?stage=onboarding' },
-    { label: 'Joining Documents', tone: 'blue', value: atStage(3), to: '/hr/candidates?stage=verification' },
-    { label: 'Documents Verified', tone: 'teal', value: atStage(4), to: '/hr/candidates?stage=joining' },
-    { label: 'Onboarded', tone: 'green', value: atStage(5), to: '/hr/candidates?stage=onboarded' },
+    { label: 'Offer Accepted', tone: 'violet', value: reached(2), to: '/hr/candidates?stage=onboarding' },
+    { label: 'Joining Documents', tone: 'blue', value: accepted.filter((a) => a.onboarding).length, to: '/hr/candidates?stage=verification' },
+    { label: 'Documents Verified', tone: 'teal', value: reached(4), to: '/hr/candidates?stage=joining' },
+    { label: 'Onboarded', tone: 'green', value: reached(5), to: '/hr/candidates?stage=onboarded' },
   ];
   const funnelStages = stages.map((s) => ({ ...s, onClick: () => navigate(s.to) }));
-  const inDocsPhase = stages[1].value + stages[0].value;
+  const stuckInDocs = stages[0].value - stages[2].value; // accepted but not verified
 
   // ===== Upcoming Joiners — everyone who accepted with a joining date, not
   // joined yet. Sorted soonest first. =====
@@ -247,13 +247,13 @@ export default function HRDashboard() {
       <div className="ta-bento">
         <Card
           title="HR Onboarding Progress"
-          action={<span className="ta-cell-sub"><strong>{accepted.length}</strong> total in onboarding</span>}
+          action={<span className="ta-cell-sub"><strong>{accepted.length}</strong> total · {stages[3].value} onboarded</span>}
         >
-          <StageBreakdown stages={funnelStages} total={accepted.length} />
-          {inDocsPhase > 0 && (
+          <Funnel stages={funnelStages} total={accepted.length} />
+          {stuckInDocs > 0 && (
             <p className="hr-insight">
               <Icon name="Info" size={13} />
-              {inDocsPhase} of {accepted.length} ({Math.round((inDocsPhase / accepted.length) * 100)}%) still in the document phase.
+              {stuckInDocs} of {accepted.length} ({Math.round((stuckInDocs / accepted.length) * 100)}%) still need documents submitted or verified.
             </p>
           )}
         </Card>

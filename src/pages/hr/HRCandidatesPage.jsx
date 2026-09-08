@@ -54,9 +54,10 @@ export default function HRCandidatesPage() {
     [data.applications, offerFor, documentsFor]
   );
 
-  // Stage filter = the candidate's current stage exactly (not "reached this or
-  // further"), so it lines up 1:1 with the dashboard's "Onboarding by stage"
-  // card — clicking a stage there shows only the people sitting in it.
+  // Stage filter = "reached this stage or further" (cumulative), matching the
+  // dashboard's onboarding funnel — a funnel band's count is exactly what its
+  // click shows here. The "Onboarding Stage" column still shows where each
+  // candidate currently is (which may be further along).
   const stageParam = HR_FUNNEL_STAGES.some((s) => s.key === sp.get('stage')) ? sp.get('stage') : 'all';
   const offerParam = OFFER_STATUS_META[sp.get('offer')] ? sp.get('offer') : 'all';
   const [stage, setStageKey] = useState(stageParam);
@@ -68,7 +69,7 @@ export default function HRCandidatesPage() {
     initialSort: { key: 'name', dir: 'asc' },
     initialFilters: {
       ...(stageParam !== 'all'
-        ? { hrRank: (r) => r.hrRank === HR_FUNNEL_STAGES.find((s) => s.key === stageParam).rank }
+        ? { hrRank: (r) => r.hrRank >= HR_FUNNEL_STAGES.find((s) => s.key === stageParam).rank }
         : {}),
       ...(offerParam !== 'all' ? { offerStatus: offerParam } : {}),
     },
@@ -90,7 +91,7 @@ export default function HRCandidatesPage() {
   const setStage = (key) => {
     setStageKey(key);
     const target = HR_FUNNEL_STAGES.find((s) => s.key === key);
-    view.setFilter('hrRank', key === 'all' ? 'all' : (r) => r.hrRank === target.rank);
+    view.setFilter('hrRank', key === 'all' ? 'all' : (r) => r.hrRank >= target.rank);
   };
 
   const setOffer = (key) => {
