@@ -2,8 +2,8 @@ import Icon from '../common/Icon.jsx';
 import Sparkline from '../common/Sparkline.jsx';
 
 /* One dashboard KPI. Two footer styles:
-   - `meter` { value, max, hint } → the number shown as "value / max" with a
-     short noun hint ("candidates in onboarding").
+   - `meter` { value, max, hint } → a thick proportion bar with a % badge and a
+     short noun hint naming the whole ("candidates in onboarding").
    - `trend` / `note` (+ optional 8-week `spark`) → a delta line and sparkline.
    `accent` is a tag tone (blue | amber | violet | green | teal | red). */
 export default function KpiCard({ icon, label, value, trend, note, spark, meter, accent = 'blue', onClick }) {
@@ -22,6 +22,7 @@ export default function KpiCard({ icon, label, value, trend, note, spark, meter,
   }
 
   const Tag = onClick ? 'button' : 'div';
+  const pct = meter ? Math.max(2, Math.min(100, Math.round((meter.value / (meter.max || 1)) * 100))) : 0;
 
   return (
     <Tag
@@ -35,13 +36,16 @@ export default function KpiCard({ icon, label, value, trend, note, spark, meter,
         <span className="ta-kpi__icon"><Icon name={icon} size={16} /></span>
       </div>
 
-      <div className="ta-kpi__value">
-        {value}
-        {meter && <span className="ta-kpi__of">/ {meter.max}</span>}
-      </div>
+      <div className="ta-kpi__value">{value}</div>
 
       {meter ? (
-        <div className="ta-kpi__hint">{meter.hint}</div>
+        <>
+          <div className="ta-kpi__bar">
+            <span className="ta-kpi__bar-track"><span className="ta-kpi__bar-fill" style={{ width: `${pct}%` }} /></span>
+            <span className="ta-kpi__bar-pct">{pct}%</span>
+          </div>
+          <div className="ta-kpi__hint">{meter.hint}</div>
+        </>
       ) : (
         <div className="ta-kpi__foot">
           {footer}

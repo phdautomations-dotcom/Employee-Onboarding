@@ -264,11 +264,11 @@
 .ta-kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 16px; }
 .ta-kpi {
   background: var(--ta-surface); border: 1px solid var(--ta-line);
-  border-radius: var(--ta-radius); box-shadow: var(--ta-shadow);
+  border-radius: var(--ta-radius); box-shadow: var(--ta-shadow), inset 3px 0 0 var(--k-fg, var(--ta-blue));
   padding: 15px 16px 14px; display: flex; flex-direction: column;
   transition: box-shadow 0.18s, transform 0.18s, border-color 0.18s;
 }
-.ta-kpi:hover { box-shadow: var(--ta-shadow-hover); transform: translateY(-1px); }
+.ta-kpi:hover { box-shadow: var(--ta-shadow-hover), inset 3px 0 0 var(--k-fg, var(--ta-blue)); transform: translateY(-1px); }
 .ta-kpi--link { text-align: left; font: inherit; cursor: pointer; }
 .ta-kpi--link:hover { border-color: color-mix(in srgb, var(--k-fg) 40%, var(--ta-line)); }
 .ta-kpi--link:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--ta-blue-wash); }
@@ -280,8 +280,18 @@
   background: color-mix(in srgb, var(--k-fg) 13%, #fff); color: var(--k-fg, var(--ta-blue));
 }
 .ta-kpi__value { font-size: 28px; font-weight: 750; line-height: 1; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
-.ta-kpi__of { font-size: 15px; font-weight: 600; color: var(--ta-text-mute); margin-left: 5px; letter-spacing: 0; }
-.ta-kpi__hint { font-size: 11.5px; color: var(--ta-text-mute); margin-top: 9px; }
+.ta-kpi__bar { display: flex; align-items: center; gap: 10px; margin-top: 13px; }
+.ta-kpi__bar-track {
+  flex: 1; height: 8px; border-radius: 999px; overflow: hidden;
+  background: color-mix(in srgb, var(--k-fg) 16%, transparent);
+}
+.ta-kpi__bar-fill {
+  display: block; height: 100%; border-radius: 999px;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--k-fg) 78%, #fff), var(--k-fg));
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.ta-kpi__bar-pct { font-size: 11.5px; font-weight: 700; color: var(--k-fg); font-variant-numeric: tabular-nums; flex-shrink: 0; }
+.ta-kpi__hint { font-size: 11.5px; color: var(--ta-text-mute); margin-top: 8px; }
 .ta-kpi__foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 11px; }
 .ta-trend { font-size: 11.5px; font-weight: 600; display: inline-flex; align-items: center; gap: 3px; min-width: 0; white-space: nowrap; }
 .ta-trend__mute { color: var(--ta-text-mute); font-weight: 500; }
