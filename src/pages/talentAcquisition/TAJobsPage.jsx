@@ -120,6 +120,7 @@ export default function TAJobsPage() {
         rows={view.rows}
         sort={view.sort}
         onSort={view.onSort}
+        pager={{ page: view.page, pageSize: view.pageSize, total: view.total, onPage: view.setPage }}
         empty={{ icon: 'Briefcase', title: 'No jobs found', message: 'Try a different search, or create a new job.' }}
         renderRow={(j) => (
           <tr key={j.id} onClick={() => navigate(`/ta/jobs/${j.id}`)} style={{ cursor: 'pointer' }}>
@@ -135,7 +136,7 @@ export default function TAJobsPage() {
             <td className="ta-cell-mute">{formatDate(j.deadline)}</td>
             <td>
               <span className="ta-rowactions" onClick={(e) => e.stopPropagation()}>
-                <button className="ta-iconbtn" onClick={() => navigate(`/ta/jobs/${j.id}`)} aria-label="Open job"><Icon name="ArrowRight" size={15} /></button>
+                <button className="ta-iconbtn" onClick={() => navigate(`/ta/jobs/${j.id}`)} aria-label="Open job"><Icon name="ChevronRight" size={17} /></button>
               </span>
             </td>
           </tr>

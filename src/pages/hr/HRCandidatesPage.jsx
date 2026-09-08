@@ -174,6 +174,7 @@ export default function HRCandidatesPage() {
         rows={view.rows}
         sort={view.sort}
         onSort={view.onSort}
+        pager={{ page: view.page, pageSize: view.pageSize, total: view.total, onPage: view.setPage }}
         empty={{ icon: 'Users', title: 'No candidates at the HR stage yet', message: 'Candidates appear here once their documents are verified.' }}
         renderRow={(r) => {
           const hrBadge = stageBadgeForStatus(r.hrStatus);
@@ -204,7 +205,7 @@ export default function HRCandidatesPage() {
               <td>
                 <span className="ta-rowactions" onClick={(e) => e.stopPropagation()}>
                   <button className="ta-iconbtn" onClick={() => navigate(`/hr/candidates/${r.candidateId}`)} aria-label="Open candidate">
-                    <Icon name="ArrowRight" size={15} />
+                    <Icon name="ChevronRight" size={17} />
                   </button>
                 </span>
               </td>

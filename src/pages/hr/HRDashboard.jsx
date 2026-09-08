@@ -3,16 +3,17 @@ import TAHeader from '../../components/ta/TAHeader.jsx';
 import Card from '../../components/ta/Card.jsx';
 import KpiCard from '../../components/ta/KpiCard.jsx';
 import FunnelChart from '../../components/ta/FunnelChart.jsx';
+import DonutChart from '../../components/ta/DonutChart.jsx';
 import Tag from '../../components/ta/Tag.jsx';
 import Icon from '../../components/common/Icon.jsx';
 import { useApp } from '../../context/AppContext.jsx';
 import { DEMO_USERS, ROLES } from '../../constants/roles.js';
-import { APP_STATUS, OFFER_STATUS, HR_FUNNEL_STAGES, hrStageRank } from '../../constants/statuses.js';
+import { APP_STATUS, OFFER_STATUS, DOC_STATUS, hrStageRank } from '../../constants/statuses.js';
 import { timeAgo, formatDate } from '../../utils/format.js';
 
 export default function HRDashboard() {
   const navigate = useNavigate();
-  const { data, offerFor, activitiesFor } = useApp();
+  const { data, offerFor, documentsFor, activitiesFor } = useApp();
   const user = DEMO_USERS[ROLES.HR];
 
   // ----- DATA -----
@@ -68,23 +69,49 @@ export default function HRDashboard() {
     },
   ];
 
-  // ----- CHART DATA -----
-  // Funnel: each stage counts everyone who reached it or further, so it only
-  // ever narrows. `here` is how many are sitting in that stage right now (the
-  // work still to do there) — that's the bottleneck the card highlights.
-  const hereNow = (rank) => apps.filter((a) => hrStageRank(a.status) === rank).length;
-  const funnelStages = HR_FUNNEL_STAGES.map((s) => ({
-    ...s,
-    value: apps.filter((a) => hrStageRank(a.status) >= s.rank).length,
-    here: hereNow(s.rank),
-  }));
-  // Ignore the final "Onboarded" bucket — those people are done, not waiting.
-  const bottleneck = funnelStages
-    .filter((s) => s.rank < 5)
-    .reduce((top, s) => (s.here > top.here ? s : top), funnelStages[0]);
-  const reachedHR = funnelStages[0]?.value || 0;
-  const onboardedCount = funnelStages[funnelStages.length - 1]?.value || 0;
-  const convRate = reachedHR ? Math.round((onboardedCount / reachedHR) * 100) : 0;
+  // ===== ANALYTIC 1 — Onboarding Completion =====
+  // Everyone HR owns: they accepted the offer and are somewhere in onboarding.
+  const hrApps = apps.filter((a) => hrStageRank(a.status) >= 2);
+  const reqDocs = (a) => documentsFor(a.id).filter((d) => d.required);
+  const docsSubmitted = (a) => { const d = reqDocs(a); return d.length > 0 && d.every((x) => x.status !== DOC_STATUS.PENDING && x.status !== DOC_STATUS.REJECTED); };
+  const docsVerified = (a) => { const d = reqDocs(a); return d.length > 0 && d.every((x) => x.status === DOC_STATUS.VERIFIED); };
+
+  // Each stage is a subset of the one above it, so the funnel always narrows.
+  const s1 = hrApps;
+  const s2 = s1.filter(docsSubmitted);
+  const s3 = s2.filter(docsVerified);
+  const s4 = s3.filter((a) => hrStageRank(a.status) >= 4);          // HR verified the onboarding forms
+  const s5 = s4.filter((a) => !!offerFor(a.id)?.joiningDate);        // a joining date is locked in
+  const s6 = s5.filter((a) => hrStageRank(a.status) >= 5);          // now an employee
+  const completion = [
+    { label: 'Offer Accepted', icon: 'FileCheck', tone: 'violet', value: s1.length },
+    { label: 'Documents Completed', icon: 'Files', tone: 'blue', value: s2.length },
+    { label: 'Verification Completed', icon: 'CheckCircle2', tone: 'teal', value: s3.length },
+    { label: 'HR Formalities Completed', icon: 'ClipboardCheck', tone: 'amber', value: s4.length },
+    { label: 'Joining Confirmed', icon: 'CalendarCheck', tone: 'blue', value: s5.length },
+    { label: 'Onboarded', icon: 'UserRoundCheck', tone: 'green', value: s6.length },
+  ];
+  // Where does onboarding lose the most people?
+  let drop = { from: '', to: '', n: 0, key: null };
+  for (let i = 1; i < completion.length; i += 1) {
+    const n = completion[i - 1].value - completion[i].value;
+    if (n > drop.n) drop = { from: completion[i - 1].label, to: completion[i].label, n, key: completion[i].label };
+  }
+
+  // ===== ANALYTIC 2 — Upcoming Joiners (workforce planning) =====
+  const daysUntil = (dateStr) => (dateStr ? Math.ceil((new Date(dateStr) - Date.now()) / 86400000) : null);
+  const upcoming = hrApps
+    .filter((a) => a.status !== APP_STATUS.EMPLOYEE)
+    .map((a) => daysUntil(offerFor(a.id)?.joiningDate))
+    .filter((d) => d != null);
+  const inRange = (min, max) => upcoming.filter((d) => d <= max && (min == null || d > min)).length;
+  const joinerSlices = [
+    { label: 'Within 7 days', value: inRange(null, 7), color: '#46c98a' },
+    { label: '8–30 days', value: inRange(7, 30), color: '#4b7bf7' },
+    { label: '31–60 days', value: inRange(30, 60), color: '#8b7ff0' },
+    { label: '60+ days', value: upcoming.filter((d) => d > 60).length, color: '#f6a04a' },
+  ];
+  const joiningWithin30 = joinerSlices[0].value + joinerSlices[1].value;
 
   // Confirmed joining dates — HR must plan around these (kit, access, day-1).
   const joiningSchedule = apps
@@ -172,36 +199,53 @@ export default function HRDashboard() {
         </Card>
       </div>
 
-      <Card title="Onboarding Funnel">
-        <div className="ta-pipe-wrap">
-          <div className="ta-pipe">
-            {funnelStages.map((s) => (
-              <button
-                key={s.key}
-                className={`ta-pipe__row${s.key === bottleneck.key && s.here > 0 ? ' ta-pipe__row--active' : ''}`}
-                onClick={() => navigate(`/hr/candidates?stage=${s.key}`)}
-              >
-                <span
-                  className="ta-pipe__icon"
-                  style={{ '--p-bg': `var(--tag-${s.tone}-bg)`, '--p-fg': `var(--tag-${s.tone}-fg)` }}
+      <div className="ta-bento">
+        <Card title="Onboarding Completion">
+          <div className="ta-pipe-wrap">
+            <div className="ta-pipe">
+              {completion.map((s) => (
+                <button
+                  key={s.label}
+                  type="button"
+                  className={`ta-pipe__row${s.label === drop.key ? ' ta-pipe__row--active' : ''}`}
+                  onClick={() => navigate('/hr/candidates')}
                 >
-                  <Icon name={s.icon} size={15} />
-                </span>
-                <span className="ta-pipe__label">
-                  {s.label}
-                  {s.rank < 5 && s.here > 0 && <span className="ta-cell-sub"> · {s.here} here now</span>}
-                </span>
-                <span className="ta-pipe__count">{s.value}</span>
-              </button>
-            ))}
+                  <span
+                    className="ta-pipe__icon"
+                    style={{ '--p-bg': `var(--tag-${s.tone}-bg)`, '--p-fg': `var(--tag-${s.tone}-fg)` }}
+                  >
+                    <Icon name={s.icon} size={15} />
+                  </span>
+                  <span className="ta-pipe__label">{s.label}</span>
+                  <span className="ta-pipe__count">
+                    {s.value}
+                    <span className="ta-pipe__pct">{completion[0].value ? Math.round((s.value / completion[0].value) * 100) : 0}%</span>
+                  </span>
+                </button>
+              ))}
+            </div>
+            <FunnelChart stages={completion} labelMode="count" />
           </div>
-          <FunnelChart stages={funnelStages} />
-        </div>
-        <div className="ta-note" style={{ margin: '14px 0 0', background: 'var(--ta-blue-wash)', color: 'var(--ta-text)' }}>
-          <Icon name="TrendingUp" size={15} />
-          <span><strong>{convRate}% onboarding conversion</strong> — {onboardedCount} of {reachedHR} who reached HR have joined.</span>
-        </div>
-      </Card>
+          {drop.n > 0 && (
+            <div className="ta-note" style={{ margin: '14px 0 0', background: 'var(--ta-blue-wash)', color: 'var(--ta-text)' }}>
+              <Icon name="ArrowDown" size={15} />
+              <span>Biggest drop-off: <strong>{drop.from} → {drop.to}</strong> ({drop.n} employee{drop.n === 1 ? '' : 's'} not through yet).</span>
+            </div>
+          )}
+        </Card>
+
+        <Card title="Upcoming Joiners">
+          <DonutChart
+            slices={joinerSlices}
+            caption="joining"
+            onSliceClick={() => navigate('/hr/employees')}
+          />
+          <div className="ta-note" style={{ margin: '12px 0 0', background: 'var(--ta-blue-wash)', color: 'var(--ta-text)' }}>
+            <Icon name="CalendarClock" size={15} />
+            <span><strong>{joiningWithin30} joining in the next 30 days</strong> — {joinerSlices[0].value} within a week.</span>
+          </div>
+        </Card>
+      </div>
     </>
   );
 }

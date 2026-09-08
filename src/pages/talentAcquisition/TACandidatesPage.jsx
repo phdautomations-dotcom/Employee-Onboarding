@@ -160,6 +160,7 @@ export default function TACandidatesPage() {
         rows={view.rows}
         sort={view.sort}
         onSort={view.onSort}
+        pager={{ page: view.page, pageSize: view.pageSize, total: view.total, onPage: view.setPage }}
         empty={{ icon: 'Users', title: 'No candidates match', message: 'Try changing the filters or search.' }}
         renderRow={(r) => {
           const badge = stageBadgeForStatus(r.status);
@@ -181,7 +182,7 @@ export default function TACandidatesPage() {
               <td>
                 <span className="ta-rowactions" onClick={(e) => e.stopPropagation()}>
                   <a className="ta-iconbtn" href={`mailto:${r.email}`} aria-label={`Email ${r.name}`}><Icon name="Mail" size={15} /></a>
-                  <button className="ta-iconbtn" onClick={() => navigate(`/ta/candidates/${r.candidateId}`)} aria-label="Open candidate"><Icon name="ArrowRight" size={15} /></button>
+                  <button className="ta-iconbtn" onClick={() => navigate(`/ta/candidates/${r.candidateId}`)} aria-label="Open candidate"><Icon name="ChevronRight" size={17} /></button>
                 </span>
               </td>
             </tr>

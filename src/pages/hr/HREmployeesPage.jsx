@@ -156,6 +156,7 @@ export default function HREmployeesPage() {
         rows={view.rows}
         sort={view.sort}
         onSort={view.onSort}
+        pager={{ page: view.page, pageSize: view.pageSize, total: view.total, onPage: view.setPage }}
         empty={{ icon: 'UserRoundCheck', title: 'No employees onboarded yet', message: 'Employees appear here once joining is marked complete.' }}
         renderRow={(e) => {
           const app = getApplication(e.applicationId);
@@ -178,7 +179,7 @@ export default function HREmployeesPage() {
                 {app && (
                   <span className="ta-rowactions" onClick={(ev) => ev.stopPropagation()}>
                     <button className="ta-iconbtn" onClick={() => navigate(`/hr/candidates/${app.candidateId}`)} aria-label="Open profile">
-                      <Icon name="ArrowRight" size={15} />
+                      <Icon name="ChevronRight" size={17} />
                     </button>
                   </span>
                 )}
