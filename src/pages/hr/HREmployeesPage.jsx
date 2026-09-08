@@ -3,9 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import Icon from '../../components/common/Icon.jsx';
 import TAHeader from '../../components/ta/TAHeader.jsx';
 import Card from '../../components/ta/Card.jsx';
+import StatBar from '../../components/ta/StatBar.jsx';
 import DataGrid from '../../components/ta/DataGrid.jsx';
 import Toolbar from '../../components/ta/Toolbar.jsx';
-import Avatar from '../../components/ta/Avatar.jsx';
+import Tag from '../../components/ta/Tag.jsx';
 import { useApp } from '../../context/AppContext.jsx';
 import { useCollectionView } from '../../hooks/useCollectionView.js';
 import { APP_STATUS } from '../../constants/statuses.js';
@@ -13,52 +14,92 @@ import { formatDate } from '../../utils/format.js';
 
 const COLUMNS = [
   { key: 'name', label: 'Employee', sortable: true },
-  { key: 'id', label: 'Employee ID', sortable: true },
   { key: 'position', label: 'Position', sortable: true },
   { key: 'department', label: 'Department', sortable: true },
   { key: 'joiningDate', label: 'Joined', sortable: true },
   { key: 'actions', label: 'Actions' },
 ];
 
+/* Give each department a stable colour so the table scans by team at a glance. */
+const DEPT_TONES = ['blue', 'violet', 'teal', 'green', 'amber'];
+function deptTone(name = '') {
+  let h = 0;
+  for (let i = 0; i < name.length; i += 1) h = (h * 31 + name.charCodeAt(i)) % 997;
+  return DEPT_TONES[h % DEPT_TONES.length];
+}
+
+/* Days until a date (negative once it's in the past). */
+function daysUntil(dateStr) {
+  if (!dateStr) return null;
+  return Math.round((new Date(dateStr) - Date.now()) / 86400000);
+}
+
 export default function HREmployeesPage() {
   const navigate = useNavigate();
   const { data, offerFor, getApplication } = useApp();
+
+  const employees = data.employees || [];
 
   const joiningPending = useMemo(
     () => (data.applications || []).filter((a) => a.status === APP_STATUS.JOINING_PENDING),
     [data.applications]
   );
 
-  const view = useCollectionView(data.employees || [], {
+  const joinedThisMonth = useMemo(() => {
+    const now = new Date();
+    return employees.filter((e) => {
+      const d = new Date(e.joiningDate);
+      return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+    }).length;
+  }, [employees]);
+
+  const departmentCount = useMemo(
+    () => new Set(employees.map((e) => e.department).filter(Boolean)).size,
+    [employees]
+  );
+
+  const view = useCollectionView(employees, {
     searchFields: ['name', 'id', 'position'],
     pageSize: 12,
     initialSort: { key: 'joiningDate', dir: 'desc' },
   });
 
+  const kpis = [
+    { icon: 'UserRoundCheck', accent: 'green', label: 'Onboarded', value: employees.length },
+    { icon: 'CalendarClock', accent: 'amber', label: 'Joining soon', value: joiningPending.length },
+    { icon: 'Sparkles', accent: 'blue', label: 'Joined this month', value: joinedThisMonth },
+    { icon: 'Building2', accent: 'violet', label: 'Departments', value: departmentCount },
+  ];
+
   return (
     <>
       <TAHeader
         title="Employees"
-        subtitle={`${joiningPending.length} joining · ${(data.employees || []).length} onboarded`}
+        subtitle={`${joiningPending.length} joining · ${employees.length} onboarded`}
       />
 
+      <StatBar items={kpis} />
+
       {joiningPending.length > 0 && (
-        <Card title="Joining in Progress">
-          <div className="ta-pipe">
+        <Card title="Joining in Progress" action={<Tag tone="amber">{joiningPending.length} pending</Tag>}>
+          <div className="hr-joiners">
             {joiningPending.map((a) => {
               const offer = offerFor(a.id);
+              const d = daysUntil(offer?.joiningDate);
               return (
                 <button
                   key={a.id}
-                  className="ta-pipe__row"
+                  className="hr-joiners__row"
                   onClick={() => navigate(`/hr/candidates/${a.candidateId}`)}
                 >
-                  <Avatar name={`${a.personal.firstName} ${a.personal.lastName}`} size="sm" />
-                  <span className="ta-pipe__label">
-                    {a.personal.firstName} {a.personal.lastName}
-                    <br />
+                  <span className="hr-joiners__icon"><Icon name="Rocket" size={15} /></span>
+                  <span className="hr-joiners__text">
+                    <span className="ta-cell-strong">{a.personal.firstName} {a.personal.lastName}</span>
                     <span className="ta-cell-sub">{a.jobTitle} · joins {formatDate(offer?.joiningDate)}</span>
                   </span>
+                  {d != null && (
+                    <Tag tone={d <= 7 ? 'green' : 'blue'}>{d <= 0 ? 'Due now' : `in ${d}d`}</Tag>
+                  )}
                   <Icon name="ArrowRight" size={15} />
                 </button>
               );
@@ -85,15 +126,14 @@ export default function HREmployeesPage() {
               style={{ cursor: app ? 'pointer' : 'default' }}
             >
               <td>
-                <span className="ta-cell-cand">
-                  <Avatar name={e.name} />
-                  <span className="ta-cell-cand__name">{e.name}</span>
-                </span>
+                <span className="ta-cell-cand__name">{e.name}</span><br />
+                <span className="ta-cell-cand__sub">{e.id}</span>
               </td>
-              <td className="ta-cell-mute">{e.id}</td>
-              <td>{e.position}</td>
-              <td className="ta-cell-mute">{e.department}</td>
-              <td className="ta-cell-mute">{formatDate(e.joiningDate)}</td>
+              <td className="ta-cell-strong">{e.position}</td>
+              <td>{e.department ? <Tag tone={deptTone(e.department)}>{e.department}</Tag> : <span className="ta-cell-mute">—</span>}</td>
+              <td className="ta-cell-mute">
+                <span className="hr-joined"><Icon name="CalendarCheck" size={13} /> {formatDate(e.joiningDate)}</span>
+              </td>
               <td>
                 {app && (
                   <span className="ta-rowactions" onClick={(ev) => ev.stopPropagation()}>

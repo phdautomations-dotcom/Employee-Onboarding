@@ -50,7 +50,7 @@ function baseApplication({
     source: SOURCES[seq % SOURCES.length],
     status,
     submittedAt,
-    assignedTo: 'Priya Nair',
+    assignedTo: 'Himanshu Singh',
     autofilled: ['skills', 'totalExperience', 'currentCompany'],
     returnReason: null,
     rejectReason: null,
@@ -196,7 +196,7 @@ function buildSyntheticCandidates(startSeq) {
       const done = status !== APP_STATUS.INTERVIEW_IN_PROGRESS;
       out.interviews.push({
         id: uid('int'), applicationId: app.id, round: 1, type: 'Technical Interview',
-        interviewer: 'Priya Nair', date: new Date(Date.now() - (daysAgo - 5) * 86400000).toISOString().slice(0, 10),
+        interviewer: 'Himanshu Singh', date: new Date(Date.now() - (daysAgo - 5) * 86400000).toISOString().slice(0, 10),
         time: '11:00', mode: 'Online', link: 'https://meet.example/xyz', location: '', notes: '',
         status: status === APP_STATUS.INTERVIEW_FAILED ? ROUND_STATUS.FAIL : done ? ROUND_STATUS.PASS : ROUND_STATUS.SCHEDULED,
         result: status === APP_STATUS.INTERVIEW_FAILED ? ROUND_STATUS.FAIL : done ? ROUND_STATUS.PASS : null,
@@ -216,7 +216,7 @@ function buildSyntheticCandidates(startSeq) {
         jobTitle: app.jobTitle, department: findJob(jobId)?.department || 'General', location: findJob(jobId)?.location || 'Bengaluru, India',
         joiningDate: new Date(Date.now() + 20 * 86400000).toISOString().slice(0, 10), employmentType: 'Full-time',
         compensation: String(1600000 + Math.floor(rng() * 1800000)), benefits: 'Health insurance, learning budget',
-        reportingManager: 'Priya Nair', probationPeriod: '6 months',
+        reportingManager: 'Himanshu Singh', probationPeriod: '6 months',
         status: offerStatus, createdAt,
         issuedAt: createdAt,
         decisionAt: offerStatus === OFFER_STATUS.ACCEPTED ? createdAt : null,
@@ -290,7 +290,7 @@ export function buildSeed() {
   });
   applications.push(a1);
   addActivity(a1.id, 'application', 'Application Submitted', 'Candidate submitted application.', a1.submittedAt, 'Meera Krishnan');
-  addActivity(a1.id, 'review', 'TA Review Started', 'Priya Nair started reviewing the application.', '2026-08-30T11:00:00', 'Priya Nair');
+  addActivity(a1.id, 'review', 'TA Review Started', 'Himanshu Singh started reviewing the application.', '2026-08-30T11:00:00', 'Himanshu Singh');
   documents = documents.concat(docsFor(a1.id));
 
   // 2. Approved -> interview planning
@@ -311,7 +311,7 @@ export function buildSeed() {
   });
   applications.push(a2);
   addActivity(a2.id, 'application', 'Application Submitted', 'Candidate submitted application.', a2.submittedAt, 'Vikram Desai');
-  addActivity(a2.id, 'approve', 'Application Approved', 'TA approved the candidate for interviews.', '2026-08-29T10:15:00', 'Priya Nair');
+  addActivity(a2.id, 'approve', 'Application Approved', 'TA approved the candidate for interviews.', '2026-08-29T10:15:00', 'Himanshu Singh');
   documents = documents.concat(docsFor(a2.id));
 
   // 3. Interview in progress (round 1 passed, round 2 scheduled)
@@ -337,7 +337,7 @@ export function buildSeed() {
       applicationId: a3.id,
       round: 1,
       type: 'HR Interview',
-      interviewer: 'Priya Nair',
+      interviewer: 'Himanshu Singh',
       date: '2026-08-25',
       time: '11:00',
       mode: 'Online',
@@ -366,10 +366,10 @@ export function buildSeed() {
     }
   );
   addActivity(a3.id, 'application', 'Application Submitted', 'Candidate submitted application.', a3.submittedAt, 'Rahul Sharma');
-  addActivity(a3.id, 'approve', 'Application Approved', 'TA approved the candidate for interviews.', '2026-08-22T09:00:00', 'Priya Nair');
-  addActivity(a3.id, 'interview', 'HR Interview Scheduled', 'Round 1 scheduled for 25 Aug 2026.', '2026-08-22T09:30:00', 'Priya Nair');
-  addActivity(a3.id, 'interview', 'HR Interview Passed', 'Round 1 result recorded: Pass.', '2026-08-25T12:30:00', 'Priya Nair');
-  addActivity(a3.id, 'interview', 'Technical Interview Scheduled', 'Round 2 scheduled for 04 Sep 2026.', '2026-08-26T10:00:00', 'Priya Nair');
+  addActivity(a3.id, 'approve', 'Application Approved', 'TA approved the candidate for interviews.', '2026-08-22T09:00:00', 'Himanshu Singh');
+  addActivity(a3.id, 'interview', 'HR Interview Scheduled', 'Round 1 scheduled for 25 Aug 2026.', '2026-08-22T09:30:00', 'Himanshu Singh');
+  addActivity(a3.id, 'interview', 'HR Interview Passed', 'Round 1 result recorded: Pass.', '2026-08-25T12:30:00', 'Himanshu Singh');
+  addActivity(a3.id, 'interview', 'Technical Interview Scheduled', 'Round 2 scheduled for 04 Sep 2026.', '2026-08-26T10:00:00', 'Himanshu Singh');
   documents = documents.concat(docsFor(a3.id));
 
   // 4. Document verification stage
@@ -414,10 +414,10 @@ export function buildSeed() {
     })
   );
   addActivity(a4.id, 'application', 'Application Submitted', 'Candidate submitted application.', a4.submittedAt, 'Ananya Iyer');
-  addActivity(a4.id, 'approve', 'Application Approved', 'TA approved the candidate for interviews.', '2026-08-14T09:00:00', 'Priya Nair');
-  addActivity(a4.id, 'interview', 'Managerial Interview Passed', 'Round 1 result recorded: Pass.', '2026-08-18T12:00:00', 'Priya Nair');
-  addActivity(a4.id, 'documents', 'Moved to Document Verification', 'All interview rounds passed.', '2026-08-18T12:10:00', 'Priya Nair');
-  addActivity(a4.id, 'documents', 'Document Rejected', 'Experience Certificate rejected: unclear copy.', '2026-08-20T10:10:00', 'Priya Nair');
+  addActivity(a4.id, 'approve', 'Application Approved', 'TA approved the candidate for interviews.', '2026-08-14T09:00:00', 'Himanshu Singh');
+  addActivity(a4.id, 'interview', 'Managerial Interview Passed', 'Round 1 result recorded: Pass.', '2026-08-18T12:00:00', 'Himanshu Singh');
+  addActivity(a4.id, 'documents', 'Moved to Document Verification', 'All interview rounds passed.', '2026-08-18T12:10:00', 'Himanshu Singh');
+  addActivity(a4.id, 'documents', 'Document Rejected', 'Experience Certificate rejected: unclear copy.', '2026-08-20T10:10:00', 'Himanshu Singh');
 
   // 5. Onboarding forms submitted, pending HR verification
   const a5 = baseApplication({
@@ -486,10 +486,10 @@ export function buildSeed() {
     emergencyContact: { name: 'Farhan Khan', phone: '+91 98333 71299' },
   };
   addActivity(a5.id, 'application', 'Application Submitted', 'Candidate submitted application.', a5.submittedAt, 'Sameer Khan');
-  addActivity(a5.id, 'approve', 'Application Approved', 'TA approved the candidate for interviews.', '2026-07-30T09:00:00', 'Priya Nair');
-  addActivity(a5.id, 'interview', 'Technical Interview Passed', 'Round 1 result recorded: Pass.', '2026-08-02T16:00:00', 'Priya Nair');
-  addActivity(a5.id, 'documents', 'Documents Verified', 'All mandatory documents verified.', '2026-08-06T10:30:00', 'Priya Nair');
-  addActivity(a5.id, 'offer', 'Offer Sent to Candidate', 'TA prepared and sent the offer.', '2026-08-08T11:00:00', 'Priya Nair');
+  addActivity(a5.id, 'approve', 'Application Approved', 'TA approved the candidate for interviews.', '2026-07-30T09:00:00', 'Himanshu Singh');
+  addActivity(a5.id, 'interview', 'Technical Interview Passed', 'Round 1 result recorded: Pass.', '2026-08-02T16:00:00', 'Himanshu Singh');
+  addActivity(a5.id, 'documents', 'Documents Verified', 'All mandatory documents verified.', '2026-08-06T10:30:00', 'Himanshu Singh');
+  addActivity(a5.id, 'offer', 'Offer Sent to Candidate', 'TA prepared and sent the offer.', '2026-08-08T11:00:00', 'Himanshu Singh');
   addActivity(a5.id, 'offer', 'Offer Accepted', 'Candidate accepted the offer.', '2026-08-10T09:00:00', 'Sameer Khan');
   addActivity(a5.id, 'onboarding', 'Onboarding Forms Submitted', 'Candidate submitted onboarding details.', '2026-08-11T10:00:00', 'Sameer Khan');
 
@@ -540,7 +540,7 @@ export function buildSeed() {
     decisionAt: null,
   });
   addActivity(a6.id, 'application', 'Application Submitted', 'Candidate submitted application.', a6.submittedAt, 'Divya Menon');
-  addActivity(a6.id, 'offer', 'Offer Sent to Candidate', 'TA prepared and sent the offer.', '2026-07-30T09:00:00', 'Priya Nair');
+  addActivity(a6.id, 'offer', 'Offer Sent to Candidate', 'TA prepared and sent the offer.', '2026-07-30T09:00:00', 'Himanshu Singh');
 
   // 7. Onboarded employee
   const a7 = baseApplication({
@@ -606,8 +606,8 @@ export function buildSeed() {
   addActivity(a7.id, 'application', 'Application Submitted', 'Candidate submitted application.', a7.submittedAt, 'Karan Bhatia');
   addActivity(a7.id, 'offer', 'Offer Accepted', 'Candidate accepted the offer.', '2026-06-24T12:00:00', 'Karan Bhatia');
   addActivity(a7.id, 'onboarding', 'Onboarding Forms Submitted', 'Candidate submitted onboarding details.', '2026-06-25T10:00:00', 'Karan Bhatia');
-  addActivity(a7.id, 'onboarding', 'Onboarding Verified', 'HR verified the onboarding details.', '2026-06-26T11:00:00', 'Arjun Mehta');
-  addActivity(a7.id, 'onboarding', 'Joining Completed', 'HR marked joining as completed.', '2026-07-15T09:30:00', 'Arjun Mehta');
+  addActivity(a7.id, 'onboarding', 'Onboarding Verified', 'HR verified the onboarding details.', '2026-06-26T11:00:00', 'Anisha Rawat');
+  addActivity(a7.id, 'onboarding', 'Joining Completed', 'HR marked joining as completed.', '2026-07-15T09:30:00', 'Anisha Rawat');
   addActivity(a7.id, 'onboarding', 'Employee Created', 'Employee record EMP-2026-00124 created.', '2026-07-15T09:31:00', 'System');
 
   // 8. Offer accepted, joining pending
@@ -667,7 +667,7 @@ export function buildSeed() {
   addActivity(a8.id, 'application', 'Application Submitted', 'Candidate submitted application.', a8.submittedAt, 'Neha Reddy');
   addActivity(a8.id, 'offer', 'Offer Accepted', 'Candidate accepted the offer.', '2026-08-06T14:00:00', 'Neha Reddy');
   addActivity(a8.id, 'onboarding', 'Onboarding Forms Submitted', 'Candidate submitted onboarding details.', '2026-08-07T10:00:00', 'Neha Reddy');
-  addActivity(a8.id, 'onboarding', 'Onboarding Verified', 'HR verified the onboarding details.', '2026-08-08T11:00:00', 'Arjun Mehta');
+  addActivity(a8.id, 'onboarding', 'Onboarding Verified', 'HR verified the onboarding details.', '2026-08-08T11:00:00', 'Anisha Rawat');
 
   // Fill out the pipeline with synthetic candidates.
   const extra = buildSyntheticCandidates(200);

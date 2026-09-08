@@ -89,7 +89,7 @@ export function AppProvider({ children }) {
           source: form.source || 'Direct',
           status: APP_STATUS.SUBMITTED,
           submittedAt: new Date().toISOString(),
-          assignedTo: 'Priya Nair',
+          assignedTo: 'Himanshu Singh',
           autofilled: form.autofilled || [],
           returnReason: null,
           rejectReason: null,
@@ -170,7 +170,7 @@ export function AppProvider({ children }) {
         const app = draft.applications.find((a) => a.id === applicationId);
         if (!app || app.status !== APP_STATUS.SUBMITTED) return;
         app.status = APP_STATUS.TA_REVIEW;
-        logActivity(draft, applicationId, 'review', 'TA Review Started', 'Talent Acquisition began reviewing the application.', 'Priya Nair');
+        logActivity(draft, applicationId, 'review', 'TA Review Started', 'Talent Acquisition began reviewing the application.', 'Himanshu Singh');
       });
     },
     [mutate]
@@ -182,7 +182,7 @@ export function AppProvider({ children }) {
         const app = draft.applications.find((a) => a.id === applicationId);
         if (!app) return;
         app.status = APP_STATUS.INTERVIEW_PLANNING;
-        logActivity(draft, applicationId, 'approve', 'Application Approved', 'TA approved the candidate and moved them to Interview Planning.', 'Priya Nair');
+        logActivity(draft, applicationId, 'approve', 'Application Approved', 'TA approved the candidate and moved them to Interview Planning.', 'Himanshu Singh');
         notify(draft, ROLES.CANDIDATE, 'Application approved', `Your application for ${app.jobTitle} was approved. Interview scheduling is next.`);
       });
     },
@@ -196,7 +196,7 @@ export function AppProvider({ children }) {
         if (!app) return;
         app.status = APP_STATUS.RETURNED;
         app.returnReason = reason;
-        logActivity(draft, applicationId, 'return', 'Application Returned', `Returned to candidate: ${reason}`, 'Priya Nair');
+        logActivity(draft, applicationId, 'return', 'Application Returned', `Returned to candidate: ${reason}`, 'Himanshu Singh');
         notify(draft, ROLES.CANDIDATE, 'Action needed on your application', reason);
       });
     },
@@ -210,7 +210,7 @@ export function AppProvider({ children }) {
         if (!app) return;
         app.status = APP_STATUS.REJECTED;
         app.rejectReason = reason;
-        logActivity(draft, applicationId, 'reject', 'Application Rejected', `Rejected: ${reason}`, 'Priya Nair');
+        logActivity(draft, applicationId, 'reject', 'Application Rejected', `Rejected: ${reason}`, 'Himanshu Singh');
         notify(draft, ROLES.CANDIDATE, 'Application update', `Your application for ${app.jobTitle} was not taken forward.`);
       });
     },
@@ -244,7 +244,7 @@ export function AppProvider({ children }) {
         if (app.status === APP_STATUS.INTERVIEW_PLANNING || app.status === APP_STATUS.INTERVIEW_PASSED) {
           app.status = APP_STATUS.INTERVIEW_IN_PROGRESS;
         }
-        logActivity(draft, applicationId, 'interview', `${payload.type} Scheduled`, `Round ${round} scheduled for ${payload.date} at ${payload.time} (${payload.mode}).`, 'Priya Nair');
+        logActivity(draft, applicationId, 'interview', `${payload.type} Scheduled`, `Round ${round} scheduled for ${payload.date} at ${payload.time} (${payload.mode}).`, 'Himanshu Singh');
         notify(draft, ROLES.CANDIDATE, 'Interview scheduled', `${payload.type} (Round ${round}) on ${payload.date} at ${payload.time}.`);
       });
     },
@@ -264,21 +264,21 @@ export function AppProvider({ children }) {
 
         if (result === ROUND_STATUS.FAIL) {
           app.status = APP_STATUS.INTERVIEW_FAILED;
-          logActivity(draft, app.id, 'interview', `${iv.type} — Failed`, `Round ${iv.round} result recorded: Fail.`, 'Priya Nair');
+          logActivity(draft, app.id, 'interview', `${iv.type} — Failed`, `Round ${iv.round} result recorded: Fail.`, 'Himanshu Singh');
           notify(draft, ROLES.CANDIDATE, 'Interview update', `Unfortunately you did not clear the ${iv.type}.`);
           return;
         }
         if (result === ROUND_STATUS.HOLD) {
-          logActivity(draft, app.id, 'interview', `${iv.type} — On Hold`, `Round ${iv.round} result recorded: Hold.`, 'Priya Nair');
+          logActivity(draft, app.id, 'interview', `${iv.type} — On Hold`, `Round ${iv.round} result recorded: Hold.`, 'Himanshu Singh');
           return;
         }
         // PASS
-        logActivity(draft, app.id, 'interview', `${iv.type} — Passed`, `Round ${iv.round} result recorded: Pass.`, 'Priya Nair');
+        logActivity(draft, app.id, 'interview', `${iv.type} — Passed`, `Round ${iv.round} result recorded: Pass.`, 'Himanshu Singh');
         const rounds = draft.interviews.filter((i) => i.applicationId === app.id);
         const pending = rounds.some((r) => r.status === ROUND_STATUS.SCHEDULED || r.status === ROUND_STATUS.COMPLETED);
         if (!pending) {
           app.status = APP_STATUS.INTERVIEW_PASSED;
-          logActivity(draft, app.id, 'interview', 'All Scheduled Rounds Passed', 'Add another round or move the candidate to document verification.', 'Priya Nair');
+          logActivity(draft, app.id, 'interview', 'All Scheduled Rounds Passed', 'Add another round or move the candidate to document verification.', 'Himanshu Singh');
         }
       });
     },
@@ -291,7 +291,7 @@ export function AppProvider({ children }) {
         const app = draft.applications.find((a) => a.id === applicationId);
         if (!app || app.status !== APP_STATUS.INTERVIEW_PASSED) return;
         app.status = APP_STATUS.DOC_VERIFICATION;
-        logActivity(draft, applicationId, 'documents', 'Moved to Document Verification', 'All required interview rounds passed.', 'Priya Nair');
+        logActivity(draft, applicationId, 'documents', 'Moved to Document Verification', 'All required interview rounds passed.', 'Himanshu Singh');
         notify(draft, ROLES.CANDIDATE, 'Interviews cleared', 'Please upload your verification documents.');
       });
     },
@@ -324,12 +324,12 @@ export function AppProvider({ children }) {
         doc.status = DOC_STATUS.VERIFIED;
         doc.verifiedAt = new Date().toISOString();
         doc.rejectionReason = null;
-        logActivity(draft, doc.applicationId, 'documents', 'Document Verified', `${doc.label} verified.`, 'Priya Nair');
+        logActivity(draft, doc.applicationId, 'documents', 'Document Verified', `${doc.label} verified.`, 'Himanshu Singh');
         if (allRequiredDocsVerified(draft, doc.applicationId)) {
           const app = draft.applications.find((a) => a.id === doc.applicationId);
           if (app && app.status === APP_STATUS.DOC_VERIFICATION) {
             app.status = APP_STATUS.DOCS_VERIFIED;
-            logActivity(draft, app.id, 'documents', 'All Documents Verified', 'All mandatory documents verified. Offer preparation is now available.', 'Priya Nair');
+            logActivity(draft, app.id, 'documents', 'All Documents Verified', 'All mandatory documents verified. Offer preparation is now available.', 'Himanshu Singh');
             notify(draft, ROLES.TA, 'Documents verified', `All documents verified for ${app.personal.firstName} ${app.personal.lastName}. Prepare offer.`);
           }
         }
@@ -346,7 +346,7 @@ export function AppProvider({ children }) {
         doc.status = DOC_STATUS.REJECTED;
         doc.rejectionReason = reason;
         doc.verifiedAt = null;
-        logActivity(draft, doc.applicationId, 'documents', 'Document Rejected', `${doc.label} rejected: ${reason}`, 'Priya Nair');
+        logActivity(draft, doc.applicationId, 'documents', 'Document Rejected', `${doc.label} rejected: ${reason}`, 'Himanshu Singh');
         notify(draft, ROLES.CANDIDATE, 'Document rejected', `${doc.label}: ${reason}`);
       });
     },
@@ -377,12 +377,12 @@ export function AppProvider({ children }) {
           offer.status = OFFER_STATUS.ISSUED;
           offer.issuedAt = new Date().toISOString();
           app.status = APP_STATUS.OFFER_ISSUED;
-          logActivity(draft, applicationId, 'offer', 'Offer Sent to Candidate', 'TA prepared and sent the offer.', 'Priya Nair');
+          logActivity(draft, applicationId, 'offer', 'Offer Sent to Candidate', 'TA prepared and sent the offer.', 'Himanshu Singh');
           notify(draft, ROLES.CANDIDATE, 'You have an offer', `Your offer for ${offer.jobTitle} has been sent.`);
         } else {
           offer.status = OFFER_STATUS.DRAFT;
           app.status = APP_STATUS.OFFER_DRAFT;
-          logActivity(draft, applicationId, 'offer', 'Offer Draft Saved', 'TA saved a draft of the offer.', 'Priya Nair');
+          logActivity(draft, applicationId, 'offer', 'Offer Draft Saved', 'TA saved a draft of the offer.', 'Himanshu Singh');
         }
       });
     },
@@ -442,7 +442,7 @@ export function AppProvider({ children }) {
         const app = draft.applications.find((a) => a.id === applicationId);
         if (!app) return;
         app.status = APP_STATUS.JOINING_PENDING;
-        logActivity(draft, applicationId, 'onboarding', 'Onboarding Verified', 'HR verified the onboarding details.', 'Arjun Mehta');
+        logActivity(draft, applicationId, 'onboarding', 'Onboarding Verified', 'HR verified the onboarding details.', 'Anisha Rawat');
         notify(draft, ROLES.CANDIDATE, 'Onboarding verified', 'Your onboarding details have been verified. Joining is pending.');
       });
     },
@@ -456,7 +456,7 @@ export function AppProvider({ children }) {
         if (!app) return;
         app.status = APP_STATUS.HR_VERIFICATION_REJECTED;
         app.onboardingRejectReason = reason;
-        logActivity(draft, applicationId, 'onboarding', 'Onboarding Returned by HR', reason, 'Arjun Mehta');
+        logActivity(draft, applicationId, 'onboarding', 'Onboarding Returned by HR', reason, 'Anisha Rawat');
         notify(draft, ROLES.CANDIDATE, 'Onboarding details returned', reason);
       });
     },
@@ -481,7 +481,7 @@ export function AppProvider({ children }) {
           joiningDate: offer?.joiningDate || null,
           createdAt: new Date().toISOString(),
         });
-        logActivity(draft, applicationId, 'onboarding', 'Joining Completed', 'HR marked joining as completed.', 'Arjun Mehta');
+        logActivity(draft, applicationId, 'onboarding', 'Joining Completed', 'HR marked joining as completed.', 'Anisha Rawat');
         logActivity(draft, applicationId, 'onboarding', 'Employee Created', `Employee record ${employeeId} created.`, 'System');
         notify(draft, ROLES.CANDIDATE, 'Welcome aboard', `Your employee ID is ${employeeId}.`);
       });
@@ -531,7 +531,7 @@ export function AppProvider({ children }) {
           type: 'application',
           title: 'Job Created',
           description: `${job.title} (${job.id}) opened in ${job.department}.`,
-          actor: 'Priya Nair',
+          actor: 'Himanshu Singh',
           at: new Date().toISOString(),
         });
       });

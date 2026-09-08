@@ -9,7 +9,7 @@ import { APP_STATUS } from '../constants/statuses.js';
 const BOTTOM_NAV = [
   { to: '/hr', label: 'Dashboard', icon: 'Home', end: true },
   { to: '/hr/candidates', label: 'Candidates', icon: 'Users' },
-  { to: '/hr/offers', label: 'Offers', icon: 'FileCheck' },
+  { to: '/hr/employees', label: 'Employees', icon: 'UserRoundCheck' },
 ];
 
 const COLLAPSE_KEY = 'talentflow.hr.sidebar.collapsed';
@@ -37,14 +37,13 @@ export default function HRLayout() {
     };
   }, [data]);
 
-  // Document verification happens inside each candidate's detail page now,
-  // not as its own list — the Candidates table shows a verified/total status instead.
+  // Offers and the global activity log now live inside the Candidates area:
+  // the Candidates table carries an offer-status column + filter, and each
+  // candidate's detail page shows their own activity timeline.
   const navItems = [
     { to: '/hr', label: 'Dashboard', icon: 'LayoutDashboard', end: true },
     { to: '/hr/candidates', label: 'Candidates', icon: 'Users', count: navCounts.verification },
-    { to: '/hr/offers', label: 'Offers', icon: 'FileCheck' },
     { to: '/hr/employees', label: 'Employees', icon: 'UserRoundCheck', count: navCounts.joining },
-    { to: '/hr/activity', label: 'Activity', icon: 'History' },
   ];
 
   const toggleCollapse = () => {
