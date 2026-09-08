@@ -1,14 +1,19 @@
 import { useMemo, useState } from 'react';
-import { Card } from '../../components/common/Card.jsx';
+import { useNavigate } from 'react-router-dom';
+import TAHeader from '../../components/ta/TAHeader.jsx';
+import Card from '../../components/ta/Card.jsx';
+import Toolbar from '../../components/ta/Toolbar.jsx';
+import EmptyState from '../../components/ta/EmptyState.jsx';
 import { ActivityTimeline } from '../../components/common/Timeline.jsx';
-import SearchBar from '../../components/common/SearchBar.jsx';
-import FilterSelect from '../../components/common/FilterSelect.jsx';
-import { EmptyState } from '../../components/common/States.jsx';
 import { useApp } from '../../context/AppContext.jsx';
 
 const TYPES = ['application', 'review', 'approve', 'return', 'reject', 'interview', 'documents', 'offer', 'onboarding'];
+const cap = (s) => s[0].toUpperCase() + s.slice(1);
 
-export default function ActivityFeed() {
+/* Full activity log. `base` is the role's route prefix so a row opens that
+   role's candidate page ('/hr' or '/ta'). */
+export default function ActivityFeed({ base = '/hr' }) {
+  const navigate = useNavigate();
   const { data, getApplication } = useApp();
   const [q, setQ] = useState('');
   const [type, setType] = useState('all');
@@ -24,28 +29,44 @@ export default function ActivityFeed() {
           const t = q.trim().toLowerCase();
           return (
             (type === 'all' || a.type === type) &&
-            (!t || a.title.toLowerCase().includes(t) || a.candidate.toLowerCase().includes(t) || (a.description || '').toLowerCase().includes(t))
+            (!t
+              || a.title.toLowerCase().includes(t)
+              || a.candidate.toLowerCase().includes(t)
+              || (a.description || '').toLowerCase().includes(t))
           );
         }),
     [data.activities, q, type, getApplication]
   );
 
+  const chips = [
+    type !== 'all' && { key: 'type', label: cap(type), onRemove: () => setType('all') },
+    q && { key: 'q', label: `“${q}”`, onRemove: () => setQ('') },
+  ].filter(Boolean);
+
   return (
-    <div className="page-body">
-      <h1 className="page-title mb-4">Activity</h1>
-      <div className="toolbar">
-        <SearchBar value={q} onChange={setQ} placeholder="Search activity or candidate" />
-        <FilterSelect label="Type" value={type} onChange={setType} options={TYPES.map((t) => ({ value: t, label: t[0].toUpperCase() + t.slice(1) }))} />
-      </div>
+    <>
+      <TAHeader title="Activity" subtitle="Every recorded action across recruitment and onboarding." />
+
+      <Toolbar
+        search={{ value: q, onChange: setQ, placeholder: 'Search activity or candidate…' }}
+        filters={[{ label: 'Type', value: type, onChange: setType, options: TYPES.map((t) => ({ value: t, label: cap(t) })) }]}
+        chips={chips}
+        onClearAll={chips.length > 1 ? () => { setQ(''); setType('all'); } : undefined}
+      />
+
       <Card>
         {items.length === 0 ? (
-          <EmptyState icon="History" title="No activity found" message="Try changing your filters." />
+          <EmptyState icon="History" title="No activity found" message="Try changing the filters." />
         ) : (
           <ActivityTimeline
-            items={items.map((a) => ({ ...a, description: a.candidate ? `${a.candidate} · ${a.description || ''}` : a.description }))}
+            items={items.slice(0, 80)}
+            onSelect={(it) => {
+              const app = getApplication(it.applicationId);
+              navigate(app ? `${base}/candidates/${app.candidateId}` : `${base}/candidates`);
+            }}
           />
         )}
       </Card>
-    </div>
+    </>
   );
 }

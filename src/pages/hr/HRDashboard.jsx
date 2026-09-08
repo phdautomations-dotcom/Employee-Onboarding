@@ -6,7 +6,6 @@ import FunnelChart from '../../components/ta/FunnelChart.jsx';
 import DonutChart from '../../components/ta/DonutChart.jsx';
 import Tag from '../../components/ta/Tag.jsx';
 import Icon from '../../components/common/Icon.jsx';
-import { ActivityTimeline } from '../../components/common/Timeline.jsx';
 import { useApp } from '../../context/AppContext.jsx';
 import { DEMO_USERS, ROLES } from '../../constants/roles.js';
 import { APP_STATUS, OFFER_STATUS, HR_FUNNEL_STAGES, hrStageRank } from '../../constants/statuses.js';
@@ -15,7 +14,7 @@ import { timeAgo, formatDate } from '../../utils/format.js';
 
 export default function HRDashboard() {
   const navigate = useNavigate();
-  const { data, offerFor, activitiesFor, getApplication } = useApp();
+  const { data, offerFor, activitiesFor } = useApp();
   const user = DEMO_USERS[ROLES.HR];
 
   // ----- DATA -----
@@ -208,19 +207,6 @@ export default function HRDashboard() {
           </div>
         </Card>
       </div>
-
-      <Card
-        title="Recent Activity"
-        action={<button className="ta-link" onClick={() => navigate('/hr/candidates')}>All candidates</button>}
-      >
-        <ActivityTimeline
-          items={(data.activities || []).slice(0, 8)}
-          onSelect={(it) => {
-            const app = getApplication(it.applicationId);
-            navigate(app ? `/hr/candidates/${app.candidateId}` : '/hr/candidates');
-          }}
-        />
-      </Card>
     </>
   );
 }

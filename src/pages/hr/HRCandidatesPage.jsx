@@ -111,7 +111,6 @@ export default function HRCandidatesPage() {
       <StatBar items={kpis} />
 
       <Toolbar
-        search={{ value: view.query, onChange: view.setQuery, placeholder: 'Search candidate or ID…' }}
         filters={[
           {
             label: 'Stage',

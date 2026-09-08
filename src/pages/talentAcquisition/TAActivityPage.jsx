@@ -1,5 +1,5 @@
 import ActivityFeed from '../shared/ActivityFeed.jsx';
 
 export default function TAActivityPage() {
-  return <ActivityFeed />;
+  return <ActivityFeed base="/ta" />;
 }

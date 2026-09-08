@@ -37,13 +37,13 @@ export default function HRLayout() {
     };
   }, [data]);
 
-  // Offers and the global activity log now live inside the Candidates area:
-  // the Candidates table carries an offer-status column + filter, and each
-  // candidate's detail page shows their own activity timeline.
+  // Offers live inside the Candidates area now (offer-status column + filter);
+  // the full activity log has its own page.
   const navItems = [
     { to: '/hr', label: 'Dashboard', icon: 'LayoutDashboard', end: true },
     { to: '/hr/candidates', label: 'Candidates', icon: 'Users', count: navCounts.verification },
     { to: '/hr/employees', label: 'Employees', icon: 'UserRoundCheck', count: navCounts.joining },
+    { to: '/hr/activity', label: 'Activity', icon: 'History' },
   ];
 
   const toggleCollapse = () => {

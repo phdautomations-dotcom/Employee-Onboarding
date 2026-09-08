@@ -23,7 +23,7 @@ export default function HRTopbar({ head, onMenu }) {
         {head?.subtitle && <p className="ta-topbar__sub">{head.subtitle}</p>}
       </div>
 
-      <GlobalSearch base="/hr" variant="ta" placeholder="Search candidates, offers…" />
+      <GlobalSearch base="/hr" variant="ta" />
       <NotificationBell role={ROLES.HR} variant="ta" />
       <span className="ta-avatar-sq" title={user.name}>{user.initials}</span>
     </header>
