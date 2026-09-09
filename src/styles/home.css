@@ -157,11 +157,6 @@
   animation: ws-card 0.5s cubic-bezier(0.22, 1, 0.36, 1) backwards;
 }
 @keyframes ws-card { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
-.wsauth__panel::before {
-  content: ""; position: absolute; left: 24px; right: 24px; top: 0; height: 3px;
-  border-radius: 3px;
-  background: linear-gradient(90deg, #60a5fa, #4f46e5);
-}
 .wsauth__panel > * { animation: ws-rise 0.45s cubic-bezier(0.22, 1, 0.36, 1) backwards; }
 .wsauth__panel > *:nth-child(2) { animation-delay: 0.06s; }
 .wsauth__panel > *:nth-child(3) { animation-delay: 0.12s; }
