@@ -1,19 +1,18 @@
 import { useState } from 'react';
 
-/* Onboarding funnel: centred bands that narrow with the count. Each band shows
-   its count and its share of the total; the gap between bands names the
-   drop-off. `stages` = [{ label, value, tone, onClick? }] cumulative, in order. */
-export default function Funnel({ stages, total }) {
+/* Funnel: centred bands that narrow with the count. Each band shows its count
+   and its share of the first (widest) stage; the gap between bands names the
+   drop-off. `stages` = [{ label, value, tone, onClick? }] in order. */
+export default function Funnel({ stages }) {
   const [hover, setHover] = useState(null);
   const first = stages[0]?.value || 1;
-  const base = total ?? first;
 
   return (
     <div className="ta-funnel2">
       {stages.map((s, i) => {
         const w = 34 + (s.value / first) * 66; // 34%..100% so labels always fit
         const drop = i > 0 ? stages[i - 1].value - s.value : 0;
-        const pct = base ? Math.round((s.value / base) * 100) : 0;
+        const pct = Math.round((s.value / first) * 100);
         const Tag = s.onClick ? 'button' : 'div';
         return (
           <div className="ta-funnel2__step" key={s.label}>

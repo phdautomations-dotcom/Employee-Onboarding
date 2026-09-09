@@ -3,20 +3,20 @@ import { useNavigate } from 'react-router-dom';
 import TAHeader from '../../components/ta/TAHeader.jsx';
 import Card from '../../components/ta/Card.jsx';
 import KpiCard from '../../components/ta/KpiCard.jsx';
-import Funnel from '../../components/ta/Funnel.jsx';
 import DonutChart from '../../components/ta/DonutChart.jsx';
+import Funnel from '../../components/ta/Funnel.jsx';
 import Tag from '../../components/ta/Tag.jsx';
 import Icon from '../../components/common/Icon.jsx';
 import { useApp } from '../../context/AppContext.jsx';
 import { DEMO_USERS, ROLES } from '../../constants/roles.js';
-import { APP_STATUS, OFFER_STATUS, hrStageRank } from '../../constants/statuses.js';
+import { APP_STATUS, DOC_STATUS, hrStageRank } from '../../constants/statuses.js';
 import { timeAgo, formatDate } from '../../utils/format.js';
 
 const HANDOVER_PREVIEW = 3;
 
 export default function HRDashboard() {
   const navigate = useNavigate();
-  const { data, offerFor, activitiesFor } = useApp();
+  const { data, offerFor, documentsFor, activitiesFor } = useApp();
   const user = DEMO_USERS[ROLES.HR];
   const taName = DEMO_USERS[ROLES.TA].name;
   const [handoverOpen, setHandoverOpen] = useState(true);   // collapse the whole list
@@ -24,7 +24,6 @@ export default function HRDashboard() {
 
   // ----- DATA -----
   const apps = data.applications || [];
-  const offers = data.offers || [];
   const employees = data.employees || [];
   const now = new Date();
 
@@ -33,61 +32,64 @@ export default function HRDashboard() {
   // TA has done its part: candidate accepted, HR has not started onboarding yet.
   const handovers = apps.filter((a) => a.status === APP_STATUS.ONBOARDING_PENDING);
 
-  const onboardingStatuses = [
-    APP_STATUS.ONBOARDING_PENDING, APP_STATUS.HR_VERIFICATION,
-    APP_STATUS.HR_VERIFICATION_REJECTED, APP_STATUS.JOINING_PENDING,
-  ];
-  const inOnboarding = apps.filter((a) => onboardingStatuses.includes(a.status)).length;
-  const issuedCount = apps.filter((a) => a.status === APP_STATUS.OFFER_ISSUED).length;
-  const acceptedCount = offers.filter((o) => o.status === OFFER_STATUS.ACCEPTED).length;
-  const offersOut = issuedCount + acceptedCount;
   const joiningPending = apps.filter((a) => a.status === APP_STATUS.JOINING_PENDING).length;
   const joinedThisMonth = employees.filter((e) => {
     const d = new Date(e.joiningDate);
     return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
   }).length;
-  const everReachedHR = apps.filter((a) => hrStageRank(a.status) >= 0).length;
+  // ===== The onboarding funnel now lives in the KPI tiles — cumulative counts,
+  // each tile's meter is its share of everyone who accepted, and clicking opens
+  // the matching Stage filter on the candidates page. =====
+  const accepted = apps.filter((a) => hrStageRank(a.status) >= 2);
+  const reached = (rank) => accepted.filter((a) => hrStageRank(a.status) >= rank).length;
+  const total = accepted.length || 1;
+  const submittedDocs = accepted.filter((a) => a.onboarding).length;
+  const verified = reached(4);
+  const onboarded = reached(5);
 
   const kpis = [
     {
-      icon: 'ClipboardCheck', label: 'Awaiting Verification', accent: 'amber', value: pendingVerification.length,
-      meter: { value: pendingVerification.length, max: Math.max(1, inOnboarding) },
-      note: `of ${inOnboarding} candidates in onboarding`,
+      icon: 'FileCheck', label: 'Offer Accepted', accent: 'violet', value: total,
+      meter: { value: total, max: total },
+      note: 'accepted · now in HR onboarding',
+      onClick: () => navigate('/hr/candidates?stage=onboarding'),
+    },
+    {
+      icon: 'Files', label: 'Joining Documents', accent: 'blue', value: submittedDocs,
+      meter: { value: submittedDocs, max: total },
+      note: `${total - submittedDocs} still to submit`,
       onClick: () => navigate('/hr/candidates?stage=verification'),
     },
     {
-      icon: 'Send', label: 'Offers Awaiting Reply', accent: 'blue', value: issuedCount,
-      meter: { value: issuedCount, max: Math.max(1, offersOut) },
-      note: `of ${offersOut} extended · ${acceptedCount} accepted`,
-      onClick: () => navigate(`/hr/candidates?offer=${OFFER_STATUS.ISSUED}`),
+      icon: 'CheckCircle2', label: 'Documents Verified', accent: 'teal', value: verified,
+      meter: { value: verified, max: total },
+      note: `${pendingVerification.length} awaiting your review`,
+      onClick: () => navigate('/hr/candidates?stage=joining'),
     },
     {
-      icon: 'CalendarClock', label: 'Joining Soon', accent: 'violet', value: joiningPending,
-      meter: { value: joiningPending, max: Math.max(1, joiningPending + employees.length) },
-      note: 'in the joining stage or onboarded',
-      onClick: () => navigate('/hr/employees'),
-    },
-    {
-      icon: 'UserRoundCheck', label: 'Onboarded', accent: 'green', value: employees.length,
-      meter: { value: employees.length, max: Math.max(1, everReachedHR) },
-      note: `of ${everReachedHR} who reached HR${joinedThisMonth > 0 ? ` · ${joinedThisMonth} this month` : ''}`,
+      icon: 'UserRoundCheck', label: 'Onboarded', accent: 'green', value: onboarded,
+      meter: { value: onboarded, max: total },
+      note: `${joiningPending} joining soon${joinedThisMonth > 0 ? ` · ${joinedThisMonth} this month` : ''}`,
       onClick: () => navigate('/hr/employees'),
     },
   ];
 
-  // ===== HR Onboarding funnel — cumulative: each stage counts everyone who
-  // reached it or further, so it always narrows and a band's count is exactly
-  // what its filter shows on the candidates page. =====
-  const accepted = apps.filter((a) => hrStageRank(a.status) >= 2);
-  const reached = (rank) => accepted.filter((a) => hrStageRank(a.status) >= rank).length;
-  const stages = [
-    { label: 'Offer Accepted', tone: 'violet', value: reached(2), to: '/hr/candidates?stage=onboarding' },
-    { label: 'Joining Documents', tone: 'blue', value: accepted.filter((a) => a.onboarding).length, to: '/hr/candidates?stage=verification' },
-    { label: 'Documents Verified', tone: 'teal', value: reached(4), to: '/hr/candidates?stage=joining' },
-    { label: 'Onboarded', tone: 'green', value: reached(5), to: '/hr/candidates?stage=onboarded' },
+  // ===== Document Verification funnel — the joining-document journey for every
+  // candidate HR currently owns: submitted → all verified. =====
+  const inHrPipe = accepted.filter((a) => a.status !== APP_STATUS.EMPLOYEE);
+  let docsSubmitted = 0;
+  let docsAllVerified = 0;
+  inHrPipe.forEach((a) => {
+    const docs = documentsFor(a.id).filter((d) => d.required);
+    if (!docs.length) return;
+    if (docs.every((d) => d.status !== DOC_STATUS.PENDING)) docsSubmitted += 1;
+    if (docs.every((d) => d.status === DOC_STATUS.VERIFIED)) docsAllVerified += 1;
+  });
+  const docFunnel = [
+    { label: 'In onboarding', tone: 'violet', value: inHrPipe.length, onClick: () => navigate('/hr/candidates?stage=onboarding') },
+    { label: 'Documents submitted', tone: 'blue', value: docsSubmitted, onClick: () => navigate('/hr/candidates?stage=verification') },
+    { label: 'All verified', tone: 'green', value: docsAllVerified, onClick: () => navigate('/hr/candidates?stage=joining') },
   ];
-  const funnelStages = stages.map((s) => ({ ...s, onClick: () => navigate(s.to) }));
-  const stuckInDocs = stages[0].value - stages[2].value; // accepted but not verified
 
   // ===== Upcoming Joiners — everyone who accepted with a joining date, not
   // joined yet. Sorted soonest first. =====
@@ -246,15 +248,13 @@ export default function HRDashboard() {
 
       <div className="ta-bento">
         <Card
-          title="HR Onboarding Progress"
-          action={<span className="ta-cell-sub"><strong>{accepted.length}</strong> total · {stages[3].value} onboarded</span>}
+          title="Document Verification"
+          action={<span className="ta-cell-sub">{docsAllVerified} of {inHrPipe.length} fully verified</span>}
         >
-          <Funnel stages={funnelStages} total={accepted.length} />
-          {stuckInDocs > 0 && (
-            <p className="hr-insight">
-              <Icon name="Info" size={13} />
-              {stuckInDocs} of {accepted.length} ({Math.round((stuckInDocs / accepted.length) * 100)}%) still need documents submitted or verified.
-            </p>
+          {inHrPipe.length === 0 ? (
+            <p className="ta-cell-mute">No one is currently in onboarding.</p>
+          ) : (
+            <Funnel stages={docFunnel} />
           )}
         </Card>
 
