@@ -3,8 +3,9 @@
    and bottom edge the stage below, so the silhouette narrows as employees
    progress. `count` is the headline; the flagged phase turns amber.
    `stages` = [{ label, count, pct, note, attention, onClick }] in order. */
-// Cool teal → indigo sequential ramp; dark enough throughout for white labels.
-const TONE = ['#3f9d94', '#3f88ab', '#4470bd', '#4a57c0', '#4a3fae'];
+// One distinct hue per phase (grey-blue → blue → teal → violet → green),
+// each dark enough for white labels. Amber (attention) is reserved.
+const TONE = ['#5b6b82', '#3563d8', '#0d8478', '#6b4fc4', '#178a49'];
 
 export default function LifecycleFunnel({ stages }) {
   // Map the true % onto a readable width band — the funnel tapers but never
