@@ -582,6 +582,14 @@ export function AppProvider({ children }) {
     setData(buildSeed());
   }, [setData]);
 
+  // Guided demo: fresh seed with no candidate application yet, so the walk-through
+  // can start from "apply for a job".
+  const startGuidedDemo = useCallback(() => {
+    const fresh = buildSeed();
+    fresh.myApplicationId = null;
+    setData(fresh);
+  }, [setData]);
+
   /* ---------- selectors ---------- */
   const selectors = useMemo(() => {
     const apps = state.applications || [];
@@ -632,6 +640,7 @@ export function AppProvider({ children }) {
       createJob,
       markNotificationsRead,
       resetDemo,
+      startGuidedDemo,
     }),
     [
       role,
@@ -662,6 +671,7 @@ export function AppProvider({ children }) {
       assignEmployeeRole,
       markNotificationsRead,
       resetDemo,
+      startGuidedDemo,
     ]
   );
 

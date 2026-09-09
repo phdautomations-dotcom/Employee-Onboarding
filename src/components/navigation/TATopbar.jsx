@@ -1,11 +1,11 @@
 import Icon from '../common/Icon.jsx';
 import GlobalSearch from './GlobalSearch.jsx';
 import NotificationBell from './NotificationBell.jsx';
-import { DEMO_USERS, ROLES } from '../../constants/roles.js';
+import ProfileMenu from './ProfileMenu.jsx';
+import { ROLES } from '../../constants/roles.js';
 
 /* Single header band: page title (from <TAHeader>) on the left, tools on the right. */
 export default function TATopbar({ head, onMenu }) {
-  const user = DEMO_USERS[ROLES.TA];
   return (
     <header className="ta-topbar">
       <button className="ta-iconbtn ta-menubtn" onClick={onMenu} aria-label="Open navigation">
@@ -24,7 +24,7 @@ export default function TATopbar({ head, onMenu }) {
 
       <GlobalSearch base="/ta" variant="ta" />
       <NotificationBell role={ROLES.TA} variant="ta" />
-      <span className="ta-avatar-sq" title={user.name}>{user.initials}</span>
+      <ProfileMenu role={ROLES.TA} links={[{ label: 'Profile & settings', icon: 'Settings', to: '/ta/settings' }]} />
     </header>
   );
 }

@@ -1,12 +1,12 @@
 import Icon from '../common/Icon.jsx';
 import GlobalSearch from './GlobalSearch.jsx';
 import NotificationBell from './NotificationBell.jsx';
-import { DEMO_USERS, ROLES } from '../../constants/roles.js';
+import ProfileMenu from './ProfileMenu.jsx';
+import { ROLES } from '../../constants/roles.js';
 
 /* Same single-header-band pattern as TATopbar: page title comes from <TAHeader>,
    tools (search / notifications / avatar) live on the right. */
 export default function HRTopbar({ head, onMenu }) {
-  const user = DEMO_USERS[ROLES.HR];
   return (
     <header className="ta-topbar">
       <button className="ta-iconbtn ta-menubtn" onClick={onMenu} aria-label="Open navigation">
@@ -25,7 +25,7 @@ export default function HRTopbar({ head, onMenu }) {
 
       <GlobalSearch base="/hr" variant="ta" />
       <NotificationBell role={ROLES.HR} variant="ta" />
-      <span className="ta-avatar-sq" title={user.name}>{user.initials}</span>
+      <ProfileMenu role={ROLES.HR} links={[{ label: 'Profile & settings', icon: 'Settings', to: '/hr/settings' }]} />
     </header>
   );
 }

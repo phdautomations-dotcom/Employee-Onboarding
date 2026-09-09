@@ -1,10 +1,5 @@
-import { useState } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import Icon from '../common/Icon.jsx';
-import { useApp } from '../../context/AppContext.jsx';
-import { DEMO_USERS, ROLES, ROLE_META } from '../../constants/roles.js';
-
-const OTHER_ROLES = [ROLES.TA, ROLES.CANDIDATE];
 
 /* Same overlapping-rings logo mark as TASidebar, so both portals share one brand. */
 function BrandMark() {
@@ -20,16 +15,6 @@ function BrandMark() {
 }
 
 export default function HRSidebar({ open, collapsed, onToggleCollapse, onNavigate, navItems }) {
-  const navigate = useNavigate();
-  const { setRole } = useApp();
-  const [menu, setMenu] = useState(false);
-  const user = DEMO_USERS[ROLES.HR];
-
-  const switchTo = (role) => {
-    setRole(role);
-    navigate(ROLE_META[role].home);
-  };
-
   return (
     <aside className={`ta-sidebar${open ? ' ta-sidebar--open' : ''}`}>
       <button
@@ -75,28 +60,6 @@ export default function HRSidebar({ open, collapsed, onToggleCollapse, onNavigat
           <span className="ta-help__sub">Visit our Help Center</span>
         </span>
       </a>
-
-      {menu && (
-        <div className="ta-menu" onMouseLeave={() => setMenu(false)}>
-          {OTHER_ROLES.map((role) => (
-            <button key={role} className="ta-menu__item" onClick={() => switchTo(role)}>
-              <Icon name="RefreshCw" size={15} /> Switch to {ROLE_META[role].label}
-            </button>
-          ))}
-          <button className="ta-menu__item" onClick={() => switchTo(ROLES.CANDIDATE)}>
-            <Icon name="LogOut" size={15} /> Sign out
-          </button>
-        </div>
-      )}
-
-      <button className="ta-usercard" onClick={() => setMenu((m) => !m)} title={user.name}>
-        <span className="ta-avatar ta-avatar--sm">{user.initials}</span>
-        <span className="ta-usercard__text">
-          <span className="ta-usercard__name">{user.name}</span>
-          <span className="ta-usercard__role">Human Resources</span>
-        </span>
-        <Icon name="ChevronDown" size={15} />
-      </button>
     </aside>
   );
 }
