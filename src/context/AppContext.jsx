@@ -1,6 +1,6 @@
-import { createContext, useCallback, useContext, useMemo } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useLocalStorage } from '../hooks/useLocalStorage.js';
-import { buildSeed } from '../data/seed.js';
+import { buildSeed, SEED_VERSION } from '../data/seed.js';
 import { JOBS, findJob } from '../data/jobs.js';
 import {
   APP_STATUS,
@@ -27,7 +27,17 @@ export function AppProvider({ children }) {
   const [data, setData] = useLocalStorage(DATA_KEY, () => buildSeed());
   const [role, setRole] = useLocalStorage(ROLE_KEY, null);
 
-  const state = typeof data === 'function' ? buildSeed() : data;
+  // Demo data from an older seed shape is rebuilt automatically — the storage
+  // key stays the same, we just re-seed when the version inside it is behind.
+  const stored = typeof data === 'function' ? null : data;
+  const isStale = !stored || stored.seedVersion !== SEED_VERSION;
+  const [reseeded] = useState(() => (isStale ? buildSeed() : null));
+  useEffect(() => {
+    if (isStale) setData(reseeded);
+    // run once on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  const state = isStale ? reseeded : stored;
 
   /* ---------- internal helpers ---------- */
   const mutate = useCallback(

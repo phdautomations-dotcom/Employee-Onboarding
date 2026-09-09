@@ -2,6 +2,10 @@ import { APP_STATUS, ROUND_STATUS, DOC_STATUS, OFFER_STATUS, REQUIRED_DOCUMENTS 
 import { findJob } from './jobs.js';
 import { makeCandidateId, makeApplicationId, makeEmployeeId, makeOfferId, uid } from '../utils/ids.js';
 
+/* Bump when the seed's shape changes so stale demo data in a browser is
+   rebuilt automatically (the storage key itself never changes). */
+export const SEED_VERSION = 3;
+
 function emptyAddress() {
   return { line1: '', line2: '', city: '', state: '', country: 'India', postalCode: '' };
 }
@@ -707,6 +711,7 @@ export function buildSeed() {
     });
 
   return {
+    seedVersion: SEED_VERSION,
     applications,
     interviews,
     documents,
