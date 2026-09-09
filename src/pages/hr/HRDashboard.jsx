@@ -76,25 +76,26 @@ export default function HRDashboard() {
     },
   ];
 
-  // ===== Onboarding Stage-wise Progress — four cumulative stages from accepted
-  // offer to onboarded. Each stage is a subset of the one before, so counts
-  // only fall; the bar is the share of the whole accepted cohort still at this
-  // stage or beyond, and every node links to the matching candidate filter. =====
+  // ===== Onboarding Stage-wise Progress — seven milestones from accepted offer
+  // to onboarded. Each stage is a subset of the one before, so counts only fall;
+  // the bar / % is the share of the accepted cohort still at that stage or
+  // beyond, and every node links to the matching candidate filter. =====
+  const handedOver = (a) => activitiesFor(a.id).some((x) => x.title === 'Handed Over to HR');
   const STAGE_DEFS = [
-    { label: 'Offer Accepted', icon: 'FileCheck', tone: 'violet', to: '/hr/candidates?stage=onboarding', pred: () => true },
-    { label: 'Forms Submitted', icon: 'Files', tone: 'blue', to: '/hr/candidates?stage=verification', pred: (a) => !!a.onboarding || hrStageRank(a.status) >= 3 },
-    { label: 'Verified & Scheduled', icon: 'CalendarCheck', tone: 'amber', to: '/hr/candidates?stage=joining', pred: (a) => hrStageRank(a.status) >= 4 },
+    { label: 'Accepted Offer', icon: 'FileCheck', tone: 'violet', to: '/hr/candidates?stage=onboarding', pred: () => true },
+    { label: 'HR Handover', icon: 'Send', tone: 'violet', to: '/hr/candidates?stage=onboarding', pred: handedOver },
+    { label: 'Onboarding Started', icon: 'ClipboardList', tone: 'blue', to: '/hr/candidates?stage=onboarding', pred: (a) => a.status !== APP_STATUS.OFFER_ACCEPTED },
+    { label: 'Documents Submitted', icon: 'Files', tone: 'blue', to: '/hr/candidates?stage=verification', pred: (a) => !!a.onboarding || hrStageRank(a.status) >= 3 },
+    { label: 'Documents Verified', icon: 'CheckCircle2', tone: 'teal', to: '/hr/candidates?stage=verification', pred: (a) => hrStageRank(a.status) >= 4 },
+    { label: 'Ready to Join', icon: 'CalendarCheck', tone: 'amber', to: '/hr/candidates?stage=joining', pred: (a) => hrStageRank(a.status) >= 4 && !!offerFor(a.id)?.joiningDate },
     { label: 'Onboarded', icon: 'UserRoundCheck', tone: 'green', to: '/hr/candidates?stage=onboarded', pred: (a) => hrStageRank(a.status) >= 5 },
   ];
   const base = accepted.length || 1;
-  let stagePrev = accepted.length;
   const journey = STAGE_DEFS.map((s) => {
     const count = accepted.filter(s.pred).length;
-    const drop = stagePrev - count;
-    stagePrev = count;
     return {
       label: s.label, icon: s.icon, tone: s.tone, count,
-      pct: Math.round((count / base) * 100), drop,
+      pct: Math.round((count / base) * 100),
       onClick: () => navigate(s.to),
     };
   });
@@ -254,17 +255,18 @@ export default function HRDashboard() {
               {accepted.length} candidate{accepted.length === 1 ? '' : 's'} in the onboarding journey · {journey[journey.length - 1].count} onboarded
             </p>
             <StageJourney stages={journey} />
-            <p className="hr-insight">
-              <Icon name="Lightbulb" size={13} />
-              {insightCount > 0 ? (
-                <>
-                  <strong>{insightCount}</strong> candidate{insightCount === 1 ? ' is' : 's are'} currently pending document verification.
-                </>
-              ) : (
-                <>No candidates are stuck on document verification right now.</>
-              )}
+            <div className="hr-insight">
+              <span className="hr-insight__icon"><Icon name="Lightbulb" size={15} /></span>
+              <span className="hr-insight__body">
+                <strong>Key Insight</strong>
+                <span>
+                  {insightCount > 0
+                    ? `${insightCount} candidate${insightCount === 1 ? ' is' : 's are'} currently pending document verification.`
+                    : 'No candidates are stuck on document verification right now.'}
+                </span>
+              </span>
               <button className="ta-link" onClick={() => navigate('/hr/candidates?stage=verification')}>View details →</button>
-            </p>
+            </div>
           </>
         )}
       </Card>

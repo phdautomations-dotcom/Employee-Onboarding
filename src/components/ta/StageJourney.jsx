@@ -1,37 +1,32 @@
 import Icon from '../common/Icon.jsx';
 
-/* Horizontal onboarding journey — one node per stage, joined by arrows that
-   carry the drop-off between stages. The count is the headline; the bar and %
-   show the share of the accepted cohort still at that stage or beyond.
-   `stages` = [{ label, count, pct, drop, tone, icon, onClick }] in order. */
+/* Onboarding stage tracker — seven milestones left to right, joined by arrows.
+   The count is the headline; the bar and % show the share of the accepted
+   cohort still at that stage or beyond. Nodes are clickable.
+   `stages` = [{ label, count, pct, tone, icon, onClick }] in order. */
 export default function StageJourney({ stages }) {
   return (
-    <div className="ta-journey">
+    <div className="ta-track">
       {stages.map((s, i) => (
-        <div className="ta-journey__step" key={s.label}>
+        <div className="ta-track__step" key={s.label}>
           {i > 0 && (
-            <span className="ta-journey__arrow" aria-hidden="true">
-              <Icon name="ChevronRight" size={15} />
-              {s.drop > 0 && <span className="ta-journey__drop">−{s.drop}</span>}
+            <span className="ta-track__arrow" aria-hidden="true">
+              <Icon name="ChevronRight" size={16} />
             </span>
           )}
           <button
             type="button"
-            className="ta-journey__node"
+            className="ta-track__node"
             onClick={s.onClick}
             title={`View ${s.count} candidate${s.count === 1 ? '' : 's'}`}
             style={{ '--n-fg': `var(--tag-${s.tone}-fg)`, '--n-bg': `var(--tag-${s.tone}-bg)` }}
           >
-            <span className="ta-journey__head">
-              <span className="ta-journey__icon"><Icon name={s.icon} size={14} /></span>
-              <span className="ta-journey__name">{s.label}</span>
-            </span>
-            <span className="ta-journey__figs">
-              <span className="ta-journey__count">{s.count}</span>
-              <span className="ta-journey__pct">{s.pct}%</span>
-            </span>
-            <span className="ta-journey__meter">
-              <span className="ta-journey__fill" style={{ width: `${s.pct}%` }} />
+            <span className="ta-track__icon"><Icon name={s.icon} size={16} /></span>
+            <span className="ta-track__name">{s.label}</span>
+            <span className="ta-track__count">{s.count}</span>
+            <span className="ta-track__pct">{s.pct}%</span>
+            <span className="ta-track__meter">
+              <span className="ta-track__fill" style={{ width: `${s.pct}%` }} />
             </span>
           </button>
         </div>
