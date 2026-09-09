@@ -4,11 +4,12 @@ import TAHeader from '../../components/ta/TAHeader.jsx';
 import Card from '../../components/ta/Card.jsx';
 import KpiCard from '../../components/ta/KpiCard.jsx';
 import DonutChart from '../../components/ta/DonutChart.jsx';
+import Funnel from '../../components/ta/Funnel.jsx';
 import Tag from '../../components/ta/Tag.jsx';
 import Icon from '../../components/common/Icon.jsx';
 import { useApp } from '../../context/AppContext.jsx';
 import { DEMO_USERS, ROLES } from '../../constants/roles.js';
-import { APP_STATUS, hrStageRank } from '../../constants/statuses.js';
+import { APP_STATUS, OFFER_STATUS, hrStageRank } from '../../constants/statuses.js';
 import { timeAgo, formatDate } from '../../utils/format.js';
 
 const HANDOVER_PREVIEW = 3;
@@ -23,6 +24,7 @@ export default function HRDashboard() {
 
   // ----- DATA -----
   const apps = data.applications || [];
+  const offers = data.offers || [];
   const employees = data.employees || [];
   const now = new Date();
 
@@ -36,9 +38,8 @@ export default function HRDashboard() {
     const d = new Date(e.joiningDate);
     return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
   }).length;
-  // ===== The onboarding funnel now lives in the KPI tiles — cumulative counts,
-  // each tile's meter is its share of everyone who accepted, and clicking opens
-  // the matching Stage filter on the candidates page. =====
+  // ===== HR onboarding funnel — cumulative counts (everyone who reached a
+  // stage or further), shared by the KPI tiles and the funnel card. =====
   const accepted = apps.filter((a) => hrStageRank(a.status) >= 2);
   const reached = (rank) => accepted.filter((a) => hrStageRank(a.status) >= rank).length;
   const total = accepted.length || 1;
@@ -46,32 +47,31 @@ export default function HRDashboard() {
   const verified = reached(4);
   const onboarded = reached(5);
 
-  const kpis = [
-    {
-      icon: 'FileCheck', label: 'Offer Accepted', accent: 'violet', value: total,
-      meter: { value: total, max: total },
-      note: 'accepted · now in HR onboarding',
-      onClick: () => navigate('/hr/candidates?stage=onboarding'),
-    },
-    {
-      icon: 'Files', label: 'Joining Documents', accent: 'blue', value: submittedDocs,
-      meter: { value: submittedDocs, max: total },
-      note: `${total - submittedDocs} still to submit`,
-      onClick: () => navigate('/hr/candidates?stage=verification'),
-    },
-    {
-      icon: 'CheckCircle2', label: 'Documents Verified', accent: 'teal', value: verified,
-      meter: { value: verified, max: total },
-      note: `${pendingVerification.length} awaiting your review`,
-      onClick: () => navigate('/hr/candidates?stage=joining'),
-    },
-    {
-      icon: 'UserRoundCheck', label: 'Onboarded', accent: 'green', value: onboarded,
-      meter: { value: onboarded, max: total },
-      note: `${joiningPending} joining soon${joinedThisMonth > 0 ? ` · ${joinedThisMonth} this month` : ''}`,
-      onClick: () => navigate('/hr/employees'),
-    },
+  // KPI tiles = the HR onboarding stages (accepted → joining docs → verified → onboarded).
+  const kpiStages = [
+    { icon: 'FileCheck', label: 'Offer Accepted', accent: 'violet', value: total, note: 'accepted · now in HR onboarding', to: '/hr/candidates?stage=onboarding' },
+    { icon: 'Files', label: 'Joining Documents', accent: 'blue', value: submittedDocs, note: `${total - submittedDocs} still to submit`, to: '/hr/candidates?stage=verification' },
+    { icon: 'CheckCircle2', label: 'Documents Verified', accent: 'amber', value: verified, note: `${pendingVerification.length} awaiting your review`, to: '/hr/candidates?stage=joining' },
+    { icon: 'UserRoundCheck', label: 'Onboarded', accent: 'green', value: onboarded, note: `${joiningPending} joining soon${joinedThisMonth > 0 ? ` · ${joinedThisMonth} this month` : ''}`, to: '/hr/employees' },
   ];
+  const kpis = kpiStages.map((s) => ({
+    icon: s.icon, label: s.label, accent: s.accent, value: s.value,
+    meter: { value: s.value, max: total }, note: s.note,
+    onClick: () => navigate(s.to),
+  }));
+
+  // ===== Offer → Employee conversion — a different question from the stage
+  // tiles: how many extended offers actually turn into onboarded employees,
+  // and where they fall away. =====
+  const extended = offers.filter((o) => o.status !== OFFER_STATUS.DRAFT).length;
+  const acceptedOffers = offers.filter((o) => o.status === OFFER_STATUS.ACCEPTED).length;
+  const conversion = extended ? Math.round((onboarded / extended) * 100) : 0;
+  const funnelStages = [
+    { label: 'Offers extended', tone: 'violet', value: extended, to: `/hr/candidates?offer=${OFFER_STATUS.ISSUED}` },
+    { label: 'Accepted', tone: 'blue', value: acceptedOffers, to: `/hr/candidates?offer=${OFFER_STATUS.ACCEPTED}` },
+    { label: 'Documents verified', tone: 'amber', value: verified, to: '/hr/candidates?stage=joining' },
+    { label: 'Onboarded', tone: 'green', value: onboarded, to: '/hr/employees' },
+  ].map((s) => ({ ...s, onClick: () => navigate(s.to) }));
 
   // ===== Upcoming Joiners — everyone who accepted with a joining date, not
   // joined yet. Sorted soonest first. =====
@@ -84,23 +84,17 @@ export default function HRDashboard() {
     .sort((x, y) => x.d - y.d);
   const joiningThisWeek = upcomingJoiners.filter((x) => x.d <= 7).length;
 
-  // ===== Onboarding by Department — which teams the incoming hires join, and
-  // who, so HR can line up equipment, access and inductions per team. =====
+  // ===== Onboarding by Department — which teams the incoming hires join, so HR
+  // can line up equipment, access and inductions per team. =====
   const DEPT_RAMP = ['#4b7bf7', '#8b7ff0', '#f6a04a', '#46c98a', '#3fbfae', '#f2b705'];
-  const byDept = {};
+  const deptCounts = {};
   notJoined.forEach((a) => {
     const dept = offerFor(a.id)?.department || 'Unassigned';
-    (byDept[dept] = byDept[dept] || []).push(a);
+    deptCounts[dept] = (deptCounts[dept] || 0) + 1;
   });
-  const deptGroups = Object.entries(byDept)
-    .sort((a, b) => b[1].length - a[1].length)
-    .map(([dept, list], i) => ({
-      dept,
-      color: DEPT_RAMP[i % DEPT_RAMP.length],
-      list,
-      names: list.map((a) => `${a.personal.firstName} ${a.personal.lastName}`),
-    }));
-  const deptSlices = deptGroups.map((g) => ({ label: g.dept, value: g.list.length, color: g.color }));
+  const deptSlices = Object.entries(deptCounts)
+    .sort((a, b) => b[1] - a[1])
+    .map(([label, value], i) => ({ label, value, color: DEPT_RAMP[i % DEPT_RAMP.length] }));
 
   return (
     <>
@@ -230,29 +224,25 @@ export default function HRDashboard() {
         </Card>
       </div>
 
-      <Card
-        title="Onboarding by Department"
-        action={<span className="ta-cell-sub">{notJoined.length} joining across {deptGroups.length} team{deptGroups.length === 1 ? '' : 's'}</span>}
-      >
-        {notJoined.length === 0 ? (
-          <p className="ta-cell-mute">No one is currently in onboarding.</p>
-        ) : (
-          <div className="hr-bydept">
+      <div className="ta-bento">
+        <Card
+          title="Offer → Employee Conversion"
+          action={<span className="ta-cell-sub"><strong>{conversion}%</strong> of {extended} offers onboarded</span>}
+        >
+          <Funnel stages={funnelStages} />
+        </Card>
+
+        <Card
+          title="Onboarding by Department"
+          action={<span className="ta-cell-sub">{notJoined.length} joining across {deptSlices.length} team{deptSlices.length === 1 ? '' : 's'}</span>}
+        >
+          {notJoined.length === 0 ? (
+            <p className="ta-cell-mute">No one is currently in onboarding.</p>
+          ) : (
             <DonutChart slices={deptSlices} caption="joining" onSliceClick={() => navigate('/hr/candidates?stage=onboarding')} />
-            <div className="hr-bydept__teams">
-              {deptGroups.map((g) => (
-                <div className="hr-bydept__team" key={g.dept}>
-                  <span className="hr-bydept__dot" style={{ background: g.color }} />
-                  <span className="hr-bydept__label">
-                    {g.dept} <span className="hr-bydept__n">{g.list.length}</span>
-                    <span className="ta-cell-sub"> · {g.names.join(', ')}</span>
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </Card>
+          )}
+        </Card>
+      </div>
     </>
   );
 }

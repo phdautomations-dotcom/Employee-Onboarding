@@ -361,18 +361,21 @@
 .ta-pipe__pct { font-size: 11px; font-weight: 600; color: var(--ta-text-mute); min-width: 30px; text-align: right; }
 .ta-pipe-wrap { display: grid; grid-template-columns: minmax(0, 1fr) 290px; gap: 22px; align-items: center; }
 
-/* Onboarding by Department — donut on the left, per-team roster on the right */
-.hr-bydept { display: grid; grid-template-columns: minmax(0, 430px) 1fr; gap: 30px; align-items: center; }
-.hr-bydept__teams { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
-.hr-bydept__team { display: flex; align-items: baseline; gap: 9px; font-size: 12.5px; }
-.hr-bydept__dot { width: 9px; height: 9px; border-radius: 3px; flex-shrink: 0; transform: translateY(1px); }
-.hr-bydept__label { min-width: 0; }
-.hr-bydept__n {
-  display: inline-block; margin-left: 3px; padding: 0 6px;
-  font-size: 11px; font-weight: 700; border-radius: 999px;
-  background: var(--ta-bg); color: var(--ta-text-soft);
+/* Funnel — narrowing bands, drop-off labelled between them */
+.ta-funnel2 { display: flex; flex-direction: column; align-items: center; }
+.ta-funnel2__step { display: flex; flex-direction: column; align-items: center; width: 100%; }
+.ta-funnel2__drop { font-size: 10.5px; font-weight: 600; color: var(--ta-text-mute); padding: 5px 0; }
+.ta-funnel2__band {
+  display: flex; align-items: center; justify-content: space-between; gap: 14px;
+  min-height: 46px; padding: 8px 18px; border: 0; border-radius: 10px;
+  color: #fff; font: inherit; text-align: left; cursor: pointer;
+  transition: opacity 0.12s, transform 0.12s;
 }
-@media (max-width: 880px) { .hr-bydept { grid-template-columns: 1fr; gap: 16px; } }
+.ta-funnel2__band:hover { transform: scale(1.015); }
+.ta-funnel2__name { font-size: 12.5px; font-weight: 600; letter-spacing: 0.01em; }
+.ta-funnel2__nums { display: inline-flex; align-items: baseline; gap: 8px; flex-shrink: 0; }
+.ta-funnel2__nums b { font-size: 17px; font-weight: 750; font-variant-numeric: tabular-nums; }
+.ta-funnel2__pct { font-size: 12px; font-weight: 600; opacity: 0.85; }
 
 /* TA → HR handover — a slim card that lists newly accepted candidates */
 .hr-handover {
