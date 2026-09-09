@@ -9,7 +9,7 @@ import Tag from '../../components/ta/Tag.jsx';
 import Icon from '../../components/common/Icon.jsx';
 import { useApp } from '../../context/AppContext.jsx';
 import { DEMO_USERS, ROLES } from '../../constants/roles.js';
-import { APP_STATUS, OFFER_STATUS, hrStageRank } from '../../constants/statuses.js';
+import { APP_STATUS, hrStageRank } from '../../constants/statuses.js';
 import { timeAgo, formatDate } from '../../utils/format.js';
 
 const HANDOVER_PREVIEW = 3;
@@ -24,7 +24,6 @@ export default function HRDashboard() {
 
   // ----- DATA -----
   const apps = data.applications || [];
-  const offers = data.offers || [];
   const employees = data.employees || [];
   const now = new Date();
 
@@ -38,40 +37,13 @@ export default function HRDashboard() {
     const d = new Date(e.joiningDate);
     return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
   }).length;
-  // ===== HR onboarding funnel — cumulative counts (everyone who reached a
-  // stage or further), shared by the KPI tiles and the funnel card. =====
+  // HR owns candidates from "offer accepted" onward.
   const accepted = apps.filter((a) => hrStageRank(a.status) >= 2);
   const reached = (rank) => accepted.filter((a) => hrStageRank(a.status) >= rank).length;
   const total = accepted.length || 1;
   const submittedDocs = accepted.filter((a) => a.onboarding).length;
   const verified = reached(4);
   const onboarded = reached(5);
-
-  // KPI tiles = the HR onboarding stages (accepted → joining docs → verified → onboarded).
-  const kpiStages = [
-    { icon: 'FileCheck', label: 'Offer Accepted', accent: 'violet', value: total, note: 'accepted · now in HR onboarding', to: '/hr/candidates?stage=onboarding' },
-    { icon: 'Files', label: 'Joining Documents', accent: 'blue', value: submittedDocs, note: `${total - submittedDocs} still to submit`, to: '/hr/candidates?stage=verification' },
-    { icon: 'CheckCircle2', label: 'Documents Verified', accent: 'amber', value: verified, note: `${pendingVerification.length} awaiting your review`, to: '/hr/candidates?stage=joining' },
-    { icon: 'UserRoundCheck', label: 'Onboarded', accent: 'green', value: onboarded, note: `${joiningPending} joining soon${joinedThisMonth > 0 ? ` · ${joinedThisMonth} this month` : ''}`, to: '/hr/employees' },
-  ];
-  const kpis = kpiStages.map((s) => ({
-    icon: s.icon, label: s.label, accent: s.accent, value: s.value,
-    meter: { value: s.value, max: total }, note: s.note,
-    onClick: () => navigate(s.to),
-  }));
-
-  // ===== Offer → Employee conversion — a different question from the stage
-  // tiles: how many extended offers actually turn into onboarded employees,
-  // and where they fall away. =====
-  const extended = offers.filter((o) => o.status !== OFFER_STATUS.DRAFT).length;
-  const acceptedOffers = offers.filter((o) => o.status === OFFER_STATUS.ACCEPTED).length;
-  const conversion = extended ? Math.round((onboarded / extended) * 100) : 0;
-  const funnelStages = [
-    { label: 'Offers extended', tone: 'violet', value: extended, to: `/hr/candidates?offer=${OFFER_STATUS.ISSUED}` },
-    { label: 'Accepted', tone: 'blue', value: acceptedOffers, to: `/hr/candidates?offer=${OFFER_STATUS.ACCEPTED}` },
-    { label: 'Documents verified', tone: 'amber', value: verified, to: '/hr/candidates?stage=joining' },
-    { label: 'Onboarded', tone: 'green', value: onboarded, to: '/hr/employees' },
-  ].map((s) => ({ ...s, onClick: () => navigate(s.to) }));
 
   // ===== Upcoming Joiners — everyone who accepted with a joining date, not
   // joined yet. Sorted soonest first. =====
@@ -83,6 +55,39 @@ export default function HRDashboard() {
     .map((x) => ({ ...x, d: daysUntil(x.joiningDate) }))
     .sort((x, y) => x.d - y.d);
   const joiningThisWeek = upcomingJoiners.filter((x) => x.d <= 7).length;
+
+  // ===== KPI tiles = HR's live workload (what needs doing), not the funnel. =====
+  const kpis = [
+    {
+      icon: 'ClipboardCheck', label: 'In Onboarding', accent: 'violet', value: notJoined.length,
+      meter: { value: notJoined.length, max: total }, note: `${handovers.length} just handed over`,
+      onClick: () => navigate('/hr/candidates?stage=onboarding'),
+    },
+    {
+      icon: 'Eye', label: 'Awaiting Verification', accent: 'amber', value: pendingVerification.length,
+      meter: { value: pendingVerification.length, max: Math.max(1, notJoined.length) }, note: 'joining documents to review',
+      onClick: () => navigate('/hr/candidates?stage=verification'),
+    },
+    {
+      icon: 'CalendarClock', label: 'Joining This Week', accent: 'blue', value: joiningThisWeek,
+      meter: { value: joiningThisWeek, max: Math.max(1, upcomingJoiners.length) }, note: `${upcomingJoiners.length} upcoming in total`,
+      onClick: () => navigate('/hr/candidates?stage=joining'),
+    },
+    {
+      icon: 'UserRoundCheck', label: 'Onboarded', accent: 'green', value: employees.length,
+      meter: { value: employees.length, max: Math.max(1, total) }, note: `${joinedThisMonth} joined this month`,
+      onClick: () => navigate('/hr/employees'),
+    },
+  ];
+
+  // ===== HR Onboarding Progress funnel — cumulative stages, so it narrows and
+  // shows where candidates drop between steps. =====
+  const funnelStages = [
+    { label: 'Offer Accepted', tone: 'violet', value: total, to: '/hr/candidates?stage=onboarding' },
+    { label: 'Joining Documents', tone: 'blue', value: submittedDocs, to: '/hr/candidates?stage=verification' },
+    { label: 'Documents Verified', tone: 'amber', value: verified, to: '/hr/candidates?stage=joining' },
+    { label: 'Onboarded', tone: 'green', value: onboarded, to: '/hr/candidates?stage=onboarded' },
+  ].map((s) => ({ ...s, onClick: () => navigate(s.to) }));
 
   // ===== Onboarding by Department — which teams the incoming hires join, so HR
   // can line up equipment, access and inductions per team. =====
@@ -226,8 +231,8 @@ export default function HRDashboard() {
 
       <div className="ta-bento">
         <Card
-          title="Offer → Employee Conversion"
-          action={<span className="ta-cell-sub"><strong>{conversion}%</strong> of {extended} offers onboarded</span>}
+          title="HR Onboarding Progress"
+          action={<span className="ta-cell-sub"><strong>{total}</strong> accepted · {onboarded} onboarded</span>}
         >
           <Funnel stages={funnelStages} />
         </Card>

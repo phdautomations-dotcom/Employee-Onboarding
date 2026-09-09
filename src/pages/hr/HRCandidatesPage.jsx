@@ -8,7 +8,7 @@ import Toolbar from '../../components/ta/Toolbar.jsx';
 import Tag from '../../components/ta/Tag.jsx';
 import { useApp } from '../../context/AppContext.jsx';
 import { useCollectionView } from '../../hooks/useCollectionView.js';
-import { APP_STATUS, DOC_STATUS, OFFER_STATUS_META, HR_FUNNEL_STAGES, hrStageRank, hrStageBadge } from '../../constants/statuses.js';
+import { APP_STATUS, DOC_STATUS, HR_FUNNEL_STAGES, hrStageRank, hrStageBadge } from '../../constants/statuses.js';
 import { formatDate } from '../../utils/format.js';
 
 const COLUMNS = [
@@ -27,7 +27,9 @@ export default function HRCandidatesPage() {
   const rows = useMemo(
     () =>
       (data.applications || [])
-        .filter((a) => hrStageRank(a.status) >= 0 || a.status === APP_STATUS.OFFER_DECLINED)
+        // HR only owns candidates once the offer is accepted (the TA → HR
+        // handover). Everything up to "offer sent" stays with Talent Acquisition.
+        .filter((a) => hrStageRank(a.status) >= 2)
         .map((a) => {
           const offer = offerFor(a.id);
           const docs = documentsFor(a.id);
@@ -59,20 +61,15 @@ export default function HRCandidatesPage() {
   // click shows here. The "Onboarding Stage" column still shows where each
   // candidate currently is (which may be further along).
   const stageParam = HR_FUNNEL_STAGES.some((s) => s.key === sp.get('stage')) ? sp.get('stage') : 'all';
-  const offerParam = OFFER_STATUS_META[sp.get('offer')] ? sp.get('offer') : 'all';
   const [stage, setStageKey] = useState(stageParam);
-  const [offer, setOfferKey] = useState(offerParam);
 
   const view = useCollectionView(rows, {
     searchFields: ['name', 'candidateId'],
     pageSize: 30,
     initialSort: { key: 'name', dir: 'asc' },
-    initialFilters: {
-      ...(stageParam !== 'all'
-        ? { hrRank: (r) => r.hrRank >= HR_FUNNEL_STAGES.find((s) => s.key === stageParam).rank }
-        : {}),
-      ...(offerParam !== 'all' ? { offerStatus: offerParam } : {}),
-    },
+    initialFilters: stageParam !== 'all'
+      ? { hrRank: (r) => r.hrRank >= HR_FUNNEL_STAGES.find((s) => s.key === stageParam).rank }
+      : {},
   });
 
   const deptOptions = useMemo(
@@ -94,14 +91,8 @@ export default function HRCandidatesPage() {
     view.setFilter('hrRank', key === 'all' ? 'all' : (r) => r.hrRank >= target.rank);
   };
 
-  const setOffer = (key) => {
-    setOfferKey(key);
-    view.setFilter('offerStatus', key === 'all' ? 'all' : key);
-  };
-
   const clearAll = () => {
     setStage('all');
-    setOffer('all');
     setJoined('all');
     view.setFilter('department', 'all');
     view.setFilter('docsState', 'all');
@@ -110,7 +101,6 @@ export default function HRCandidatesPage() {
   const DOCS_LABEL = { verified: 'All verified', rejected: 'Has rejection', pending: 'Docs pending' };
   const chips = [
     stage !== 'all' && { key: 'stage', label: HR_FUNNEL_STAGES.find((s) => s.key === stage)?.label, onRemove: () => setStage('all') },
-    offer !== 'all' && { key: 'offer', label: OFFER_STATUS_META[offer]?.label, onRemove: () => setOffer('all') },
     activeDept !== 'all' && { key: 'dept', label: activeDept, onRemove: () => view.setFilter('department', 'all') },
     activeDocs !== 'all' && { key: 'docs', label: DOCS_LABEL[activeDocs], onRemove: () => view.setFilter('docsState', 'all') },
     joined !== 'all' && { key: 'join', label: joined === 'set' ? 'Joining date set' : 'No joining date', onRemove: () => setJoined('all') },
@@ -137,12 +127,6 @@ export default function HRCandidatesPage() {
             value: stage,
             onChange: setStage,
             options: HR_FUNNEL_STAGES.map((s) => ({ value: s.key, label: s.label })),
-          },
-          {
-            label: 'Offer',
-            value: offer,
-            onChange: setOffer,
-            options: Object.entries(OFFER_STATUS_META).map(([value, m]) => ({ value, label: m.label })),
           },
           { label: 'Department', value: activeDept, onChange: (v) => view.setFilter('department', v), options: deptOptions },
           {
