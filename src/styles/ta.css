@@ -361,36 +361,28 @@
 .ta-pipe__pct { font-size: 11px; font-weight: 600; color: var(--ta-text-mute); min-width: 30px; text-align: right; }
 .ta-pipe-wrap { display: grid; grid-template-columns: minmax(0, 1fr) 290px; gap: 22px; align-items: center; }
 
-/* Onboarding Stage-wise Progress — horizontal milestone tracker */
-.ta-track {
-  display: flex; align-items: stretch; gap: 0;
-  overflow-x: auto; padding-bottom: 4px;
+/* Onboarding Stage-wise Progress — vertical narrowing funnel */
+.ta-funnel { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.ta-funnel__step { width: 100%; display: flex; flex-direction: column; align-items: center; }
+.ta-funnel__link { width: 2px; height: 8px; background: var(--ta-line); }
+.ta-funnel__label {
+  display: inline-flex; align-items: center; gap: 7px;
+  margin: 4px 0 5px; font-size: 11.5px; font-weight: 600; color: var(--ta-text-soft);
 }
-.ta-track__step { display: flex; align-items: stretch; flex: 1 1 0; min-width: 0; }
-.ta-track__arrow {
-  flex: 0 0 22px; display: inline-flex; align-items: center; justify-content: center;
-  color: var(--ta-line); align-self: center;
-}
-.ta-track__node {
-  flex: 1 1 0; min-width: 116px;
-  display: flex; flex-direction: column; align-items: center; gap: 6px;
-  padding: 14px 10px 12px; border: 1px solid var(--ta-line); border-radius: 12px;
-  background: var(--ta-surface); font: inherit; text-align: center; cursor: pointer;
-  transition: border-color 0.12s, box-shadow 0.12s;
-}
-.ta-track__node:hover { border-color: var(--n-fg); box-shadow: var(--ta-shadow); }
-.ta-track__icon {
+.ta-funnel__icon {
   display: inline-flex; align-items: center; justify-content: center;
-  width: 34px; height: 34px; border-radius: 50%; color: var(--n-fg); background: var(--n-bg);
+  width: 22px; height: 22px; border-radius: 6px; color: var(--n-fg); background: var(--n-bg);
 }
-.ta-track__name {
-  font-size: 11px; font-weight: 600; color: var(--ta-text-soft);
-  line-height: 1.25; min-height: 2.5em; display: flex; align-items: center;
+.ta-funnel__band {
+  min-width: 120px; max-width: 100%;
+  display: flex; align-items: center; justify-content: space-between; gap: 14px;
+  padding: 9px 16px; border: 0; border-radius: 8px;
+  color: #fff; font: inherit; cursor: pointer;
+  transition: filter 0.12s, transform 0.12s;
 }
-.ta-track__count { font-size: 20px; font-weight: 750; font-variant-numeric: tabular-nums; color: var(--ta-text); line-height: 1; }
-.ta-track__pct { font-size: 11px; font-weight: 650; color: var(--n-fg); font-variant-numeric: tabular-nums; }
-.ta-track__meter { width: 100%; height: 5px; border-radius: 3px; background: var(--ta-line-soft); overflow: hidden; margin-top: 2px; }
-.ta-track__fill { display: block; height: 100%; border-radius: 3px; background: var(--n-fg); transition: width 0.3s ease; }
+.ta-funnel__band:hover { filter: brightness(1.06); transform: scale(1.01); }
+.ta-funnel__count { font-size: 16px; font-weight: 750; font-variant-numeric: tabular-nums; }
+.ta-funnel__pct { font-size: 12px; font-weight: 650; opacity: 0.9; font-variant-numeric: tabular-nums; }
 
 /* Key Insight — highlighted callout under an analytics card */
 .hr-insight {
