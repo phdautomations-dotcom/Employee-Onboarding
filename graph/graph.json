@@ -1,6 +1,6 @@
 {
   "app": "recruitment-onboarding-frontend",
-  "generatedAt": "2026-09-07T11:53:15.142Z",
+  "generatedAt": "2026-09-09T06:58:52.489Z",
   "stats": {
     "files": 105,
     "edges": 373,
@@ -789,7 +789,6 @@
         "src/utils/format.js"
       ],
       "importedBy": [
-        "src/pages/hr/HRDashboard.jsx",
         "src/pages/shared/ActivityFeed.jsx"
       ]
     },
@@ -1185,6 +1184,7 @@
       ],
       "imports": [],
       "importedBy": [
+        "src/pages/hr/HRDashboard.jsx",
         "src/pages/talentAcquisition/TADashboard.jsx"
       ]
     },
@@ -2176,7 +2176,7 @@
       "name": "HRCandidatesPage.jsx",
       "dir": "src/pages/hr",
       "layer": "page",
-      "loc": 158,
+      "loc": 168,
       "summary": "",
       "exports": [
         "default (HRCandidatesPage)"
@@ -2206,7 +2206,7 @@
       "name": "HRDashboard.jsx",
       "dir": "src/pages/hr",
       "layer": "page",
-      "loc": 150,
+      "loc": 185,
       "summary": "",
       "exports": [
         "default (HRDashboard)"
@@ -2219,10 +2219,10 @@
         "src/components/ta/Card.jsx",
         "src/components/ta/KpiCard.jsx",
         "src/components/ta/FunnelChart.jsx",
+        "src/components/ta/DonutChart.jsx",
         "src/components/ta/Avatar.jsx",
         "src/components/ta/Tag.jsx",
         "src/components/common/Icon.jsx",
-        "src/components/common/Timeline.jsx",
         "src/context/AppContext.jsx",
         "src/constants/roles.js",
         "src/constants/statuses.js",
@@ -2238,7 +2238,7 @@
       "name": "HREmployeesPage.jsx",
       "dir": "src/pages/hr",
       "layer": "page",
-      "loc": 113,
+      "loc": 138,
       "summary": "",
       "exports": [
         "default (HREmployeesPage)"
@@ -2699,7 +2699,7 @@
       "name": "ta.css",
       "dir": "src/styles",
       "layer": "style",
-      "loc": 896,
+      "loc": 902,
       "summary": "",
       "exports": [],
       "externals": [],
@@ -3669,6 +3669,10 @@
     },
     {
       "source": "src/pages/hr/HRDashboard.jsx",
+      "target": "src/components/ta/DonutChart.jsx"
+    },
+    {
+      "source": "src/pages/hr/HRDashboard.jsx",
       "target": "src/components/ta/Avatar.jsx"
     },
     {
@@ -3678,10 +3682,6 @@
     {
       "source": "src/pages/hr/HRDashboard.jsx",
       "target": "src/components/common/Icon.jsx"
-    },
-    {
-      "source": "src/pages/hr/HRDashboard.jsx",
-      "target": "src/components/common/Timeline.jsx"
     },
     {
       "source": "src/pages/hr/HRDashboard.jsx",

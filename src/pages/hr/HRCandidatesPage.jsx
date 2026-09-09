@@ -8,7 +8,7 @@ import Avatar from '../../components/ta/Avatar.jsx';
 import Tag from '../../components/ta/Tag.jsx';
 import { useApp } from '../../context/AppContext.jsx';
 import { useCollectionView } from '../../hooks/useCollectionView.js';
-import { APP_STATUS, DOC_STATUS, OFFER_STATUS_META, HR_FUNNEL_STAGES, hrStageRank, stageBadgeForStatus } from '../../constants/statuses.js';
+import { APP_STATUS, DOC_STATUS, OFFER_STATUS_META, HR_FUNNEL_STAGES, hrStageRank, stageBadgeForStatus, statusMeta } from '../../constants/statuses.js';
 import { formatDate } from '../../utils/format.js';
 
 // The old offer-status tones don't match Tag's tone names — map them once.
@@ -63,13 +63,19 @@ export default function HRCandidatesPage() {
   const stageParam = HR_FUNNEL_STAGES.some((s) => s.key === sp.get('stage')) ? sp.get('stage') : 'all';
   const [stage, setStageKey] = useState(stageParam);
 
+  // Exact-status filter — separate from the stage bucket above, this is what the
+  // dashboard's "Onboarding Review Status" donut links to, since each of its
+  // slices is one precise status, not "this stage or further".
+  const statusParam = Object.values(APP_STATUS).includes(sp.get('status')) ? sp.get('status') : null;
+
   const view = useCollectionView(rows, {
     searchFields: ['name', 'candidateId'],
     pageSize: 12,
     initialSort: { key: 'name', dir: 'asc' },
-    initialFilters: stageParam !== 'all'
-      ? { hrRank: (r) => r.hrRank >= HR_FUNNEL_STAGES.find((s) => s.key === stageParam).rank }
-      : undefined,
+    initialFilters: {
+      ...(stageParam !== 'all' ? { hrRank: (r) => r.hrRank >= HR_FUNNEL_STAGES.find((s) => s.key === stageParam).rank } : {}),
+      ...(statusParam ? { hrStatus: statusParam } : {}),
+    },
   });
 
   const setStage = (key) => {
@@ -78,13 +84,17 @@ export default function HRCandidatesPage() {
     view.setFilter('hrRank', key === 'all' ? 'all' : (r) => r.hrRank >= target.rank);
   };
 
+  const activeExactStatus = typeof view.filters.hrStatus === 'string' ? view.filters.hrStatus : null;
+
   const clearAll = () => {
     view.setQuery('');
     setStage('all');
+    view.setFilter('hrStatus', 'all');
   };
 
   const chips = [
     stage !== 'all' && { key: 'stage', label: HR_FUNNEL_STAGES.find((s) => s.key === stage)?.label, onRemove: () => setStage('all') },
+    activeExactStatus && { key: 'status', label: statusMeta(activeExactStatus).label, onRemove: () => view.setFilter('hrStatus', 'all') },
     view.query && { key: 'q', label: `“${view.query}”`, onRemove: () => view.setQuery('') },
   ].filter(Boolean);
 

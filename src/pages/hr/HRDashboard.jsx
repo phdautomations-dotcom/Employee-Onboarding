@@ -3,15 +3,25 @@ import TAHeader from '../../components/ta/TAHeader.jsx';
 import Card from '../../components/ta/Card.jsx';
 import KpiCard from '../../components/ta/KpiCard.jsx';
 import FunnelChart from '../../components/ta/FunnelChart.jsx';
+import DonutChart from '../../components/ta/DonutChart.jsx';
 import Avatar from '../../components/ta/Avatar.jsx';
 import Tag from '../../components/ta/Tag.jsx';
 import Icon from '../../components/common/Icon.jsx';
-import { ActivityTimeline } from '../../components/common/Timeline.jsx';
 import { useApp } from '../../context/AppContext.jsx';
 import { DEMO_USERS, ROLES } from '../../constants/roles.js';
 import { APP_STATUS, OFFER_STATUS, HR_FUNNEL_STAGES, hrStageRank } from '../../constants/statuses.js';
 import { weeklyCounts } from '../../utils/metrics.js';
 import { timeAgo } from '../../utils/format.js';
+
+// Where every candidate HR has actually reviewed stands right now —
+// HR's job starts once forms are submitted (Under Review) and ends once
+// they're onboarded, so this only covers those stages.
+const REVIEW_BUCKETS = [
+  { status: APP_STATUS.HR_VERIFICATION, label: 'Under Review', color: 'var(--tag-amber-fg)' },
+  { status: APP_STATUS.HR_VERIFICATION_REJECTED, label: 'Returned for Correction', color: 'var(--tag-red-fg)' },
+  { status: APP_STATUS.JOINING_PENDING, label: 'Confirmed — Joining', color: 'var(--tag-teal-fg)' },
+  { status: APP_STATUS.EMPLOYEE, label: 'Onboarded', color: 'var(--tag-green-fg)' },
+];
 
 export default function HRDashboard() {
   const navigate = useNavigate();
@@ -67,6 +77,15 @@ export default function HRDashboard() {
     value: apps.filter((a) => hrStageRank(a.status) >= s.rank).length,
   }));
   const busiest = funnelStages.reduce((top, s) => (s.value > top.value ? s : top), funnelStages[0]);
+
+  // Candidates whose forms HR has actually reviewed (or is reviewing) —
+  // where each one currently stands in that review.
+  const reviewedCandidates = apps.filter((a) => REVIEW_BUCKETS.some((b) => b.status === a.status));
+  const reviewSlices = REVIEW_BUCKETS.map((b) => ({
+    label: b.label,
+    color: b.color,
+    value: apps.filter((a) => a.status === b.status).length,
+  }));
 
   return (
     <>
@@ -141,8 +160,24 @@ export default function HRDashboard() {
         </Card>
       </div>
 
-      <Card title="Recent Activity">
-        <ActivityTimeline items={(data.activities || []).slice(0, 7)} />
+      {/* Onboarding Review Status — where the forms HR has reviewed (or is
+          reviewing) currently stand, end to end from review to onboarded. */}
+      <Card
+        title="Onboarding Review Status"
+        action={<button className="ta-link" onClick={() => navigate('/hr/candidates')}>View candidates <Icon name="ArrowRight" size={13} /></button>}
+      >
+        {reviewedCandidates.length === 0 ? (
+          <p className="ta-cell-mute">Nothing reviewed yet — this fills in once candidates submit onboarding forms.</p>
+        ) : (
+          <DonutChart
+            slices={reviewSlices}
+            caption="Reviewed"
+            onSliceClick={(label) => {
+              const bucket = REVIEW_BUCKETS.find((b) => b.label === label);
+              if (bucket) navigate(`/hr/candidates?status=${bucket.status}`);
+            }}
+          />
+        )}
       </Card>
     </>
   );

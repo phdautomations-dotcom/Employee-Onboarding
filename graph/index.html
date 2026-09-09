@@ -12,7 +12,9 @@
     --ink: #e8ecff;
     --ink-dim: #8b93b8;
     --accent: #6c8cff;
+    --live: #5cff9d;
     --glow: 0 0 24px rgba(108, 140, 255, 0.45);
+    --mono: "SF Mono", "JetBrains Mono", "Consolas", ui-monospace, monospace;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -58,11 +60,33 @@
     color: transparent;
   }
   .brand span { letter-spacing: 0.2em; font-size: 11px; color: var(--ink-dim); font-weight: 500; }
+  .brand .flavor { color: var(--ink-dim); font-weight: 500; letter-spacing: 0.18em; }
 
-  .stats { display: flex; gap: 18px; margin-left: auto; }
+  .live {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em;
+    color: var(--live); text-transform: uppercase;
+  }
+  .live b {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--live); box-shadow: 0 0 8px var(--live);
+    animation: blink 1.7s ease-in-out infinite;
+  }
+  @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
+
+  .stats { display: flex; gap: 18px; margin-left: auto; font-family: var(--mono); }
   .stat { text-align: right; }
-  .stat u { display: block; font-size: 16px; font-weight: 700; font-style: normal; }
+  .stat u { display: block; font-size: 16px; font-weight: 700; font-style: normal; text-shadow: 0 0 12px rgba(108, 140, 255, 0.5); }
   .stat i { font-style: normal; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-dim); }
+
+  /* ---- sci-fi corner brackets, dropped on any HUD panel ---------------- */
+  .corners { position: relative; }
+  .corners::before, .corners::after {
+    content: ""; position: absolute; width: 10px; height: 10px;
+    border: 1.5px solid var(--accent); opacity: 0.75; pointer-events: none;
+  }
+  .corners::before { top: -1px; left: -1px; border-right: none; border-bottom: none; }
+  .corners::after { bottom: -1px; right: -1px; border-left: none; border-top: none; }
 
   /* ---- search --------------------------------------------------------- */
   .search {
@@ -164,6 +188,33 @@
   .drawer .close { position: absolute; top: 18px; right: 18px; background: none; border: none; color: var(--ink-dim); font-size: 20px; cursor: pointer; }
   .drawer .close:hover { color: var(--ink); }
 
+  /* ---- briefing panel (plain-language "what is this?") ---------------- */
+  .brief {
+    position: fixed;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%) scale(0.97);
+    width: min(480px, calc(100vw - 40px));
+    max-height: calc(100vh - 80px);
+    overflow-y: auto;
+    padding: 26px 26px 22px;
+    background: var(--panel);
+    border: 1px solid var(--panel-line);
+    border-radius: 16px;
+    backdrop-filter: blur(20px);
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    z-index: 8;
+  }
+  .brief.open { opacity: 1; pointer-events: auto; transform: translate(-50%, -50%) scale(1); }
+  .brief h3 { font-size: 16px; margin: 0 0 14px; }
+  .brief p { color: #c4ccf0; line-height: 1.65; margin-bottom: 12px; font-size: 12.5px; }
+  .brief p:last-child { margin-bottom: 0; }
+  .brief b { color: var(--ink); }
+  .brief .close { position: absolute; top: 16px; right: 18px; background: none; border: none; color: var(--ink-dim); font-size: 20px; cursor: pointer; }
+  .brief .close:hover { color: var(--ink); }
+
   .badge {
     display: inline-block;
     padding: 3px 10px;
@@ -195,6 +246,32 @@
   .links a:hover { background: rgba(108, 140, 255, 0.12); border-left-color: var(--accent); }
   .links a small { color: var(--ink-dim); }
 
+  /* ---- hover tip: the "what is this dot" readout ---------------------- */
+  .tip {
+    position: fixed;
+    z-index: 9;
+    width: 264px;
+    padding: 13px 15px;
+    border-radius: 12px;
+    background: rgba(10, 13, 24, 0.93);
+    border: 1px solid var(--panel-line);
+    backdrop-filter: blur(14px);
+    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.6);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.12s ease;
+  }
+  .tip.on { opacity: 1; }
+  .tip .tname { font-weight: 700; font-size: 13px; margin-bottom: 2px; word-break: break-all; }
+  .tip .tkind { font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 9px; }
+  .tip .tsum { color: #b9c2e8; font-size: 11.5px; line-height: 1.5; margin-bottom: 10px; }
+  .tip .trow { display: flex; align-items: center; gap: 7px; font-size: 11.5px; padding: 3px 0; }
+  .tip .trow .arrow { font-family: var(--mono); color: var(--accent); }
+  .tip .trow b { font-variant-numeric: tabular-nums; }
+  .tip .tnames { color: var(--ink-dim); font-size: 10.5px; margin: 2px 0 4px; line-height: 1.5; word-break: break-all; }
+  .tip .twarn { margin-top: 8px; padding: 6px 9px; border-radius: 7px; background: rgba(255, 180, 84, 0.12); border: 1px solid rgba(255, 180, 84, 0.35); color: #ffb454; font-size: 10.5px; line-height: 1.45; }
+  .tip .tfoot { margin-top: 9px; padding-top: 8px; border-top: 1px solid var(--panel-line); color: var(--ink-dim); font-size: 10px; letter-spacing: 0.06em; }
+
   .hint {
     position: fixed;
     bottom: 20px; left: 50%;
@@ -206,13 +283,33 @@
     z-index: 5;
   }
   .stale { color: #ffb454; }
+
+  /* ---- boot sequence ---------------------------------------------------- */
+  .boot {
+    position: fixed; inset: 0; z-index: 50;
+    background: #05060c;
+    display: flex; align-items: center; justify-content: center;
+    transition: opacity 0.5s ease;
+  }
+  .boot.out { opacity: 0; pointer-events: none; }
+  .boot pre {
+    font-family: var(--mono); font-size: 13px; line-height: 1.9;
+    color: var(--live); text-shadow: 0 0 10px rgba(92, 255, 157, 0.5);
+    white-space: pre-wrap;
+    min-width: 320px;
+  }
+  .boot pre .dim { color: var(--ink-dim); text-shadow: none; }
+  .boot pre .cursor { display: inline-block; width: 8px; background: var(--live); animation: blink 0.9s step-end infinite; }
 </style>
 </head>
 <body>
 <canvas id="stage"></canvas>
 
+<div class="boot" id="boot"><pre id="bootText"></pre></div>
+
 <div class="hud">
-  <div class="brand"><b>Graphify</b><span id="appName"></span></div>
+  <div class="brand"><b>Graphify</b><span class="flavor">// codebase telemetry</span><span id="appName"></span></div>
+  <div class="live"><b></b>live</div>
   <div class="stats">
     <div class="stat"><u id="sFiles">0</u><i>files</i></div>
     <div class="stat"><u id="sEdges">0</u><i>edges</i></div>
@@ -220,26 +317,37 @@
   </div>
 </div>
 
-<div class="search">
+<div class="search corners">
   <input id="q" placeholder="Search files, exports  ( / )" autocomplete="off" />
   <div class="results" id="results"></div>
 </div>
 
-<div class="legend" id="legend"><h4>Layers</h4></div>
+<div class="legend corners" id="legend"><h4>Layers</h4></div>
 
 <div class="controls">
+  <button id="cBrief" title="What am I looking at?">?</button>
   <button id="cReheat" title="Re-run layout">&#8635;</button>
   <button id="cFit" title="Fit to screen">&#9633;</button>
   <button id="cIn" title="Zoom in">+</button>
   <button id="cOut" title="Zoom out">&minus;</button>
 </div>
 
-<div class="drawer" id="drawer">
+<div class="brief corners" id="brief">
+  <button class="close" id="briefClose">&times;</button>
+  <h3>What am I looking at?</h3>
+  <p>Each dot is <b>one file</b>. The moving spark on a line shows <b>which way the data travels</b> — out of the file that provides it, into the file that uses it.</p>
+  <p><b>Just hover any dot</b> to see what it takes data from, and what it sends data to.</p>
+  <p>Bigger dot = more files depend on it. No lines at all = nothing uses it.</p>
+</div>
+
+<div class="drawer corners" id="drawer">
   <button class="close" id="drawerClose">&times;</button>
   <div id="drawerBody"></div>
 </div>
 
-<div class="hint" id="hint">drag to pan &nbsp;·&nbsp; scroll to zoom &nbsp;·&nbsp; click a node &nbsp;·&nbsp; double-click to isolate</div>
+<div class="tip" id="tip"></div>
+
+<div class="hint" id="hint"><b>hover a dot</b> to inspect it &nbsp;·&nbsp; click for full details &nbsp;·&nbsp; drag to pan &nbsp;·&nbsp; scroll to zoom &nbsp;·&nbsp; <b>?</b> for help</div>
 
 <script src="graph-data.js"></script>
 <script>
@@ -252,6 +360,40 @@
       '<span class="stale">graph-data.js missing — run <b>npm run graph</b> first</span>';
     return;
   }
+
+  // ---- boot sequence ----------------------------------------------------
+  // A short telemetry-style typing intro using the graph's own numbers, so
+  // the first thing you see reads like a mission-control system coming online.
+  (function boot() {
+    const el = document.getElementById("boot");
+    const pre = document.getElementById("bootText");
+    const lines = [
+      "> ESTABLISHING TELEMETRY LINK...",
+      `> ${G.stats.files} MODULES DETECTED`,
+      `> MAPPING ${G.stats.edges} DEPENDENCY LINKS...`,
+      `> ${(G.hubs || []).length} HUBS IDENTIFIED`,
+      "> RENDER SURFACE ONLINE",
+    ];
+    let li = 0, ci = 0;
+    function typeLine() {
+      if (li >= lines.length) {
+        pre.innerHTML += '\n<span class="dim">— all systems nominal —</span>';
+        setTimeout(() => { el.classList.add("out"); setTimeout(() => el.remove(), 550); }, 450);
+        return;
+      }
+      const line = lines[li];
+      if (ci <= line.length) {
+        pre.innerHTML = lines.slice(0, li).join("\n") + (li ? "\n" : "") + line.slice(0, ci) + '<span class="cursor">&nbsp;</span>';
+        ci++;
+        setTimeout(typeLine, 12);
+      } else {
+        li++; ci = 0;
+        setTimeout(typeLine, 90);
+      }
+    }
+    typeLine();
+    el.addEventListener("click", () => { el.classList.add("out"); setTimeout(() => el.remove(), 550); });
+  })();
 
   // ---- palette --------------------------------------------------------------
   const COLORS = {
@@ -272,10 +414,22 @@
     vx: 0, vy: 0,
     deg: n.imports.length + n.importedBy.length,
     r: 4 + Math.sqrt(n.importedBy.length) * 2.6,
+    // each node floats on its own little orbit so the map feels alive even
+    // once the physics has settled — phase/size/speed differ per node so
+    // they never move in lockstep
+    dPhase: Math.random() * Math.PI * 2,
+    dAmp: 3 + Math.random() * 5,
+    dSpeed: 0.006 + Math.random() * 0.008,
   }));
   const byId = new Map(nodes.map((n) => [n.id, n]));
   const links = G.edges
-    .map((e) => ({ s: byId.get(e.source), t: byId.get(e.target) }))
+    .map((e) => ({
+      s: byId.get(e.source),
+      t: byId.get(e.target),
+      // stagger each line's travelling packet so they don't pulse in unison
+      phase: Math.random(),
+      speed: 0.0016 + Math.random() * 0.0022,
+    }))
     .filter((e) => e.s && e.t);
 
   const neighbors = new Map(nodes.map((n) => [n.id, new Set()]));
@@ -295,14 +449,87 @@
   let W = 0, H = 0, DPR = Math.min(window.devicePixelRatio || 1, 2);
   const cam = { k: 0.85, x: 0, y: 0 };
 
+  // One animation clock, and it never stops — dots keep floating, stars keep
+  // drifting, packets keep travelling. Hovering only changes what's
+  // highlighted; nothing about the map ever freezes.
+  let at = 0;
+
+  // World position of a node = settled physics position + its gentle orbit.
+  // Everything (drawing, hit-testing, centring) goes through this so the
+  // visual and the clickable target never drift apart.
+  function pos(n) {
+    if (n === drag) return [n.x, n.y];
+    return [
+      n.x + Math.cos(at * n.dSpeed + n.dPhase) * n.dAmp,
+      n.y + Math.sin(at * n.dSpeed * 1.13 + n.dPhase) * n.dAmp,
+    ];
+  }
+
   function resize() {
     W = window.innerWidth; H = window.innerHeight;
     cv.width = W * DPR; cv.height = H * DPR;
     cv.style.width = W + "px"; cv.style.height = H + "px";
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    makeStars();
   }
   window.addEventListener("resize", resize);
+
+  // ---- starfield --------------------------------------------------------
+  // A drifting backdrop the graph floats in front of. Each star has its own
+  // speed and a `depth` (0 = far away, 1 = closer): nearer stars are bigger,
+  // brighter, drift faster, and shift more when you pan — which is what sells
+  // the sense of actually moving through space.
+  let stars = [];
+  function makeStars() {
+    const count = Math.round((W * H) / 3400);
+    stars = Array.from({ length: count }, () => {
+      const depth = Math.random();
+      const angle = Math.random() * Math.PI * 2;
+      const speed = (0.06 + depth * 0.22) * (0.5 + Math.random());
+      return {
+        x: Math.random() * W,
+        y: Math.random() * H,
+        depth,
+        r: 0.35 + depth * 1.15,
+        vx: Math.cos(angle) * speed * 0.35,
+        vy: Math.sin(angle) * speed,
+        phase: Math.random() * Math.PI * 2,
+        twSpeed: 0.02 + Math.random() * 0.045,
+      };
+    });
+  }
   resize();
+
+  function drawStars() {
+    stars.forEach((s) => {
+      // drift, wrapping around the edges so the field never runs out
+      s.x += s.vx; s.y += s.vy;
+      if (s.x < -4) s.x = W + 4; else if (s.x > W + 4) s.x = -4;
+      if (s.y < -4) s.y = H + 4; else if (s.y > H + 4) s.y = -4;
+
+      // parallax: nearer stars slide further as the camera pans
+      const px = s.x + cam.x * s.depth * 0.06;
+      const py = s.y + cam.y * s.depth * 0.06;
+      const wx = ((px % W) + W) % W;
+      const wy = ((py % H) + H) % H;
+
+      const tw = 0.25 + 0.75 * (0.5 + 0.5 * Math.sin(at * s.twSpeed + s.phase));
+      const alpha = tw * (0.35 + s.depth * 0.65);
+
+      ctx.beginPath();
+      ctx.arc(wx, wy, s.r, 0, 7);
+      ctx.fillStyle = `rgba(220, 232, 255, ${alpha})`;
+      ctx.fill();
+
+      // the closest few get a soft halo so the field has some depth to it
+      if (s.depth > 0.82) {
+        ctx.shadowColor = "rgba(180, 205, 255, 0.9)";
+        ctx.shadowBlur = 6;
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      }
+    });
+  }
 
   const toScreen = (wx, wy) => [wx * cam.k + cam.x, wy * cam.k + cam.y];
   const toWorld = (sx, sy) => [(sx - cam.x) / cam.k, (sy - cam.y) / cam.k];
@@ -374,6 +601,7 @@
 
   function draw() {
     t += 1;
+    at += 1;   // everything keeps moving, hover or not
     tick();
 
     // background wash
@@ -383,39 +611,51 @@
     g.addColorStop(1, "#05060c");
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, W, H);
+    drawStars();
     drawGrid();
 
     const dim = hover || selected || focusId;
     const lit = dim ? litSet(dim) : null;
 
-    // edges
+    // edges — every visible line always carries a travelling packet, so the
+    // map reads as a live system rather than a static diagram.
+    //
+    // Direction matters: an edge s -> t means "s uses t", so the actual code
+    // travels the other way — out of t and into s. The packet therefore runs
+    // t -> s, which is why a heavily-used file shows sparks radiating
+    // outwards (it's feeding everyone) instead of everything rushing into it.
     ctx.lineWidth = 1;
     links.forEach((l) => {
       if (!visible(l.s) || !visible(l.t)) return;
       const on = !lit || (lit.has(l.s.id) && lit.has(l.t.id));
-      const [x1, y1] = toScreen(l.s.x, l.s.y);
-      const [x2, y2] = toScreen(l.t.x, l.t.y);
+      const [sx, sy] = pos(l.s);
+      const [tx, ty] = pos(l.t);
+      const [x1, y1] = toScreen(sx, sy);   // the file that uses
+      const [x2, y2] = toScreen(tx, ty);   // the file being used (the source of the data)
       ctx.strokeStyle = on ? "rgba(150,175,255,0.28)" : "rgba(120,140,200,0.05)";
       ctx.beginPath();
       ctx.moveTo(x1, y1);
       ctx.lineTo(x2, y2);
       ctx.stroke();
-      if (on && lit) drawFlow(x1, y1, x2, y2, colorOf(l.t.layer));
+      if (on) drawFlow(x2, y2, x1, y1, colorOf(l.t.layer), l, !!lit);
     });
 
     // nodes
     nodes.forEach((n) => {
       if (!visible(n)) return;
       const on = !lit || lit.has(n.id);
-      const [x, y] = toScreen(n.x, n.y);
+      const [wx, wy] = pos(n);
+      const [x, y] = toScreen(wx, wy);
       const r = Math.max(2.4, n.r * cam.k);
       const c = colorOf(n.layer);
 
       ctx.beginPath();
       ctx.arc(x, y, r, 0, 7);
       if (on) {
+        // gentle breathing glow — hubs (imported a lot) pulse a bit harder
+        const pulse = Math.sin(at * 0.035 + n.dPhase) * (2 + Math.min(6, n.importedBy.length * 0.6));
         ctx.shadowColor = c;
-        ctx.shadowBlur = 16 + r;
+        ctx.shadowBlur = Math.max(6, 16 + r + pulse);
         ctx.fillStyle = c;
       } else {
         ctx.shadowBlur = 0;
@@ -424,9 +664,15 @@
       ctx.fill();
       ctx.shadowBlur = 0;
 
+      // a hovered/selected node gets a widening halo ring so your eye locks on
       if (on && (n === selected || n === hover)) {
         ctx.strokeStyle = "#fff";
         ctx.lineWidth = 1.5;
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(x, y, r + 6 + Math.sin(t * 0.09) * 2, 0, 7);
+        ctx.strokeStyle = "rgba(255,255,255,0.28)";
+        ctx.lineWidth = 1;
         ctx.stroke();
       }
 
@@ -448,17 +694,23 @@
     return s;
   }
 
-  function drawFlow(x1, y1, x2, y2, color) {
-    const p = ((t % 90) / 90);
+  // One packet travelling from the file being used towards the file using it,
+  // i.e. the direction the code actually moves. Highlighted lines get a
+  // bigger, brighter packet.
+  function drawFlow(x1, y1, x2, y2, color, l, highlighted) {
+    const p = (l.phase + at * l.speed) % 1;
     const x = x1 + (x2 - x1) * p;
     const y = y1 + (y2 - y1) * p;
+    const r = highlighted ? 2.4 : 1.6;
     ctx.beginPath();
-    ctx.arc(x, y, 1.8, 0, 7);
+    ctx.arc(x, y, r, 0, 7);
     ctx.fillStyle = color;
+    ctx.globalAlpha = highlighted ? 1 : 0.55;
     ctx.shadowColor = color;
-    ctx.shadowBlur = 8;
+    ctx.shadowBlur = highlighted ? 10 : 6;
     ctx.fill();
     ctx.shadowBlur = 0;
+    ctx.globalAlpha = 1;
   }
 
   function drawGrid() {
@@ -473,6 +725,55 @@
     ctx.stroke();
   }
 
+  // ---- hover readout -------------------------------------------------
+  // Everything you need to understand a dot without clicking: what it is,
+  // what it pulls in, and what depends on it — in plain words.
+  const tipEl = document.getElementById("tip");
+
+  function nameOf(id) {
+    const m = byId.get(id);
+    return m ? m.name : id.replace(/^src\//, "");
+  }
+
+  function showTip(n, mx, my) {
+    const c = colorOf(n.layer);
+    const uses = n.imports.map(nameOf);
+    const usedBy = n.importedBy.map(nameOf);
+    const few = (arr) => arr.slice(0, 3).join(", ") + (arr.length > 3 ? ` +${arr.length - 3} more` : "");
+    const plural = (a) => (a.length === 1 ? "file" : "files");
+
+    // Plain sentences, no jargon — you shouldn't need to decode "imports"
+    // vs "imported by" to understand which way the dependency runs.
+    const usesLine = uses.length
+      ? `<div class="trow"><span class="arrow">&darr;</span> Takes data <b>from ${uses.length}</b> ${plural(uses)}</div><div class="tnames">${few(uses)}</div>`
+      : `<div class="trow">Takes data from nothing else</div>`;
+    const neededLine = usedBy.length
+      ? `<div class="trow"><span class="arrow">&uarr;</span> Sends data <b>to ${usedBy.length}</b> ${plural(usedBy)}</div><div class="tnames">${few(usedBy)}</div>`
+      : `<div class="trow">Sends data to nothing else</div>`;
+    const warn = usedBy.length >= 8
+      ? `<div class="twarn">Change this carefully — ${usedBy.length} files would be affected.</div>`
+      : "";
+
+    tipEl.innerHTML = `
+      <div class="tname">${n.name}</div>
+      <div class="tkind" style="color:${c}">${n.layer}</div>
+      ${n.summary ? `<div class="tsum">${n.summary}</div>` : ""}
+      ${usesLine}
+      ${neededLine}
+      ${warn}
+      <div class="tfoot">click to open full details</div>
+    `;
+    tipEl.classList.add("on");
+    // keep the card on screen — flip sides near the right/bottom edges
+    const w = 264, h = tipEl.offsetHeight || 180;
+    const x = mx + 18 + w > window.innerWidth ? mx - 18 - w : mx + 18;
+    const y = Math.min(Math.max(12, my - 20), window.innerHeight - h - 12);
+    tipEl.style.left = x + "px";
+    tipEl.style.top = y + "px";
+  }
+
+  const hideTip = () => tipEl.classList.remove("on");
+
   // ---- hit testing + interaction ------------------------------------
   let drag = null, panning = false, last = null, moved = 0;
 
@@ -480,7 +781,8 @@
     let best = null, bd = 16 * 16;
     nodes.forEach((n) => {
       if (!visible(n)) return;
-      const [x, y] = toScreen(n.x, n.y);
+      const [wx, wy] = pos(n);
+      const [x, y] = toScreen(wx, wy);
       const d = (x - sx) ** 2 + (y - sy) ** 2;
       const rr = Math.max(9, n.r * cam.k + 5);
       if (d < rr * rr && d < bd) { bd = d; best = n; }
@@ -493,8 +795,10 @@
     moved = 0;
     const n = nodeAt(e.clientX, e.clientY);
     if (n) { drag = n; n.vx = n.vy = 0; reheat(); }
-    else { panning = true; }
+    else { panning = true; hideTip(); }
   });
+
+  window.addEventListener("mouseleave", () => { hover = null; hideTip(); });
 
   window.addEventListener("mousemove", (e) => {
     if (last) moved += Math.abs(e.clientX - last[0]) + Math.abs(e.clientY - last[1]);
@@ -508,11 +812,15 @@
       cam.x += e.clientX - last[0];
       cam.y += e.clientY - last[1];
       last = [e.clientX, e.clientY];
+      hideTip();
       return;
     }
     const n = nodeAt(e.clientX, e.clientY);
-    hover = n;
+    const changed = n !== hover;
+    hover = n;                       // truthy hover freezes the animation clock
     cv.style.cursor = n ? "pointer" : (panning ? "grabbing" : "grab");
+    if (n) showTip(n, e.clientX, e.clientY);
+    else if (changed) hideTip();
   });
 
   window.addEventListener("mouseup", (e) => {
@@ -580,6 +888,19 @@
   document.getElementById("cFit").onclick = fit;
   document.getElementById("cIn").onclick = () => zoom(1.25);
   document.getElementById("cOut").onclick = () => zoom(1 / 1.25);
+
+  // ---- briefing panel ("what am I looking at?") -------------------
+  const brief = document.getElementById("brief");
+  document.getElementById("cBrief").onclick = () => brief.classList.toggle("open");
+  document.getElementById("briefClose").onclick = () => brief.classList.remove("open");
+  // Show it automatically the first time this browser opens the map, so the
+  // explanation is there before anyone has to go looking for it.
+  try {
+    if (!localStorage.getItem("graphify.briefed")) {
+      setTimeout(() => brief.classList.add("open"), 2200);
+      localStorage.setItem("graphify.briefed", "1");
+    }
+  } catch (e) { /* localStorage unavailable — skip the reminder, not critical */ }
 
   // ---- detail drawer --------------------------------------------
   const drawer = document.getElementById("drawer");

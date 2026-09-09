@@ -159,7 +159,8 @@
 .ta-shell--collapsed .ta-help__text,
 .ta-shell--collapsed .ta-usercard__text,
 .ta-shell--collapsed .ta-usercard > svg,
-.ta-shell--collapsed .ta-nav__label { display: none; }
+.ta-shell--collapsed .ta-nav__label,
+.ta-shell--collapsed .ta-nav__count { display: none; }
 .ta-shell--collapsed .ta-nav__link,
 .ta-shell--collapsed .ta-help,
 .ta-shell--collapsed .ta-usercard { justify-content: center; gap: 0; padding-left: 0; padding-right: 0; }
@@ -254,6 +255,10 @@
 .ta-card__title { font-size: 14.5px; font-weight: 600; }
 .ta-card__body { padding: 16px; flex: 1; }
 .ta-bento > .ta-card > .ta-card__body { display: flex; flex-direction: column; justify-content: center; }
+/* A card sitting directly on the page (not inside a bento row) needs its own
+   bottom margin — .ta-card has none by default so it doesn't double up inside
+   .ta-bento, which already spaces its cards via grid gap. */
+.ta-page > .ta-card { margin-bottom: 16px; }
 .ta-link {
   font-size: 12.5px; font-weight: 600; color: var(--ta-blue);
   background: transparent; border: 0; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;
@@ -850,7 +855,8 @@
   .ta-shell--collapsed .ta-brand__text,
   .ta-shell--collapsed .ta-help__text,
   .ta-shell--collapsed .ta-usercard__text,
-  .ta-shell--collapsed .ta-nav__label { display: revert; }
+  .ta-shell--collapsed .ta-nav__label,
+  .ta-shell--collapsed .ta-nav__count { display: revert; }
   .ta-shell--collapsed .ta-brand__logo { display: block; }
   .ta-shell--collapsed .ta-brand__badge { display: none; }
   .ta-shell--collapsed .ta-nav__link,

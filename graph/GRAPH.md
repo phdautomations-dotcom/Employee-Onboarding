@@ -1,6 +1,6 @@
 # Project graph — recruitment-onboarding-frontend
 
-_Generated 2026-09-07 by `scripts/graphify.mjs`. 105 files, 373 import edges._
+_Generated 2026-09-09 by `scripts/graphify.mjs`. 105 files, 373 import edges._
 
 **Read this file instead of scanning `src/`.** Regenerate after code changes with `npm run graph`.
 
@@ -211,15 +211,15 @@ _Generated 2026-09-07 by `scripts/graphify.mjs`. 105 files, 373 import edges._
   imports: `src/components/common/Icon.jsx`, `src/components/ta/TAHeader.jsx`, `src/components/ta/Card.jsx`, `src/components/ta/Button.jsx`, `src/components/ta/Tag.jsx`, `src/components/ta/EmptyState.jsx`, `src/components/ta/Avatar.jsx`, `src/components/workflow/ReasonModal.jsx`, `src/context/AppContext.jsx`, `src/context/ToastContext.jsx`, `src/constants/statuses.js`, `src/utils/format.js`
   importedBy: `src/routes/AppRoutes.jsx`
 - **`src/pages/hr/HRCandidatesPage.jsx`**
-  158 loc · imports 10 · imported by 1 · exports: default (HRCandidatesPage)
+  168 loc · imports 10 · imported by 1 · exports: default (HRCandidatesPage)
   imports: `src/components/common/Icon.jsx`, `src/components/ta/TAHeader.jsx`, `src/components/ta/DataGrid.jsx`, `src/components/ta/Toolbar.jsx`, `src/components/ta/Avatar.jsx`, `src/components/ta/Tag.jsx`, `src/context/AppContext.jsx`, `src/hooks/useCollectionView.js`, `src/constants/statuses.js`, `src/utils/format.js`
   importedBy: `src/routes/AppRoutes.jsx`
 - **`src/pages/hr/HRDashboard.jsx`**
-  150 loc · imports 13 · imported by 1 · exports: default (HRDashboard)
-  imports: `src/components/ta/TAHeader.jsx`, `src/components/ta/Card.jsx`, `src/components/ta/KpiCard.jsx`, `src/components/ta/FunnelChart.jsx`, `src/components/ta/Avatar.jsx`, `src/components/ta/Tag.jsx`, `src/components/common/Icon.jsx`, `src/components/common/Timeline.jsx`, `src/context/AppContext.jsx`, `src/constants/roles.js`, `src/constants/statuses.js`, `src/utils/metrics.js`, `src/utils/format.js`
+  185 loc · imports 13 · imported by 1 · exports: default (HRDashboard)
+  imports: `src/components/ta/TAHeader.jsx`, `src/components/ta/Card.jsx`, `src/components/ta/KpiCard.jsx`, `src/components/ta/FunnelChart.jsx`, `src/components/ta/DonutChart.jsx`, `src/components/ta/Avatar.jsx`, `src/components/ta/Tag.jsx`, `src/components/common/Icon.jsx`, `src/context/AppContext.jsx`, `src/constants/roles.js`, `src/constants/statuses.js`, `src/utils/metrics.js`, `src/utils/format.js`
   importedBy: `src/routes/AppRoutes.jsx`
 - **`src/pages/hr/HREmployeesPage.jsx`**
-  113 loc · imports 10 · imported by 1 · exports: default (HREmployeesPage)
+  138 loc · imports 10 · imported by 1 · exports: default (HREmployeesPage)
   imports: `src/components/common/Icon.jsx`, `src/components/ta/TAHeader.jsx`, `src/components/ta/Card.jsx`, `src/components/ta/DataGrid.jsx`, `src/components/ta/Toolbar.jsx`, `src/components/ta/Avatar.jsx`, `src/context/AppContext.jsx`, `src/hooks/useCollectionView.js`, `src/constants/statuses.js`, `src/utils/format.js`
   importedBy: `src/routes/AppRoutes.jsx`
 - **`src/pages/hr/HROffersPage.jsx`**
@@ -355,9 +355,9 @@ _Generated 2026-09-07 by `scripts/graphify.mjs`. 105 files, 373 import edges._
   imports: `src/components/common/Icon.jsx`, `src/components/common/States.jsx`
   importedBy: `src/components/workflow/DocumentTable.jsx`, `src/pages/shared/DocumentsReview.jsx`, `src/pages/talentAcquisition/TAInterviewsPage.jsx`, `src/pages/talentAcquisition/TAOffersPage.jsx`
 - **`src/components/common/Timeline.jsx`**
-  62 loc · imports 2 · imported by 2 · exports: ActivityTimeline, StageTracker
+  62 loc · imports 2 · imported by 1 · exports: ActivityTimeline, StageTracker
   imports: `src/components/common/Icon.jsx`, `src/utils/format.js`
-  importedBy: `src/pages/hr/HRDashboard.jsx`, `src/pages/shared/ActivityFeed.jsx`
+  importedBy: `src/pages/shared/ActivityFeed.jsx`
 - **`src/components/common/ToastContainer.jsx`**
   30 loc · imports 2 · imported by 1 · exports: default (ToastContainer)
   imports: `src/components/common/Icon.jsx`, `src/context/ToastContext.jsx`
@@ -388,8 +388,8 @@ _Generated 2026-09-07 by `scripts/graphify.mjs`. 105 files, 373 import edges._
   imports: `src/components/common/Icon.jsx`, `src/components/ta/EmptyState.jsx`, `src/components/ta/Pager.jsx`
   importedBy: `src/pages/hr/HRCandidatesPage.jsx`, `src/pages/hr/HREmployeesPage.jsx`, `src/pages/hr/HROffersPage.jsx`, `src/pages/talentAcquisition/TACandidatesPage.jsx`, `src/pages/talentAcquisition/TAJobsPage.jsx`
 - **`src/components/ta/DonutChart.jsx`**
-  88 loc · imports 0 · imported by 1 · exports: default (DonutChart)
-  importedBy: `src/pages/talentAcquisition/TADashboard.jsx`
+  88 loc · imports 0 · imported by 2 · exports: default (DonutChart)
+  importedBy: `src/pages/hr/HRDashboard.jsx`, `src/pages/talentAcquisition/TADashboard.jsx`
 - **`src/components/ta/EmptyState.jsx`**
   14 loc · imports 1 · imported by 9 · exports: default (EmptyState)
   imports: `src/components/common/Icon.jsx`
@@ -510,5 +510,5 @@ _Generated 2026-09-07 by `scripts/graphify.mjs`. 105 files, 373 import edges._
   847 loc · imports 0 · imported by 1
   importedBy: `src/main.jsx`
 - **`src/styles/ta.css`**
-  896 loc · imports 0 · imported by 1
+  902 loc · imports 0 · imported by 1
   importedBy: `src/main.jsx`

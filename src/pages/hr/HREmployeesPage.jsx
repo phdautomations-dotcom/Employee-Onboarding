@@ -29,17 +29,35 @@ export default function HREmployeesPage() {
     [data.applications]
   );
 
-  const view = useCollectionView(data.employees || [], {
+  const employees = data.employees || [];
+
+  const view = useCollectionView(employees, {
     searchFields: ['name', 'id', 'position'],
     pageSize: 12,
     initialSort: { key: 'joiningDate', dir: 'desc' },
   });
 
+  const departmentOptions = useMemo(
+    () => [...new Set(employees.map((e) => e.department))].sort().map((d) => ({ value: d, label: d })),
+    [employees]
+  );
+  const activeDepartment = typeof view.filters.department === 'string' ? view.filters.department : 'all';
+
+  const chips = [
+    activeDepartment !== 'all' && { key: 'dept', label: activeDepartment, onRemove: () => view.setFilter('department', 'all') },
+    view.query && { key: 'q', label: `“${view.query}”`, onRemove: () => view.setQuery('') },
+  ].filter(Boolean);
+
+  const clearAll = () => {
+    view.setQuery('');
+    view.setFilter('department', 'all');
+  };
+
   return (
     <>
       <TAHeader
         title="Employees"
-        subtitle={`${joiningPending.length} joining · ${(data.employees || []).length} onboarded`}
+        subtitle={`${joiningPending.length} joining · ${employees.length} onboarded`}
       />
 
       {joiningPending.length > 0 && (
@@ -67,7 +85,14 @@ export default function HREmployeesPage() {
         </Card>
       )}
 
-      <Toolbar search={{ value: view.query, onChange: view.setQuery, placeholder: 'Search employees by name, ID or position…' }} />
+      <Toolbar
+        search={{ value: view.query, onChange: view.setQuery, placeholder: 'Search employees by name, ID or position…' }}
+        filters={[
+          { label: 'Department', value: activeDepartment, onChange: (v) => view.setFilter('department', v), options: departmentOptions },
+        ]}
+        chips={chips}
+        onClearAll={chips.length > 1 ? clearAll : undefined}
+      />
 
       <DataGrid
         columns={COLUMNS}
