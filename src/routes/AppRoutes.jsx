@@ -11,6 +11,7 @@ import HRLayout from '../layouts/HRLayout.jsx';
 import RoleRoute from '../components/routing/RoleRoute.jsx';
 
 import LoginPage from '../pages/LoginPage.jsx';
+import HomePage from '../pages/HomePage.jsx';
 
 import LandingPage from '../pages/candidate/LandingPage.jsx';
 import JobsPage from '../pages/candidate/JobsPage.jsx';
@@ -42,6 +43,7 @@ import ProfilePage from '../pages/shared/ProfilePage.jsx';
 export default function AppRoutes() {
   return (
     <Routes>
+      <Route path="/" element={<HomePage />} />
       <Route path="/login" element={<LoginPage />} />
 
       {/* Candidate / public */}
@@ -56,7 +58,6 @@ export default function AppRoutes() {
         <Route path="/candidate/profile" element={<CandidateProfilePage />} />
 
         {/* legacy redirects */}
-        <Route path="/" element={<Navigate to="/candidate" replace />} />
         <Route path="/jobs" element={<Navigate to="/candidate/jobs" replace />} />
         <Route path="/jobs/:jobId" element={<LegacyJobRedirect />} />
         <Route path="/apply" element={<Navigate to="/candidate/apply" replace />} />

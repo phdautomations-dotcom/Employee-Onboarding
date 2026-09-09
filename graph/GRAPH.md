@@ -1,33 +1,33 @@
 # Project graph — recruitment-onboarding-frontend
 
-_Generated 2026-09-09 by `scripts/graphify.mjs`. 111 files, 380 import edges._
+_Generated 2026-09-09 by `scripts/graphify.mjs`. 113 files, 385 import edges._
 
 **Read this file instead of scanning `src/`.** Regenerate after code changes with `npm run graph`.
 
 ## Layers
 
 - `component` — 51
-- `page` — 27
+- `page` — 28
 - `navigation` — 11
 - `util` — 4
 - `hook` — 3
+- `style` — 3
 - `layout` — 3
 - `entry` — 2
 - `route` — 2
 - `constant` — 2
 - `context` — 2
 - `data` — 2
-- `style` — 2
 
 ## Most depended-on files (hubs)
 
-- `src/components/common/Icon.jsx` — 58 importers
-- `src/context/AppContext.jsx` — 31 importers
+- `src/components/common/Icon.jsx` — 59 importers
+- `src/context/AppContext.jsx` — 32 importers
 - `src/utils/format.js` — 26 importers
 - `src/constants/statuses.js` — 24 importers
 - `src/components/common/Button.jsx` — 14 importers
+- `src/constants/roles.js` — 14 importers
 - `src/components/ta/Button.jsx` — 13 importers
-- `src/constants/roles.js` — 13 importers
 - `src/context/ToastContext.jsx` — 12 importers
 - `src/components/ta/Card.jsx` — 11 importers
 - `src/components/ta/TAHeader.jsx` — 11 importers
@@ -38,6 +38,7 @@ _Generated 2026-09-09 by `scripts/graphify.mjs`. 111 files, 380 import edges._
 
 | path | component |
 | --- | --- |
+| `/` | HomePage |
 | `/login` | LoginPage |
 | `/candidate` | LandingPage |
 | `/candidate/jobs` | JobsPage |
@@ -47,7 +48,6 @@ _Generated 2026-09-09 by `scripts/graphify.mjs`. 111 files, 380 import edges._
 | `/candidate/application` | MyApplicationPage |
 | `/candidate/application/success` | ApplicationSuccessPage |
 | `/candidate/profile` | CandidateProfilePage |
-| `/` | Navigate |
 | `/jobs` | Navigate |
 | `/jobs/:jobId` | LegacyJobRedirect |
 | `/apply` | Navigate |
@@ -105,8 +105,8 @@ _Generated 2026-09-09 by `scripts/graphify.mjs`. 111 files, 380 import edges._
   imports: `src/routes/AppRoutes.jsx`, `src/components/common/ToastContainer.jsx`, `src/components/demo/DemoFlow.jsx`, `src/context/AppContext.jsx`, `src/constants/roles.js`
   importedBy: `src/main.jsx`
 - **`src/main.jsx`**
-  31 loc · imports 5 · imported by 0
-  imports: `src/App.jsx`, `src/context/AppContext.jsx`, `src/context/ToastContext.jsx`, `src/index.css`, `src/styles/ta.css`
+  32 loc · imports 6 · imported by 0
+  imports: `src/App.jsx`, `src/context/AppContext.jsx`, `src/context/ToastContext.jsx`, `src/index.css`, `src/styles/ta.css`, `src/styles/home.css`
 
 ### route
 
@@ -115,8 +115,8 @@ _Generated 2026-09-09 by `scripts/graphify.mjs`. 111 files, 380 import edges._
   imports: `src/context/AppContext.jsx`
   importedBy: `src/routes/AppRoutes.jsx`
 - **`src/routes/AppRoutes.jsx`**
-  113 loc · imports 28 · imported by 1 · exports: default (AppRoutes)
-  imports: `src/layouts/CandidateLayout.jsx`, `src/layouts/TALayout.jsx`, `src/layouts/HRLayout.jsx`, `src/components/routing/RoleRoute.jsx`, `src/pages/LoginPage.jsx`, `src/pages/candidate/LandingPage.jsx`, `src/pages/candidate/JobsPage.jsx`, `src/pages/candidate/JobDetailsPage.jsx`, `src/pages/candidate/ApplyPage.jsx`, `src/pages/candidate/ApplicationSuccessPage.jsx`, `src/pages/candidate/MyApplicationPage.jsx`, `src/pages/candidate/CandidateProfilePage.jsx`, `src/pages/talentAcquisition/TADashboard.jsx`, `src/pages/talentAcquisition/TACandidatesPage.jsx`, `src/pages/talentAcquisition/TACandidateDetailPage.jsx`, `src/pages/talentAcquisition/TAInterviewsPage.jsx`, `src/pages/talentAcquisition/TADocumentsPage.jsx`, `src/pages/talentAcquisition/TAOffersPage.jsx`, `src/pages/talentAcquisition/TAJobsPage.jsx`, `src/pages/talentAcquisition/TAJobDetailPage.jsx`, `src/pages/talentAcquisition/TAActivityPage.jsx`, `src/pages/hr/HRDashboard.jsx`, `src/pages/hr/HRCandidatesPage.jsx`, `src/pages/hr/HRCandidateDetailPage.jsx`, `src/pages/hr/HREmployeesPage.jsx`, `src/pages/hr/HRActivityPage.jsx`, `src/pages/shared/SettingsPage.jsx`, `src/pages/shared/ProfilePage.jsx`
+  114 loc · imports 29 · imported by 1 · exports: default (AppRoutes)
+  imports: `src/layouts/CandidateLayout.jsx`, `src/layouts/TALayout.jsx`, `src/layouts/HRLayout.jsx`, `src/components/routing/RoleRoute.jsx`, `src/pages/LoginPage.jsx`, `src/pages/HomePage.jsx`, `src/pages/candidate/LandingPage.jsx`, `src/pages/candidate/JobsPage.jsx`, `src/pages/candidate/JobDetailsPage.jsx`, `src/pages/candidate/ApplyPage.jsx`, `src/pages/candidate/ApplicationSuccessPage.jsx`, `src/pages/candidate/MyApplicationPage.jsx`, `src/pages/candidate/CandidateProfilePage.jsx`, `src/pages/talentAcquisition/TADashboard.jsx`, `src/pages/talentAcquisition/TACandidatesPage.jsx`, `src/pages/talentAcquisition/TACandidateDetailPage.jsx`, `src/pages/talentAcquisition/TAInterviewsPage.jsx`, `src/pages/talentAcquisition/TADocumentsPage.jsx`, `src/pages/talentAcquisition/TAOffersPage.jsx`, `src/pages/talentAcquisition/TAJobsPage.jsx`, `src/pages/talentAcquisition/TAJobDetailPage.jsx`, `src/pages/talentAcquisition/TAActivityPage.jsx`, `src/pages/hr/HRDashboard.jsx`, `src/pages/hr/HRCandidatesPage.jsx`, `src/pages/hr/HRCandidateDetailPage.jsx`, `src/pages/hr/HREmployeesPage.jsx`, `src/pages/hr/HRActivityPage.jsx`, `src/pages/shared/SettingsPage.jsx`, `src/pages/shared/ProfilePage.jsx`
   importedBy: `src/App.jsx`
 
 ### layout
@@ -145,7 +145,7 @@ _Generated 2026-09-09 by `scripts/graphify.mjs`. 111 files, 380 import edges._
   imports: `src/components/common/Icon.jsx`, `src/context/AppContext.jsx`
   importedBy: `src/components/navigation/HRTopbar.jsx`, `src/components/navigation/TATopbar.jsx`, `src/components/navigation/Topbar.jsx`
 - **`src/components/navigation/HRSidebar.jsx`**
-  66 loc · imports 1 · imported by 1 · exports: default (HRSidebar)
+  54 loc · imports 1 · imported by 1 · exports: default (HRSidebar)
   imports: `src/components/common/Icon.jsx`
   importedBy: `src/layouts/HRLayout.jsx`
 - **`src/components/navigation/HRTopbar.jsx`**
@@ -157,7 +157,7 @@ _Generated 2026-09-09 by `scripts/graphify.mjs`. 111 files, 380 import edges._
   imports: `src/components/common/Icon.jsx`, `src/context/AppContext.jsx`, `src/utils/format.js`
   importedBy: `src/components/navigation/HRTopbar.jsx`, `src/components/navigation/TATopbar.jsx`, `src/components/navigation/Topbar.jsx`
 - **`src/components/navigation/ProfileMenu.jsx`**
-  86 loc · imports 3 · imported by 3 · exports: default (ProfileMenu)
+  89 loc · imports 3 · imported by 3 · exports: default (ProfileMenu)
   imports: `src/components/common/Icon.jsx`, `src/context/AppContext.jsx`, `src/constants/roles.js`
   importedBy: `src/components/navigation/CandidateHeader.jsx`, `src/components/navigation/HRTopbar.jsx`, `src/components/navigation/TATopbar.jsx`
 - **`src/components/navigation/RoleSwitcher.jsx`**
@@ -209,6 +209,10 @@ _Generated 2026-09-09 by `scripts/graphify.mjs`. 111 files, 380 import edges._
   490 loc · imports 10 · imported by 1 · exports: default (MyApplicationPage)
   imports: `src/components/common/Icon.jsx`, `src/components/ta/Button.jsx`, `src/components/ta/Card.jsx`, `src/components/ta/Tag.jsx`, `src/components/ta/EmptyState.jsx`, `src/components/common/Field.jsx`, `src/context/AppContext.jsx`, `src/context/ToastContext.jsx`, `src/utils/format.js`, `src/constants/statuses.js`
   importedBy: `src/routes/AppRoutes.jsx`
+- **`src/pages/HomePage.jsx`**
+  151 loc · imports 3 · imported by 1 · exports: default (HomePage)
+  imports: `src/components/common/Icon.jsx`, `src/context/AppContext.jsx`, `src/constants/roles.js`
+  importedBy: `src/routes/AppRoutes.jsx`
 - **`src/pages/hr/HRActivityPage.jsx`**
   6 loc · imports 1 · imported by 1 · exports: default (HRActivityPage)
   imports: `src/pages/shared/ActivityFeed.jsx`
@@ -222,7 +226,7 @@ _Generated 2026-09-09 by `scripts/graphify.mjs`. 111 files, 380 import edges._
   imports: `src/components/common/Icon.jsx`, `src/components/ta/TAHeader.jsx`, `src/components/ta/StatBar.jsx`, `src/components/ta/DataGrid.jsx`, `src/components/ta/Toolbar.jsx`, `src/components/ta/Tag.jsx`, `src/context/AppContext.jsx`, `src/hooks/useCollectionView.js`, `src/constants/statuses.js`, `src/utils/format.js`
   importedBy: `src/routes/AppRoutes.jsx`
 - **`src/pages/hr/HRDashboard.jsx`**
-  310 loc · imports 11 · imported by 1 · exports: default (HRDashboard)
+  307 loc · imports 11 · imported by 1 · exports: default (HRDashboard)
   imports: `src/components/ta/TAHeader.jsx`, `src/components/ta/Card.jsx`, `src/components/ta/KpiCard.jsx`, `src/components/ta/DonutChart.jsx`, `src/components/ta/LifecycleFunnel.jsx`, `src/components/ta/Tag.jsx`, `src/components/common/Icon.jsx`, `src/context/AppContext.jsx`, `src/constants/roles.js`, `src/constants/statuses.js`, `src/utils/format.js`
   importedBy: `src/routes/AppRoutes.jsx`
 - **`src/pages/hr/HREmployeesPage.jsx`**
@@ -328,8 +332,8 @@ _Generated 2026-09-09 by `scripts/graphify.mjs`. 111 files, 380 import edges._
   imports: `src/components/common/Icon.jsx`
   importedBy: `src/pages/shared/DocumentsReview.jsx`, `src/pages/talentAcquisition/TAInterviewsPage.jsx`, `src/pages/talentAcquisition/TAOffersPage.jsx`
 - **`src/components/common/Icon.jsx`**
-  35 loc · imports 0 · imported by 58 · exports: default (Icon)
-  importedBy: `src/components/JobBrowser.jsx`, `src/components/JobCard.jsx`, `src/components/JobFilters.jsx`, `src/components/common/ActiveFilters.jsx`, `src/components/common/Badge.jsx`, `src/components/common/Button.jsx`, `src/components/common/Card.jsx`, `src/components/common/ChipsInput.jsx`, `src/components/common/DocumentCard.jsx`, `src/components/common/Field.jsx`, `src/components/common/FileUpload.jsx`, `src/components/common/FilterSelect.jsx`, `src/components/common/Modal.jsx`, `src/components/common/SearchBar.jsx`, `src/components/common/States.jsx`, `src/components/common/Stepper.jsx`, `src/components/common/Table.jsx`, `src/components/common/Timeline.jsx`, `src/components/common/ToastContainer.jsx`, `src/components/demo/DemoFlow.jsx`, `src/components/navigation/GlobalSearch.jsx`, `src/components/navigation/HRSidebar.jsx`, `src/components/navigation/HRTopbar.jsx`, `src/components/navigation/NotificationBell.jsx`, `src/components/navigation/ProfileMenu.jsx`, `src/components/navigation/RoleSwitcher.jsx`, `src/components/navigation/Sidebar.jsx`, `src/components/navigation/TASidebar.jsx`, `src/components/navigation/TATopbar.jsx`, `src/components/navigation/Topbar.jsx`, `src/components/ta/Button.jsx`, `src/components/ta/DataGrid.jsx`, `src/components/ta/EmptyState.jsx`, `src/components/ta/Field.jsx`, `src/components/ta/KpiCard.jsx`, `src/components/ta/Pager.jsx`, `src/components/ta/StatBar.jsx`, `src/components/ta/Tag.jsx`, `src/components/ta/Toolbar.jsx`, `src/components/workflow/RecruitmentTimeline.jsx`, `src/layouts/HRLayout.jsx`, `src/layouts/TALayout.jsx`, `src/pages/LoginPage.jsx`, `src/pages/candidate/ApplicationSuccessPage.jsx`, `src/pages/candidate/ApplyPage.jsx`, `src/pages/candidate/JobDetailsPage.jsx`, `src/pages/candidate/MyApplicationPage.jsx`, `src/pages/hr/HRCandidateDetailPage.jsx`, `src/pages/hr/HRCandidatesPage.jsx`, `src/pages/hr/HRDashboard.jsx`, `src/pages/hr/HREmployeesPage.jsx`, `src/pages/hr/HROffersPage.jsx`, `src/pages/shared/ActivityFeed.jsx`, `src/pages/talentAcquisition/TACandidateDetailPage.jsx`, `src/pages/talentAcquisition/TACandidatesPage.jsx`, `src/pages/talentAcquisition/TADashboard.jsx`, `src/pages/talentAcquisition/TAJobDetailPage.jsx`, `src/pages/talentAcquisition/TAJobsPage.jsx`
+  35 loc · imports 0 · imported by 59 · exports: default (Icon)
+  importedBy: `src/components/JobBrowser.jsx`, `src/components/JobCard.jsx`, `src/components/JobFilters.jsx`, `src/components/common/ActiveFilters.jsx`, `src/components/common/Badge.jsx`, `src/components/common/Button.jsx`, `src/components/common/Card.jsx`, `src/components/common/ChipsInput.jsx`, `src/components/common/DocumentCard.jsx`, `src/components/common/Field.jsx`, `src/components/common/FileUpload.jsx`, `src/components/common/FilterSelect.jsx`, `src/components/common/Modal.jsx`, `src/components/common/SearchBar.jsx`, `src/components/common/States.jsx`, `src/components/common/Stepper.jsx`, `src/components/common/Table.jsx`, `src/components/common/Timeline.jsx`, `src/components/common/ToastContainer.jsx`, `src/components/demo/DemoFlow.jsx`, `src/components/navigation/GlobalSearch.jsx`, `src/components/navigation/HRSidebar.jsx`, `src/components/navigation/HRTopbar.jsx`, `src/components/navigation/NotificationBell.jsx`, `src/components/navigation/ProfileMenu.jsx`, `src/components/navigation/RoleSwitcher.jsx`, `src/components/navigation/Sidebar.jsx`, `src/components/navigation/TASidebar.jsx`, `src/components/navigation/TATopbar.jsx`, `src/components/navigation/Topbar.jsx`, `src/components/ta/Button.jsx`, `src/components/ta/DataGrid.jsx`, `src/components/ta/EmptyState.jsx`, `src/components/ta/Field.jsx`, `src/components/ta/KpiCard.jsx`, `src/components/ta/Pager.jsx`, `src/components/ta/StatBar.jsx`, `src/components/ta/Tag.jsx`, `src/components/ta/Toolbar.jsx`, `src/components/workflow/RecruitmentTimeline.jsx`, `src/layouts/HRLayout.jsx`, `src/layouts/TALayout.jsx`, `src/pages/HomePage.jsx`, `src/pages/LoginPage.jsx`, `src/pages/candidate/ApplicationSuccessPage.jsx`, `src/pages/candidate/ApplyPage.jsx`, `src/pages/candidate/JobDetailsPage.jsx`, `src/pages/candidate/MyApplicationPage.jsx`, `src/pages/hr/HRCandidateDetailPage.jsx`, `src/pages/hr/HRCandidatesPage.jsx`, `src/pages/hr/HRDashboard.jsx`, `src/pages/hr/HREmployeesPage.jsx`, `src/pages/hr/HROffersPage.jsx`, `src/pages/shared/ActivityFeed.jsx`, `src/pages/talentAcquisition/TACandidateDetailPage.jsx`, `src/pages/talentAcquisition/TACandidatesPage.jsx`, `src/pages/talentAcquisition/TADashboard.jsx`, `src/pages/talentAcquisition/TAJobDetailPage.jsx`, `src/pages/talentAcquisition/TAJobsPage.jsx`
 - **`src/components/common/Metric.jsx`**
   28 loc · imports 0 · imported by 0 · exports: default (Metric)
 - **`src/components/common/Modal.jsx`**
@@ -369,7 +373,7 @@ _Generated 2026-09-09 by `scripts/graphify.mjs`. 111 files, 380 import edges._
 - **`src/components/common/Tooltip.jsx`**
   12 loc · imports 0 · imported by 0 · exports: default (Tooltip)
 - **`src/components/demo/DemoFlow.jsx`**
-  462 loc · imports 4 · imported by 1 · exports: default (DemoFlow)
+  471 loc · imports 4 · imported by 1 · exports: default (DemoFlow)
   imports: `src/components/common/Icon.jsx`, `src/context/AppContext.jsx`, `src/constants/roles.js`, `src/constants/statuses.js`
   importedBy: `src/App.jsx`
 - **`src/components/JobBrowser.jsx`**
@@ -417,8 +421,8 @@ _Generated 2026-09-09 by `scripts/graphify.mjs`. 111 files, 380 import edges._
   52 loc · imports 1 · imported by 2 · exports: default (KpiCard)
   imports: `src/components/common/Icon.jsx`
   importedBy: `src/pages/hr/HRDashboard.jsx`, `src/pages/talentAcquisition/TADashboard.jsx`
-- **`src/components/ta/LifecycleFunnel.jsx`** — Employee Lifecycle Funnel — a real tapering funnel, top to bottom. Each segment is a centred trapezoid whose top edge matches the stage above and bottom edge the stage below, so the silhouette narrows as employees progress. `count` is the h
-  48 loc · imports 0 · imported by 1 · exports: default (LifecycleFunnel)
+- **`src/components/ta/LifecycleFunnel.jsx`**
+  86 loc · imports 0 · imported by 1 · exports: default (LifecycleFunnel)
   importedBy: `src/pages/hr/HRDashboard.jsx`
 - **`src/components/ta/Pager.jsx`**
   54 loc · imports 1 · imported by 2 · exports: default (Pager)
@@ -485,9 +489,9 @@ _Generated 2026-09-09 by `scripts/graphify.mjs`. 111 files, 380 import edges._
 ### context
 
 - **`src/context/AppContext.jsx`**
-  748 loc · imports 6 · imported by 31 · exports: AppProvider, useApp
+  748 loc · imports 6 · imported by 32 · exports: AppProvider, useApp
   imports: `src/hooks/useLocalStorage.js`, `src/data/seed.js`, `src/data/jobs.js`, `src/constants/statuses.js`, `src/constants/roles.js`, `src/utils/ids.js`
-  importedBy: `src/App.jsx`, `src/components/demo/DemoFlow.jsx`, `src/components/navigation/GlobalSearch.jsx`, `src/components/navigation/NotificationBell.jsx`, `src/components/navigation/ProfileMenu.jsx`, `src/components/navigation/RoleSwitcher.jsx`, `src/components/routing/RoleRoute.jsx`, `src/layouts/HRLayout.jsx`, `src/main.jsx`, `src/pages/LoginPage.jsx`, `src/pages/candidate/ApplyPage.jsx`, `src/pages/candidate/CandidateProfilePage.jsx`, `src/pages/candidate/JobDetailsPage.jsx`, `src/pages/candidate/JobsPage.jsx`, `src/pages/candidate/LandingPage.jsx`, `src/pages/candidate/MyApplicationPage.jsx`, `src/pages/hr/HRCandidateDetailPage.jsx`, `src/pages/hr/HRCandidatesPage.jsx`, `src/pages/hr/HRDashboard.jsx`, `src/pages/hr/HREmployeesPage.jsx`, `src/pages/hr/HROffersPage.jsx`, `src/pages/shared/ActivityFeed.jsx`, `src/pages/shared/DocumentsReview.jsx`, `src/pages/shared/SettingsPage.jsx`, `src/pages/talentAcquisition/TACandidateDetailPage.jsx`, `src/pages/talentAcquisition/TACandidatesPage.jsx`, `src/pages/talentAcquisition/TADashboard.jsx`, `src/pages/talentAcquisition/TAInterviewsPage.jsx`, `src/pages/talentAcquisition/TAJobDetailPage.jsx`, `src/pages/talentAcquisition/TAJobsPage.jsx`, `src/pages/talentAcquisition/TAOffersPage.jsx`
+  importedBy: `src/App.jsx`, `src/components/demo/DemoFlow.jsx`, `src/components/navigation/GlobalSearch.jsx`, `src/components/navigation/NotificationBell.jsx`, `src/components/navigation/ProfileMenu.jsx`, `src/components/navigation/RoleSwitcher.jsx`, `src/components/routing/RoleRoute.jsx`, `src/layouts/HRLayout.jsx`, `src/main.jsx`, `src/pages/HomePage.jsx`, `src/pages/LoginPage.jsx`, `src/pages/candidate/ApplyPage.jsx`, `src/pages/candidate/CandidateProfilePage.jsx`, `src/pages/candidate/JobDetailsPage.jsx`, `src/pages/candidate/JobsPage.jsx`, `src/pages/candidate/LandingPage.jsx`, `src/pages/candidate/MyApplicationPage.jsx`, `src/pages/hr/HRCandidateDetailPage.jsx`, `src/pages/hr/HRCandidatesPage.jsx`, `src/pages/hr/HRDashboard.jsx`, `src/pages/hr/HREmployeesPage.jsx`, `src/pages/hr/HROffersPage.jsx`, `src/pages/shared/ActivityFeed.jsx`, `src/pages/shared/DocumentsReview.jsx`, `src/pages/shared/SettingsPage.jsx`, `src/pages/talentAcquisition/TACandidateDetailPage.jsx`, `src/pages/talentAcquisition/TACandidatesPage.jsx`, `src/pages/talentAcquisition/TADashboard.jsx`, `src/pages/talentAcquisition/TAInterviewsPage.jsx`, `src/pages/talentAcquisition/TAJobDetailPage.jsx`, `src/pages/talentAcquisition/TAJobsPage.jsx`, `src/pages/talentAcquisition/TAOffersPage.jsx`
 - **`src/context/ToastContext.jsx`**
   50 loc · imports 1 · imported by 12 · exports: ToastProvider, useToast, useToastList
   imports: `src/utils/ids.js`
@@ -511,8 +515,8 @@ _Generated 2026-09-09 by `scripts/graphify.mjs`. 111 files, 380 import edges._
 ### constant
 
 - **`src/constants/roles.js`**
-  30 loc · imports 0 · imported by 13 · exports: ROLES, ROLE_META, DEMO_USERS
-  importedBy: `src/App.jsx`, `src/components/demo/DemoFlow.jsx`, `src/components/navigation/CandidateHeader.jsx`, `src/components/navigation/HRTopbar.jsx`, `src/components/navigation/ProfileMenu.jsx`, `src/components/navigation/RoleSwitcher.jsx`, `src/components/navigation/TATopbar.jsx`, `src/components/navigation/Topbar.jsx`, `src/context/AppContext.jsx`, `src/pages/LoginPage.jsx`, `src/pages/hr/HRDashboard.jsx`, `src/pages/shared/ProfilePage.jsx`, `src/pages/talentAcquisition/TADashboard.jsx`
+  30 loc · imports 0 · imported by 14 · exports: ROLES, ROLE_META, DEMO_USERS
+  importedBy: `src/App.jsx`, `src/components/demo/DemoFlow.jsx`, `src/components/navigation/CandidateHeader.jsx`, `src/components/navigation/HRTopbar.jsx`, `src/components/navigation/ProfileMenu.jsx`, `src/components/navigation/RoleSwitcher.jsx`, `src/components/navigation/TATopbar.jsx`, `src/components/navigation/Topbar.jsx`, `src/context/AppContext.jsx`, `src/pages/HomePage.jsx`, `src/pages/LoginPage.jsx`, `src/pages/hr/HRDashboard.jsx`, `src/pages/shared/ProfilePage.jsx`, `src/pages/talentAcquisition/TADashboard.jsx`
 - **`src/constants/statuses.js`** — ============================================================ Centralized status system. Every status has: label, tone (badge variant), icon (lucide name). ============================================================
   234 loc · imports 0 · imported by 24 · exports: APP_STATUS, STATUS_META, statusMeta, PIPELINE_STAGES, stageIndexForStatus, stageBadgeForStatus, HR_FUNNEL_STAGES, hrStageRank, hrStageBadge, ROUND_STATUS, ROUND_STATUS_META, DOC_STATUS, DOC_STATUS_META, OFFER_STATUS, OFFER_STATUS_META, REQUIRED_DOCUMENTS, MANDATORY_DOC_KEYS, isDocMandatory, DOC_CATEGORIES, INTERVIEW_TYPES, INTERVIEW_MODES
   importedBy: `src/components/common/Badge.jsx`, `src/components/common/DocumentCard.jsx`, `src/components/demo/DemoFlow.jsx`, `src/components/workflow/DocumentTable.jsx`, `src/components/workflow/InterviewResultModal.jsx`, `src/components/workflow/RecruitmentTimeline.jsx`, `src/components/workflow/ScheduleInterviewModal.jsx`, `src/context/AppContext.jsx`, `src/data/seed.js`, `src/layouts/HRLayout.jsx`, `src/pages/candidate/MyApplicationPage.jsx`, `src/pages/hr/HRCandidateDetailPage.jsx`, `src/pages/hr/HRCandidatesPage.jsx`, `src/pages/hr/HRDashboard.jsx`, `src/pages/hr/HREmployeesPage.jsx`, `src/pages/hr/HROffersPage.jsx`, `src/pages/shared/ActivityFeed.jsx`, `src/pages/shared/DocumentsReview.jsx`, `src/pages/talentAcquisition/TACandidateDetailPage.jsx`, `src/pages/talentAcquisition/TACandidatesPage.jsx`, `src/pages/talentAcquisition/TADashboard.jsx`, `src/pages/talentAcquisition/TAInterviewsPage.jsx`, `src/pages/talentAcquisition/TAJobDetailPage.jsx`, `src/pages/talentAcquisition/TAOffersPage.jsx`
@@ -532,6 +536,9 @@ _Generated 2026-09-09 by `scripts/graphify.mjs`. 111 files, 380 import edges._
 - **`src/index.css`**
   847 loc · imports 0 · imported by 1
   importedBy: `src/main.jsx`
+- **`src/styles/home.css`**
+  196 loc · imports 0 · imported by 1
+  importedBy: `src/main.jsx`
 - **`src/styles/ta.css`**
-  1519 loc · imports 0 · imported by 1
+  1518 loc · imports 0 · imported by 1
   importedBy: `src/main.jsx`

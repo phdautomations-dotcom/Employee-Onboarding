@@ -61,6 +61,9 @@ export default function ProfileMenu({ role, links = [] }) {
             </span>
           </div>
 
+          <button type="button" className="profilemenu__item" onClick={() => go('/')} role="menuitem">
+            <Icon name="Home" size={15} /> Landing page
+          </button>
           {links.map((l) => (
             <button key={l.to} type="button" className="profilemenu__item" onClick={() => go(l.to)} role="menuitem">
               <Icon name={l.icon} size={15} /> {l.label}

@@ -88,31 +88,31 @@ export default function HRDashboard() {
 
   const LC_DEFS = [
     {
-      label: 'New Hire', to: '/hr/candidates?stage=onboarding',
+      label: 'New Hire', icon: 'FileCheck', tone: 'blue', to: '/hr/candidates?stage=onboarding',
       count: accepted.length,
       action: handovers.length,
       note: handovers.length ? `${handovers.length} awaiting kickoff` : '',
     },
     {
-      label: 'Pre-Joining', to: '/hr/candidates?stage=verification',
+      label: 'Pre-Joining', icon: 'Files', tone: 'violet', to: '/hr/candidates?stage=verification',
       count: accepted.filter((a) => rankOf(a) >= 3).length,
       action: pendingVerification.length + docsReturned,
       note: pendingVerification.length ? `${pendingVerification.length} to review` : '',
     },
     {
-      label: 'Joining', to: '/hr/candidates?stage=joining',
+      label: 'Joining', icon: 'CalendarCheck', tone: 'amber', to: '/hr/candidates?stage=joining',
       count: accepted.filter((a) => rankOf(a) >= 4).length,
       action: joiningThisWeek,
       note: joiningThisWeek ? `${joiningThisWeek} joining this week` : `${joiningPending} scheduled`,
     },
     {
-      label: 'Onboarding', to: '/hr/candidates?stage=onboarded',
+      label: 'Onboarding', icon: 'ClipboardCheck', tone: 'green', to: '/hr/candidates?stage=onboarded',
       count: employees.length,
       action: 0,
       note: onboardingEmps.length ? `${onboardingEmps.length} in first-month ramp` : '',
     },
     {
-      label: 'Active Employee', to: '/hr/employees',
+      label: 'Active Employee', icon: 'UserRoundCheck', tone: 'teal', to: '/hr/employees',
       count: activeEmps.length,
       action: 0,
       note: '',
@@ -121,12 +121,9 @@ export default function HRDashboard() {
   const lcBase = accepted.length || 1;
   const lcBottleneck = LC_DEFS.reduce((best, s, i) => (s.action > LC_DEFS[best].action ? i : best), 0);
   const lifecycle = LC_DEFS.map((s, i) => ({
-    label: s.label,
-    count: s.count,
+    ...s,
     pct: Math.round((s.count / lcBase) * 100),
-    note: s.note,
     attention: i === lcBottleneck && s.action > 0,
-    onClick: () => navigate(s.to),
   }));
   const bottleneck = LC_DEFS[lcBottleneck];
 
@@ -280,10 +277,10 @@ export default function HRDashboard() {
           <p className="ta-cell-mute">No employees are in the post-recruitment lifecycle yet.</p>
         ) : (
           <>
-            <p className="ta-cell-sub" style={{ marginBottom: 10 }}>
+            <p className="ta-cell-sub" style={{ marginBottom: 12 }}>
               {accepted.length} in the lifecycle · {accepted.length - employees.length} still onboarding
             </p>
-            <LifecycleFunnel stages={lifecycle} />
+            <LifecycleFunnel stages={lifecycle.map((s) => ({ ...s, onClick: () => navigate(s.to) }))} />
             <p className="ta-funnel__foot">
               <Icon name="AlertTriangle" size={12} />
               <strong>{bottleneck.label}</strong> needs attention — {bottleneck.note}.

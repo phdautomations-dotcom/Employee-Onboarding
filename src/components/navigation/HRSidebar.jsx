@@ -1,18 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import Icon from '../common/Icon.jsx';
-
-/* Same overlapping-rings logo mark as TASidebar, so both portals share one brand. */
-function BrandMark() {
-  return (
-    <span className="ta-brand__mark">
-      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#fff" strokeWidth="1.8">
-        <circle cx="9" cy="9" r="5" />
-        <circle cx="15" cy="9" r="5" />
-        <circle cx="12" cy="15" r="5" />
-      </svg>
-    </span>
-  );
-}
+import logo from '../../assets/ccentrik-logo.png';
 
 export default function HRSidebar({ open, collapsed, onToggleCollapse, onNavigate, navItems }) {
   return (
@@ -27,9 +15,9 @@ export default function HRSidebar({ open, collapsed, onToggleCollapse, onNavigat
       </button>
 
       <div className="ta-brand">
-        <BrandMark />
+        <img className="ta-brand__logo" src={logo} alt="Ccentrik" />
+        <span className="ta-brand__badge" aria-hidden="true">C</span>
         <span className="ta-brand__text">
-          <span className="ta-brand__name">TalentFlow</span>
           <span className="ta-brand__sub">HR Portal</span>
         </span>
       </div>
@@ -53,7 +41,7 @@ export default function HRSidebar({ open, collapsed, onToggleCollapse, onNavigat
 
       <div className="ta-sidebar__spacer" />
 
-      <a className="ta-help" href="mailto:support@talentflow.example" title="Visit our Help Center">
+      <a className="ta-help" href="mailto:support@ccentrik.app" title="Visit our Help Center">
         <span className="ta-help__icon"><Icon name="LifeBuoy" size={16} /></span>
         <span className="ta-help__text">
           <span className="ta-help__title">Need help?</span>

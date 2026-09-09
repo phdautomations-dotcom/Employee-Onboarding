@@ -361,28 +361,27 @@
 .ta-pipe__pct { font-size: 11px; font-weight: 600; color: var(--ta-text-mute); min-width: 30px; text-align: right; }
 .ta-pipe-wrap { display: grid; grid-template-columns: minmax(0, 1fr) 290px; gap: 22px; align-items: center; }
 
-/* Employee Lifecycle Funnel — tapering trapezoid segments, top to bottom */
-.ta-funnel { display: flex; flex-direction: column; gap: 3px; width: 100%; }
-.ta-funnel__seg {
-  position: relative; width: 100%; height: 56px;
-  border: 0; padding: 0; background: transparent; font: inherit; cursor: pointer;
+/* Employee Lifecycle Funnel — one continuous SVG funnel, interactive */
+.ta-lcf { position: relative; width: 100%; max-width: 400px; margin: 8px auto 0; }
+.ta-lcf svg { display: block; width: 100%; height: auto; overflow: visible; }
+.ta-lcf__band { cursor: pointer; transition: opacity 0.15s ease, transform 0.15s ease; }
+.ta-lcf__band path:first-child { transition: filter 0.15s; }
+.ta-lcf__band:hover path:first-child { filter: brightness(1.06); }
+.ta-lcf__band:focus { outline: none; }
+.ta-lcf__lead { stroke: var(--ta-line); stroke-width: 1; }
+.ta-lcf__val { font-size: 12px; }
+.ta-lcf__num { fill: var(--ta-text); font-weight: 800; font-variant-numeric: tabular-nums; }
+.ta-lcf__name { fill: var(--ta-text-soft); font-weight: 500; }
+.ta-lcf__drop { fill: var(--ta-text-mute); font-size: 10px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.ta-lcf__tip {
+  position: absolute; left: 12px; transform: translateY(-50%);
+  display: flex; flex-direction: column; gap: 1px;
+  padding: 7px 11px; border-radius: 9px; pointer-events: none;
+  background: var(--ta-text); color: #fff; box-shadow: var(--ta-shadow-hover); z-index: 5;
 }
-.ta-funnel__fill {
-  position: absolute; inset: 0; background: #4470bd;
-  transition: filter 0.12s, clip-path 0.3s ease;
-}
-.ta-funnel__seg:hover .ta-funnel__fill { filter: brightness(1.08); }
-.ta-funnel__seg.is-attn .ta-funnel__fill { background: #f0a132; }
-.ta-funnel__text {
-  position: absolute; inset: 0; pointer-events: none;
-  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;
-  color: #fff; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.22);
-}
-.ta-funnel__seg.is-attn .ta-funnel__text { color: #3f2a05; text-shadow: none; }
-.ta-funnel__row { display: flex; align-items: baseline; gap: 8px; }
-.ta-funnel__label { font-size: 12.5px; font-weight: 650; letter-spacing: 0.01em; }
-.ta-funnel__count { font-size: 16px; font-weight: 800; font-variant-numeric: tabular-nums; }
-.ta-funnel__note { font-size: 10px; font-weight: 600; opacity: 0.95; }
+.ta-lcf__tip b { font-size: 12px; }
+.ta-lcf__tip span { font-size: 11px; opacity: 0.82; white-space: nowrap; }
+
 .ta-funnel__foot {
   display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
   margin-top: 14px; font-size: 11.5px; color: var(--ta-text-soft);
