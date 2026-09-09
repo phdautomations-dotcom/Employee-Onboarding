@@ -265,7 +265,7 @@ _Generated 2026-09-09 by `scripts/graphify.mjs`. 111 files, 380 import edges._
   imports: `src/components/common/Icon.jsx`, `src/components/ta/TAHeader.jsx`, `src/components/ta/DataGrid.jsx`, `src/components/ta/Toolbar.jsx`, `src/components/ta/Tag.jsx`, `src/context/AppContext.jsx`, `src/hooks/useCollectionView.js`, `src/constants/statuses.js`, `src/utils/format.js`
   importedBy: `src/routes/AppRoutes.jsx`
 - **`src/pages/talentAcquisition/TADashboard.jsx`**
-  286 loc · imports 11 · imported by 1 · exports: default (TADashboard)
+  288 loc · imports 11 · imported by 1 · exports: default (TADashboard)
   imports: `src/components/common/Icon.jsx`, `src/components/ta/TAHeader.jsx`, `src/components/ta/Card.jsx`, `src/components/ta/KpiCard.jsx`, `src/components/ta/DonutChart.jsx`, `src/components/ta/FunnelChart.jsx`, `src/context/AppContext.jsx`, `src/constants/roles.js`, `src/constants/statuses.js`, `src/utils/metrics.js`, `src/utils/format.js`
   importedBy: `src/routes/AppRoutes.jsx`
 - **`src/pages/talentAcquisition/TADocumentsPage.jsx`**
@@ -369,7 +369,7 @@ _Generated 2026-09-09 by `scripts/graphify.mjs`. 111 files, 380 import edges._
 - **`src/components/common/Tooltip.jsx`**
   12 loc · imports 0 · imported by 0 · exports: default (Tooltip)
 - **`src/components/demo/DemoFlow.jsx`**
-  143 loc · imports 4 · imported by 1 · exports: default (DemoFlow)
+  462 loc · imports 4 · imported by 1 · exports: default (DemoFlow)
   imports: `src/components/common/Icon.jsx`, `src/context/AppContext.jsx`, `src/constants/roles.js`, `src/constants/statuses.js`
   importedBy: `src/App.jsx`
 - **`src/components/JobBrowser.jsx`**
@@ -533,5 +533,5 @@ _Generated 2026-09-09 by `scripts/graphify.mjs`. 111 files, 380 import edges._
   847 loc · imports 0 · imported by 1
   importedBy: `src/main.jsx`
 - **`src/styles/ta.css`**
-  1461 loc · imports 0 · imported by 1
+  1519 loc · imports 0 · imported by 1
   importedBy: `src/main.jsx`

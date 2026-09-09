@@ -1,6 +1,6 @@
 {
   "app": "recruitment-onboarding-frontend",
-  "generatedAt": "2026-09-09T10:34:17.472Z",
+  "generatedAt": "2026-09-09T11:07:32.811Z",
   "stats": {
     "files": 111,
     "edges": 380,
@@ -856,7 +856,7 @@
       "name": "DemoFlow.jsx",
       "dir": "src/components/demo",
       "layer": "component",
-      "loc": 143,
+      "loc": 462,
       "summary": "",
       "exports": [
         "default (DemoFlow)"
@@ -2606,7 +2606,7 @@
       "name": "TADashboard.jsx",
       "dir": "src/pages/talentAcquisition",
       "layer": "page",
-      "loc": 286,
+      "loc": 288,
       "summary": "",
       "exports": [
         "default (TADashboard)"
@@ -2824,7 +2824,7 @@
       "name": "ta.css",
       "dir": "src/styles",
       "layer": "style",
-      "loc": 1461,
+      "loc": 1519,
       "summary": "",
       "exports": [],
       "externals": [],

@@ -8,7 +8,7 @@ import {
   ClipboardCheck, ClipboardList, Route, LogOut, SearchX, UserX, Send, Save,
   Building2, BadgeCheck, GraduationCap, Wallet, Rocket, Sparkle,
   RefreshCw, TrendingUp, Zap, Activity, CalendarClock, ListChecks, Target,
-  Home, LifeBuoy, Moon, MessageSquare, Lightbulb,
+  Home, LifeBuoy, Moon, MessageSquare, Lightbulb, Play, Square, Bot,
 } from 'lucide-react';
 
 const REGISTRY = {
@@ -21,7 +21,7 @@ const REGISTRY = {
   ClipboardCheck, ClipboardList, Route, LogOut, SearchX, UserX, Send, Save,
   Building2, BadgeCheck, GraduationCap, Wallet, Rocket, Sparkle,
   RefreshCw, TrendingUp, Zap, Activity, CalendarClock, ListChecks, Target,
-  Home, LifeBuoy, Moon, MessageSquare, Lightbulb,
+  Home, LifeBuoy, Moon, MessageSquare, Lightbulb, Play, Square, Bot,
 };
 
 /**
