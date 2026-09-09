@@ -5,60 +5,109 @@ import { useApp } from '../context/AppContext.jsx';
 import { ROLES, ROLE_META } from '../constants/roles.js';
 import logo from '../assets/ccentrik-logo.png';
 
-const OPTIONS = [
-  { role: ROLES.TA, icon: 'Users', blurb: 'Applications, interviews, documents and offers.' },
-  { role: ROLES.HR, icon: 'UserRoundCheck', blurb: 'Onboarding verification, joining and employees.' },
+const WORKSPACES = [
+  {
+    role: ROLES.TA,
+    icon: 'Users',
+    title: 'Talent Acquisition',
+    blurb: 'Screen applicants, run interviews, verify documents and extend offers.',
+  },
+  {
+    role: ROLES.HR,
+    icon: 'UserRoundCheck',
+    title: 'Human Resources',
+    blurb: 'Take over accepted candidates, verify onboarding and complete joining.',
+  },
+];
+
+const HIGHLIGHTS = [
+  'One shared pipeline from application to first day',
+  'Documents, offers and onboarding tracked in one place',
+  'A live activity trail across every team',
 ];
 
 export default function LoginPage() {
-  const { setRole } = useApp();
   const navigate = useNavigate();
+  const { setRole } = useApp();
   const [selected, setSelected] = useState(ROLES.TA);
 
-  const proceed = () => {
+  const enter = () => {
     setRole(selected);
     navigate(ROLE_META[selected].home);
   };
 
   return (
-    <div className="lp-login">
-      <div className="lp-login__card">
-        <a className="lp-login__back" href="/"><Icon name="ArrowLeft" size={14} /> Back to home</a>
-
-        <span className="lp-login__brand">
+    <div className="auth">
+      <aside className="auth__brand">
+        <a className="auth__logo" href="/">
           <img src={logo} alt="Ccentrik" />
           <span>Ccentrik</span>
-        </span>
+        </a>
 
-        <h1>Sign in to your workspace</h1>
-        <p className="lp-login__sub">Pick a workspace to continue — this is a role simulation, no password needed.</p>
-
-        <div className="lp-login__opts">
-          {OPTIONS.map((o) => (
-            <button
-              key={o.role}
-              type="button"
-              className={`lp-login__opt${selected === o.role ? ' is-active' : ''}`}
-              onClick={() => setSelected(o.role)}
-            >
-              <span className="lp-login__opticon"><Icon name={o.icon} size={18} /></span>
-              <span className="lp-login__opttext">
-                <strong>{ROLE_META[o.role].label}</strong>
-                <span>{o.blurb}</span>
-              </span>
-              {selected === o.role && <Icon name="CheckCircle2" size={17} />}
-            </button>
-          ))}
+        <div className="auth__pitch">
+          <h1>One workspace for hiring and onboarding.</h1>
+          <p>
+            Ccentrik connects Talent Acquisition and HR on a single workflow —
+            so nothing gets lost between the offer and the first day.
+          </p>
+          <ul className="auth__highlights">
+            {HIGHLIGHTS.map((h) => (
+              <li key={h}><Icon name="CheckCircle2" size={15} /> {h}</li>
+            ))}
+          </ul>
         </div>
 
-        <button className="lp-btn lp-btn--lg lp-login__go" onClick={proceed}>
-          Continue as {ROLE_META[selected].label} <Icon name="ArrowRight" size={15} />
-        </button>
+        <p className="auth__copy">© {new Date().getFullYear()} Ccentrik · a frontend product demo</p>
+      </aside>
 
-        <p className="lp-login__note">
-          Applying for a role? <a href="/candidate">Browse jobs on the careers site</a> — candidates don't sign in.
-        </p>
-      </div>
+      <main className="auth__panel">
+        <a className="auth__back" href="/"><Icon name="ArrowLeft" size={14} /> Back to home</a>
+
+        <div className="auth__form">
+          <h2>Sign in</h2>
+          <p className="auth__sub">
+            Choose your workspace to continue. This is a role simulation — no password required.
+          </p>
+
+          <div className="auth__opts" role="radiogroup" aria-label="Workspace">
+            {WORKSPACES.map((w) => {
+              const active = selected === w.role;
+              return (
+                <button
+                  key={w.role}
+                  type="button"
+                  role="radio"
+                  aria-checked={active}
+                  className={`auth__opt${active ? ' is-active' : ''}`}
+                  onClick={() => setSelected(w.role)}
+                >
+                  <span className="auth__optIcon"><Icon name={w.icon} size={19} /></span>
+                  <span className="auth__optText">
+                    <strong>{w.title}</strong>
+                    <span>{w.blurb}</span>
+                  </span>
+                  <Icon name={active ? 'CheckCircle2' : 'Circle'} size={18} className="auth__optMark" />
+                </button>
+              );
+            })}
+          </div>
+
+          <button className="auth__go" onClick={enter}>
+            Continue as {WORKSPACES.find((w) => w.role === selected).title}
+            <Icon name="ArrowRight" size={16} />
+          </button>
+
+          <div className="auth__divider"><span>or</span></div>
+
+          <a className="auth__careers" href="/candidate">
+            <span className="auth__careersText">
+              <strong>Applying for a role?</strong>
+              <span>Browse jobs on the careers site — candidates don't sign in.</span>
+            </span>
+            <Icon name="ArrowRight" size={15} />
+          </a>
+        </div>
+      </main>
     </div>
   );
 }
