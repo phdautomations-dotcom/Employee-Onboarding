@@ -5,7 +5,7 @@ import { Field, Input, Select, Textarea } from '../common/Field.jsx';
 import ChipsInput from '../common/ChipsInput.jsx';
 import { todayISO } from '../../utils/format.js';
 
-const DEPARTMENTS = ['Product Engineering', 'Enterprise Solutions', 'Design', 'People & Culture', 'Business Intelligence', 'Platform', 'Quality Engineering', 'Customer Success'];
+const DEPARTMENTS = ['Sales', 'Human Resource', 'Talent Acquisition', 'SAP ABAP', 'SAP Functional'];
 const WORK_MODES = ['Hybrid', 'Remote', 'On-site'];
 const EMP_TYPES = ['Full-time', 'Contract', 'Internship'];
 

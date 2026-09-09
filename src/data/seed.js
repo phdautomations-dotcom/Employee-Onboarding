@@ -4,7 +4,7 @@ import { makeCandidateId, makeApplicationId, makeEmployeeId, makeOfferId, uid } 
 
 /* Bump when the seed's shape changes so stale demo data in a browser is
    rebuilt automatically (the storage key itself never changes). */
-export const SEED_VERSION = 3;
+export const SEED_VERSION = 4;
 
 function emptyAddress() {
   return { line1: '', line2: '', city: '', state: '', country: 'India', postalCode: '' };
@@ -475,7 +475,7 @@ export function buildSeed() {
     applicationId: a5.id,
     candidateName: 'Sameer Khan',
     jobTitle: 'Data Analyst',
-    department: 'Business Intelligence',
+    department: 'SAP Functional',
     location: 'Pune, India',
     joiningDate: '2026-10-01',
     employmentType: 'Full-time',
@@ -535,7 +535,7 @@ export function buildSeed() {
     applicationId: a6.id,
     candidateName: 'Divya Menon',
     jobTitle: 'QA Automation Engineer',
-    department: 'Quality Engineering',
+    department: 'SAP ABAP',
     location: 'Remote, India',
     joiningDate: '2026-09-25',
     employmentType: 'Full-time',
@@ -584,7 +584,7 @@ export function buildSeed() {
     applicationId: a7.id,
     candidateName: 'Karan Bhatia',
     jobTitle: 'Business Analyst',
-    department: 'Enterprise Solutions',
+    department: 'Sales',
     location: 'Chennai, India',
     joiningDate: '2026-07-15',
     employmentType: 'Full-time',
@@ -608,7 +608,7 @@ export function buildSeed() {
     applicationId: a7.id,
     name: 'Karan Bhatia',
     position: 'Business Analyst',
-    department: 'Enterprise Solutions',
+    department: 'Sales',
     joiningDate: '2026-07-15',
     createdAt: '2026-07-15T09:30:00',
   });
@@ -654,7 +654,7 @@ export function buildSeed() {
     applicationId: a8.id,
     candidateName: 'Neha Reddy',
     jobTitle: 'DevOps Engineer',
-    department: 'Platform',
+    department: 'SAP ABAP',
     location: 'Bengaluru, India',
     joiningDate: '2026-09-15',
     employmentType: 'Full-time',

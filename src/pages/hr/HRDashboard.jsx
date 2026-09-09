@@ -4,19 +4,18 @@ import TAHeader from '../../components/ta/TAHeader.jsx';
 import Card from '../../components/ta/Card.jsx';
 import KpiCard from '../../components/ta/KpiCard.jsx';
 import DonutChart from '../../components/ta/DonutChart.jsx';
-import Funnel from '../../components/ta/Funnel.jsx';
 import Tag from '../../components/ta/Tag.jsx';
 import Icon from '../../components/common/Icon.jsx';
 import { useApp } from '../../context/AppContext.jsx';
 import { DEMO_USERS, ROLES } from '../../constants/roles.js';
-import { APP_STATUS, DOC_STATUS, hrStageRank } from '../../constants/statuses.js';
+import { APP_STATUS, hrStageRank } from '../../constants/statuses.js';
 import { timeAgo, formatDate } from '../../utils/format.js';
 
 const HANDOVER_PREVIEW = 3;
 
 export default function HRDashboard() {
   const navigate = useNavigate();
-  const { data, offerFor, documentsFor, activitiesFor } = useApp();
+  const { data, offerFor, activitiesFor } = useApp();
   const user = DEMO_USERS[ROLES.HR];
   const taName = DEMO_USERS[ROLES.TA].name;
   const [handoverOpen, setHandoverOpen] = useState(true);   // collapse the whole list
@@ -74,23 +73,6 @@ export default function HRDashboard() {
     },
   ];
 
-  // ===== Document Verification funnel — the joining-document journey for every
-  // candidate HR currently owns: submitted → all verified. =====
-  const inHrPipe = accepted.filter((a) => a.status !== APP_STATUS.EMPLOYEE);
-  let docsSubmitted = 0;
-  let docsAllVerified = 0;
-  inHrPipe.forEach((a) => {
-    const docs = documentsFor(a.id).filter((d) => d.required);
-    if (!docs.length) return;
-    if (docs.every((d) => d.status !== DOC_STATUS.PENDING)) docsSubmitted += 1;
-    if (docs.every((d) => d.status === DOC_STATUS.VERIFIED)) docsAllVerified += 1;
-  });
-  const docFunnel = [
-    { label: 'In onboarding', tone: 'violet', value: inHrPipe.length, onClick: () => navigate('/hr/candidates?stage=onboarding') },
-    { label: 'Documents submitted', tone: 'blue', value: docsSubmitted, onClick: () => navigate('/hr/candidates?stage=verification') },
-    { label: 'All verified', tone: 'green', value: docsAllVerified, onClick: () => navigate('/hr/candidates?stage=joining') },
-  ];
-
   // ===== Upcoming Joiners — everyone who accepted with a joining date, not
   // joined yet. Sorted soonest first. =====
   const daysUntil = (dateStr) => (dateStr ? Math.ceil((new Date(dateStr) - Date.now()) / 86400000) : null);
@@ -102,21 +84,23 @@ export default function HRDashboard() {
     .sort((x, y) => x.d - y.d);
   const joiningThisWeek = upcomingJoiners.filter((x) => x.d <= 7).length;
 
-  // ===== Onboarding by Department — which teams the incoming hires are joining,
-  // so HR can line up equipment, access and inductions per team. =====
-  const deptCounts = {};
+  // ===== Onboarding by Department — which teams the incoming hires join, and
+  // who, so HR can line up equipment, access and inductions per team. =====
+  const DEPT_RAMP = ['#4b7bf7', '#8b7ff0', '#f6a04a', '#46c98a', '#3fbfae', '#f2b705'];
+  const byDept = {};
   notJoined.forEach((a) => {
     const dept = offerFor(a.id)?.department || 'Unassigned';
-    deptCounts[dept] = (deptCounts[dept] || 0) + 1;
+    (byDept[dept] = byDept[dept] || []).push(a);
   });
-  const DEPT_RAMP = ['#4b7bf7', '#8b7ff0', '#f6a04a', '#46c98a', '#3fbfae', '#f2b705'];
-  let deptSlices = Object.entries(deptCounts)
-    .sort((a, b) => b[1] - a[1])
-    .map(([label, value], i) => ({ label, value, color: DEPT_RAMP[i % DEPT_RAMP.length] }));
-  if (deptSlices.length > 5) {
-    const rest = deptSlices.slice(4).reduce((s, x) => s + x.value, 0);
-    deptSlices = [...deptSlices.slice(0, 4), { label: 'Other', value: rest, color: '#98a2b3' }];
-  }
+  const deptGroups = Object.entries(byDept)
+    .sort((a, b) => b[1].length - a[1].length)
+    .map(([dept, list], i) => ({
+      dept,
+      color: DEPT_RAMP[i % DEPT_RAMP.length],
+      list,
+      names: list.map((a) => `${a.personal.firstName} ${a.personal.lastName}`),
+    }));
+  const deptSlices = deptGroups.map((g) => ({ label: g.dept, value: g.list.length, color: g.color }));
 
   return (
     <>
@@ -246,29 +230,29 @@ export default function HRDashboard() {
         </Card>
       </div>
 
-      <div className="ta-bento">
-        <Card
-          title="Document Verification"
-          action={<span className="ta-cell-sub">{docsAllVerified} of {inHrPipe.length} fully verified</span>}
-        >
-          {inHrPipe.length === 0 ? (
-            <p className="ta-cell-mute">No one is currently in onboarding.</p>
-          ) : (
-            <Funnel stages={docFunnel} />
-          )}
-        </Card>
-
-        <Card
-          title="Onboarding by Department"
-          action={<span className="ta-cell-sub">{notJoined.length} joining across {Object.keys(deptCounts).length} team{Object.keys(deptCounts).length === 1 ? '' : 's'}</span>}
-        >
-          {notJoined.length === 0 ? (
-            <p className="ta-cell-mute">No one is currently in onboarding.</p>
-          ) : (
+      <Card
+        title="Onboarding by Department"
+        action={<span className="ta-cell-sub">{notJoined.length} joining across {deptGroups.length} team{deptGroups.length === 1 ? '' : 's'}</span>}
+      >
+        {notJoined.length === 0 ? (
+          <p className="ta-cell-mute">No one is currently in onboarding.</p>
+        ) : (
+          <div className="hr-bydept">
             <DonutChart slices={deptSlices} caption="joining" onSliceClick={() => navigate('/hr/candidates?stage=onboarding')} />
-          )}
-        </Card>
-      </div>
+            <div className="hr-bydept__teams">
+              {deptGroups.map((g) => (
+                <div className="hr-bydept__team" key={g.dept}>
+                  <span className="hr-bydept__dot" style={{ background: g.color }} />
+                  <span className="hr-bydept__label">
+                    {g.dept} <span className="hr-bydept__n">{g.list.length}</span>
+                    <span className="ta-cell-sub"> · {g.names.join(', ')}</span>
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </Card>
     </>
   );
 }
