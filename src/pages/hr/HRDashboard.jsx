@@ -4,12 +4,11 @@ import TAHeader from '../../components/ta/TAHeader.jsx';
 import Card from '../../components/ta/Card.jsx';
 import KpiCard from '../../components/ta/KpiCard.jsx';
 import DonutChart from '../../components/ta/DonutChart.jsx';
-import Funnel from '../../components/ta/Funnel.jsx';
 import Tag from '../../components/ta/Tag.jsx';
 import Icon from '../../components/common/Icon.jsx';
 import { useApp } from '../../context/AppContext.jsx';
 import { DEMO_USERS, ROLES } from '../../constants/roles.js';
-import { APP_STATUS, hrStageRank } from '../../constants/statuses.js';
+import { APP_STATUS, hrStageRank, hrStageBadge } from '../../constants/statuses.js';
 import { timeAgo, formatDate } from '../../utils/format.js';
 
 const HANDOVER_PREVIEW = 3;
@@ -39,11 +38,7 @@ export default function HRDashboard() {
   }).length;
   // HR owns candidates from "offer accepted" onward.
   const accepted = apps.filter((a) => hrStageRank(a.status) >= 2);
-  const reached = (rank) => accepted.filter((a) => hrStageRank(a.status) >= rank).length;
   const total = accepted.length || 1;
-  const submittedDocs = accepted.filter((a) => a.onboarding).length;
-  const verified = reached(4);
-  const onboarded = reached(5);
 
   // ===== Upcoming Joiners — everyone who accepted with a joining date, not
   // joined yet. Sorted soonest first. =====
@@ -80,14 +75,30 @@ export default function HRDashboard() {
     },
   ];
 
-  // ===== HR Onboarding Progress funnel — cumulative stages, so it narrows and
-  // shows where candidates drop between steps. =====
-  const funnelStages = [
-    { label: 'Offer Accepted', tone: 'violet', value: total, to: '/hr/candidates?stage=onboarding' },
-    { label: 'Joining Documents', tone: 'blue', value: submittedDocs, to: '/hr/candidates?stage=verification' },
-    { label: 'Documents Verified', tone: 'amber', value: verified, to: '/hr/candidates?stage=joining' },
-    { label: 'Onboarded', tone: 'green', value: onboarded, to: '/hr/candidates?stage=onboarded' },
-  ].map((s) => ({ ...s, onClick: () => navigate(s.to) }));
+  // ===== Onboarding Aging — how long each candidate has been waiting for the
+  // next step (documents from them, or verification from HR). The "over 2 weeks"
+  // group is the chase-now list. =====
+  const WAITING_STATUSES = [APP_STATUS.ONBOARDING_PENDING, APP_STATUS.HR_VERIFICATION, APP_STATUS.HR_VERIFICATION_REJECTED];
+  const daysSince = (d) => Math.floor((Date.now() - new Date(d)) / 86400000);
+  const waiting = apps
+    .filter((a) => WAITING_STATUSES.includes(a.status))
+    .map((a) => {
+      const acts = activitiesFor(a.id);
+      const last = acts.reduce((m, x) => (x.at > m ? x.at : m), a.submittedAt);
+      return {
+        a,
+        name: `${a.personal.firstName} ${a.personal.lastName}`,
+        days: daysSince(last),
+        stage: hrStageBadge(a.status).label,
+        waitingOn: a.status === APP_STATUS.ONBOARDING_PENDING ? 'candidate' : 'HR review',
+      };
+    })
+    .sort((x, y) => y.days - x.days);
+  const ageBuckets = [
+    { label: 'Under a week', tone: 'green', to: '/hr/candidates?stage=onboarding', items: waiting.filter((w) => w.days < 7) },
+    { label: '1–2 weeks', tone: 'amber', to: '/hr/candidates?stage=verification', items: waiting.filter((w) => w.days >= 7 && w.days < 14) },
+    { label: 'Over 2 weeks', tone: 'red', to: '/hr/candidates?stage=verification', items: waiting.filter((w) => w.days >= 14) },
+  ];
 
   // ===== Onboarding by Department — which teams the incoming hires join, so HR
   // can line up equipment, access and inductions per team. =====
@@ -231,10 +242,38 @@ export default function HRDashboard() {
 
       <div className="ta-bento">
         <Card
-          title="HR Onboarding Progress"
-          action={<span className="ta-cell-sub"><strong>{total}</strong> accepted · {onboarded} onboarded</span>}
+          title="Onboarding Aging"
+          action={<span className="ta-cell-sub">{waiting.length} waiting on a next step</span>}
         >
-          <Funnel stages={funnelStages} />
+          {waiting.length === 0 ? (
+            <p className="ta-cell-mute">Nothing is waiting — every onboarding candidate moved recently.</p>
+          ) : (
+            <div className="hr-aging">
+              {ageBuckets.map((b) => (
+                <button
+                  key={b.label}
+                  type="button"
+                  className="hr-aging__row"
+                  onClick={() => navigate(b.to)}
+                  disabled={b.items.length === 0}
+                >
+                  <span className={`hr-aging__dot hr-aging__dot--${b.tone}`} />
+                  <span className="hr-aging__label">{b.label}</span>
+                  <span className="hr-aging__count">{b.items.length}</span>
+                  <span className="ta-cell-sub hr-aging__names">
+                    {b.items.slice(0, 3).map((x) => x.name).join(', ') || '—'}
+                    {b.items.length > 3 ? ` +${b.items.length - 3}` : ''}
+                  </span>
+                </button>
+              ))}
+              {waiting[0].days >= 10 && (
+                <p className="hr-insight">
+                  <Icon name="AlertTriangle" size={13} />
+                  Oldest: <strong>{waiting[0].name}</strong> — {waiting[0].days} days waiting on {waiting[0].waitingOn}.
+                </p>
+              )}
+            </div>
+          )}
         </Card>
 
         <Card

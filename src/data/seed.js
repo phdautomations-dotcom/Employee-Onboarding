@@ -4,7 +4,7 @@ import { makeCandidateId, makeApplicationId, makeEmployeeId, makeOfferId, uid } 
 
 /* Bump when the seed's shape changes so stale demo data in a browser is
    rebuilt automatically (the storage key itself never changes). */
-export const SEED_VERSION = 4;
+export const SEED_VERSION = 5;
 
 function emptyAddress() {
   return { line1: '', line2: '', city: '', state: '', country: 'India', postalCode: '' };
@@ -165,11 +165,20 @@ function buildSyntheticCandidates(startSeq) {
   let offerSeq = 100;
   let empSeq = 200;
 
+  // Candidates who are actively in HR onboarding wouldn't realistically have
+  // applied 5 months ago — keep their timeline recent so "days waiting" is sane.
+  const RECENT_ONBOARDING = [
+    APP_STATUS.OFFER_ACCEPTED, APP_STATUS.ONBOARDING_PENDING,
+    APP_STATUS.HR_VERIFICATION, APP_STATUS.HR_VERIFICATION_REJECTED, APP_STATUS.JOINING_PENDING,
+  ];
+
   statuses.forEach((status, idx) => {
     const first = FIRST_NAMES[Math.floor(rng() * FIRST_NAMES.length)];
     const last = LAST_NAMES[Math.floor(rng() * LAST_NAMES.length)];
     const jobId = JOB_IDS[Math.floor(rng() * JOB_IDS.length)];
-    const daysAgo = 4 + Math.floor(rng() * 150);
+    const daysAgo = RECENT_ONBOARDING.includes(status)
+      ? 22 + Math.floor(rng() * 16)   // 22–37 days ago (keeps derived dates positive)
+      : 4 + Math.floor(rng() * 150);
     const submittedAt = new Date(Date.now() - daysAgo * 86400000).toISOString();
     const totalExp = 1 + Math.floor(rng() * 14);
     const skills = [...SKILL_POOL].sort(() => rng() - 0.5).slice(0, 3 + Math.floor(rng() * 2));

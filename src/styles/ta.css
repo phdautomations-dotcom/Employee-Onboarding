@@ -377,6 +377,30 @@
 .ta-funnel2__nums b { font-size: 17px; font-weight: 750; font-variant-numeric: tabular-nums; }
 .ta-funnel2__pct { font-size: 12px; font-weight: 600; opacity: 0.85; }
 
+/* Onboarding Aging — waiting-time buckets */
+.hr-aging { display: flex; flex-direction: column; gap: 2px; }
+.hr-aging__row {
+  display: grid; grid-template-columns: 11px auto 26px 1fr; align-items: center; gap: 10px;
+  width: 100%; padding: 10px 8px; border: 0; border-radius: 9px;
+  background: transparent; font: inherit; text-align: left; cursor: pointer; transition: background 0.12s;
+}
+.hr-aging__row:disabled { cursor: default; opacity: 0.55; }
+.hr-aging__row:not(:disabled):hover { background: var(--ta-bg); }
+.hr-aging__row + .hr-aging__row { border-top: 1px solid var(--ta-line-soft); border-radius: 0; }
+.hr-aging__dot { width: 11px; height: 11px; border-radius: 4px; }
+.hr-aging__dot--green { background: var(--tag-green-fg); }
+.hr-aging__dot--amber { background: var(--tag-amber-fg); }
+.hr-aging__dot--red { background: var(--tag-red-fg); }
+.hr-aging__label { font-size: 12.5px; font-weight: 600; white-space: nowrap; }
+.hr-aging__count { font-size: 15px; font-weight: 750; font-variant-numeric: tabular-nums; text-align: right; }
+.hr-aging__names { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hr-insight {
+  display: flex; align-items: center; gap: 7px;
+  margin: 14px 4px 2px; font-size: 12px; color: var(--ta-text-soft);
+}
+.hr-insight svg { color: var(--tag-red-fg); flex-shrink: 0; }
+.hr-insight strong { color: var(--ta-text); }
+
 /* TA → HR handover — a slim card that lists newly accepted candidates */
 .hr-handover {
   background: var(--ta-surface); border: 1px solid var(--ta-line);
