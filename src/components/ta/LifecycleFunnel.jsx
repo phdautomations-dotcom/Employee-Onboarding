@@ -3,9 +3,10 @@
    and bottom edge the stage below, so the silhouette narrows as employees
    progress. `count` is the headline; the flagged phase turns amber.
    `stages` = [{ label, count, pct, note, attention, onClick }] in order. */
-// One vivid hue per phase across the cool spectrum (violet → green). Amber is
-// the odd one out on purpose — it's reserved for the flagged phase (.is-attn).
-const TONE = ['#7c3aed', '#4f46e5', '#2563eb', '#0891b2', '#16a34a'];
+// Monochromatic blue-teal progression — deep navy at the top easing to a
+// refined teal at the bottom. Amber (.is-attn in ta.css) flags the phase that
+// needs attention.
+const TONE = ['#1E3A5F', '#28527A', '#326B8F', '#3D8194', '#489A91'];
 
 export default function LifecycleFunnel({ stages }) {
   // Map the true % onto a readable width band — the funnel tapers but never
