@@ -132,7 +132,7 @@ export default function HRDashboard() {
 
   // ===== Onboarding by Department — which teams the incoming hires join, so HR
   // can line up equipment, access and inductions per team. =====
-  const DEPT_RAMP = ['#4b7bf7', '#8b7ff0', '#f6a04a', '#46c98a', '#3fbfae', '#f2b705'];
+  const DEPT_RAMP = ['#4b7bf7', '#8b7ff0', '#f6a04a', '#46c98a', '#e5484d', '#f2b705'];
   const deptCounts = {};
   notJoined.forEach((a) => {
     const dept = offerFor(a.id)?.department || 'Unassigned';

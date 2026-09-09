@@ -371,13 +371,14 @@
   position: absolute; inset: 0; background: #4470bd;
   transition: filter 0.12s, clip-path 0.3s ease;
 }
-.ta-funnel__seg:hover .ta-funnel__fill { filter: brightness(0.96); }
-.ta-funnel__seg.is-attn .ta-funnel__fill { background: #e8983c; }
+.ta-funnel__seg:hover .ta-funnel__fill { filter: brightness(1.08); }
+.ta-funnel__seg.is-attn .ta-funnel__fill { background: #f0a132; }
 .ta-funnel__text {
   position: absolute; inset: 0; pointer-events: none;
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;
+  color: #fff; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.22);
 }
-.ta-funnel__seg.is-attn .ta-funnel__text { color: #3f2a05; }
+.ta-funnel__seg.is-attn .ta-funnel__text { color: #3f2a05; text-shadow: none; }
 .ta-funnel__row { display: flex; align-items: baseline; gap: 8px; }
 .ta-funnel__label { font-size: 12.5px; font-weight: 650; letter-spacing: 0.01em; }
 .ta-funnel__count { font-size: 16px; font-weight: 800; font-variant-numeric: tabular-nums; }

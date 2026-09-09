@@ -3,16 +3,9 @@
    and bottom edge the stage below, so the silhouette narrows as employees
    progress. `count` is the headline; the flagged phase turns amber.
    `stages` = [{ label, count, pct, note, attention, onClick }] in order. */
-// Single blue hue, deep → pale down the funnel. Label ink flips to navy on the
-// two lightest steps so every segment stays readable. Amber is reserved for the
-// phase that needs attention (see .is-attn in ta.css).
-const TONE = [
-  { bg: '#1e3a70', ink: '#fff' },
-  { bg: '#2d5bb9', ink: '#fff' },
-  { bg: '#4f86e0', ink: '#fff' },
-  { bg: '#9cbef1', ink: '#17305c' },
-  { bg: '#d2e2fa', ink: '#17305c' },
-];
+// One vivid hue per phase across the cool spectrum (violet → green). Amber is
+// the odd one out on purpose — it's reserved for the flagged phase (.is-attn).
+const TONE = ['#7c3aed', '#4f46e5', '#2563eb', '#0891b2', '#16a34a'];
 
 export default function LifecycleFunnel({ stages }) {
   // Map the true % onto a readable width band — the funnel tapers but never
@@ -36,9 +29,9 @@ export default function LifecycleFunnel({ stages }) {
           >
             <span
               className="ta-funnel__fill"
-              style={{ clipPath: clip, background: s.attention ? undefined : tone.bg }}
+              style={{ clipPath: clip, background: s.attention ? undefined : tone }}
             />
-            <span className="ta-funnel__text" style={{ color: s.attention ? undefined : tone.ink }}>
+            <span className="ta-funnel__text">
               <span className="ta-funnel__row">
                 <span className="ta-funnel__label">{s.label}</span>
                 <span className="ta-funnel__count">{s.count}</span>
