@@ -266,6 +266,7 @@ export function AppProvider({ children }) {
           status: ROUND_STATUS.SCHEDULED,
           result: null,
           comments: '',
+          shareComments: false, // remarks are internal unless the TA chooses to share them
         });
         if (app.status === APP_STATUS.INTERVIEW_PLANNING || app.status === APP_STATUS.INTERVIEW_PASSED) {
           app.status = APP_STATUS.INTERVIEW_IN_PROGRESS;
@@ -278,12 +279,13 @@ export function AppProvider({ children }) {
   );
 
   const recordInterviewResult = useCallback(
-    (interviewId, { result, comments }) => {
+    (interviewId, { result, comments, shareComments = false }) => {
       mutate((draft) => {
         const iv = draft.interviews.find((i) => i.id === interviewId);
         if (!iv) return;
         iv.result = result;
         iv.comments = comments;
+        iv.shareComments = !!shareComments;
         iv.status = result; // PASS | FAIL | HOLD
         const app = draft.applications.find((a) => a.id === iv.applicationId);
         if (!app) return;
@@ -413,12 +415,12 @@ export function AppProvider({ children }) {
         }
         Object.assign(offer, payload);
         if (submitForApproval) {
-          // Offer goes straight to the candidate — HR no longer gates this step.
+          // The letter is prepared and emailed outside the app — this just records it.
           offer.status = OFFER_STATUS.ISSUED;
           offer.issuedAt = new Date().toISOString();
           app.status = APP_STATUS.OFFER_ISSUED;
-          logActivity(draft, applicationId, 'offer', 'Offer Sent to Candidate', 'TA prepared and sent the offer.', 'Himanshu Singh');
-          notify(draft, ROLES.CANDIDATE, 'You have an offer', `Your offer for ${offer.jobTitle} has been sent.`);
+          logActivity(draft, applicationId, 'offer', 'Offer Extended', 'TA recorded that the offer letter was sent to the candidate by email.', 'Himanshu Singh');
+          notify(draft, ROLES.CANDIDATE, 'You have an offer', `Your offer for ${offer.jobTitle} has been emailed to you.`);
         } else {
           offer.status = OFFER_STATUS.DRAFT;
           app.status = APP_STATUS.OFFER_DRAFT;

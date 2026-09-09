@@ -448,11 +448,16 @@
   margin-bottom: 14px; overflow: hidden;
 }
 .ta-updates__head {
-  display: flex; align-items: center; justify-content: space-between; gap: 10px;
-  padding: 10px 16px; border-bottom: 1px solid var(--ta-line-soft);
+  display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%;
+  padding: 11px 16px; border: 0; background: transparent; font: inherit;
+  text-align: left; cursor: pointer;
 }
+.ta-updates__head:hover { background: var(--ta-bg); }
+.ta-updates__list:not([hidden]) { border-top: 1px solid var(--ta-line-soft); }
 .ta-updates__lead { display: inline-flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--ta-text); }
-.ta-updates__lead svg { color: var(--ta-blue); }
+.ta-updates__toggle { display: inline-flex; align-items: center; gap: 12px; }
+.ta-updates__toggle svg { color: var(--ta-text-mute); }
+.ta-updates__toggle .ta-link { cursor: pointer; }
 .ta-updates__count {
   display: inline-flex; align-items: center; justify-content: center;
   min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px;
@@ -839,6 +844,22 @@
 }
 .cx-docreason__btns { display: flex; gap: 6px; margin-top: 6px; }
 .ta-btn--sm { padding: 5px 10px; font-size: 11.5px; }
+
+/* Checkbox + label line (modals) */
+.ta-checkline { display: flex; align-items: flex-start; gap: 10px; margin-top: 12px; cursor: pointer; }
+.ta-checkline input { margin-top: 2px; width: 15px; height: 15px; flex-shrink: 0; accent-color: var(--ta-blue); }
+.ta-checkline > span { display: flex; flex-direction: column; gap: 2px; }
+.ta-checkline strong { font-size: 12.5px; font-weight: 600; color: var(--ta-text); }
+
+/* Interview remark visibility pill */
+.ta-remark { margin-top: 4px; font-size: 12px; }
+.ta-remark__tag {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 1px 7px; border-radius: 999px; font-size: 10px; font-weight: 650;
+  margin-left: 6px; vertical-align: middle;
+}
+.ta-remark__tag--internal { background: var(--tag-grey-bg); color: var(--tag-grey-fg); }
+.ta-remark__tag--shared { background: var(--tag-green-bg); color: var(--tag-green-fg); }
 
 .ta-info { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 18px; }
 .ta-info--1 { grid-template-columns: 1fr; }

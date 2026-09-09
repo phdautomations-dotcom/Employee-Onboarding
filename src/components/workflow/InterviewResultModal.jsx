@@ -13,16 +13,18 @@ const OPTIONS = [
 export default function InterviewResultModal({ open, onClose, interview, onSave }) {
   const [result, setResult] = useState(ROUND_STATUS.PASS);
   const [comments, setComments] = useState('');
+  const [share, setShare] = useState(false);
   const [error, setError] = useState('');
 
   const save = () => {
     if (!comments.trim()) {
-      setError('Please add a short comment.');
+      setError('Please add a short remark.');
       return;
     }
-    onSave({ result, comments: comments.trim() });
+    onSave({ result, comments: comments.trim(), shareComments: share });
     setResult(ROUND_STATUS.PASS);
     setComments('');
+    setShare(false);
     setError('');
   };
 
@@ -33,12 +35,8 @@ export default function InterviewResultModal({ open, onClose, interview, onSave 
       title={`Interview Result — Round ${interview?.round} (${interview?.type})`}
       footer={
         <>
-          <Button variant="secondary" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button icon="Save" onClick={save}>
-            Save Result
-          </Button>
+          <Button variant="secondary" onClick={onClose}>Cancel</Button>
+          <Button icon="Save" onClick={save}>Save Result</Button>
         </>
       }
     >
@@ -52,9 +50,16 @@ export default function InterviewResultModal({ open, onClose, interview, onSave 
           ))}
         </div>
       </Field>
-      <Field label="Comments" required error={error}>
+      <Field label="Interview remarks" required error={error}>
         <Textarea rows={5} value={comments} onChange={(e) => setComments(e.target.value)} error={error} placeholder="Strengths, concerns, recommendation…" />
       </Field>
+      <label className="ta-checkline">
+        <input type="checkbox" checked={share} onChange={(e) => setShare(e.target.checked)} />
+        <span>
+          <strong>Share these remarks with the candidate</strong>
+          <span className="ta-cell-sub">Off by default — remarks stay internal to the hiring team unless you turn this on.</span>
+        </span>
+      </label>
     </Modal>
   );
 }

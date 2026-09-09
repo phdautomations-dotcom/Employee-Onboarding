@@ -54,7 +54,7 @@ export default function TACandidateDetailPage() {
     getApplicationByCandidate, interviewsFor, documentsFor, offerFor, employeeFor, activitiesFor,
     startReview, approveApplication, returnApplication, rejectApplication,
     scheduleInterview, recordInterviewResult, advanceToDocuments,
-    verifyDocument, rejectDocument, saveOffer, confirmOfferAccepted,
+    verifyDocument, rejectDocument, saveOffer, confirmOfferAccepted, declineOffer,
   } = useApp();
 
   const app = getApplicationByCandidate(candidateId);
@@ -126,12 +126,17 @@ export default function TACandidateDetailPage() {
             <Button icon="ArrowRight" onClick={() => act(() => advanceToDocuments(app.id), 'Moved to document verification.')}>Proceed to documents</Button>
           )}
           {CAN_OFFER.includes(app.status) && (
-            <Button icon="FileCheck" onClick={() => setModal('offer')}>{offer ? 'Edit offer' : 'Prepare offer'}</Button>
+            <Button icon="FileCheck" onClick={() => setModal('offer')}>{offer ? 'Update offer' : 'Record extended offer'}</Button>
           )}
           {app.status === APP_STATUS.OFFER_ISSUED && offer && (
-            <Button icon="CheckCircle2" onClick={() => act(() => confirmOfferAccepted(offer.id), 'Offer acceptance confirmed — handed over to HR.')}>
-              Confirm offer accepted
-            </Button>
+            <>
+              <Button icon="CheckCircle2" onClick={() => act(() => confirmOfferAccepted(offer.id), 'Offer acceptance confirmed — handed over to HR.')}>
+                Confirm accepted
+              </Button>
+              <Button variant="ghost" icon="XCircle" onClick={() => act(() => declineOffer(offer.id), 'Marked as declined.')}>
+                Mark declined
+              </Button>
+            </>
           )}
           <a className="ta-btn ta-btn--ghost" href={`mailto:${p.email}`}><Icon name="Mail" size={15} /> Contact</a>
         </div>
@@ -205,7 +210,14 @@ export default function TACandidateDetailPage() {
                         <Tag tone={m.tone === 'info' ? 'blue' : m.tone === 'success' ? 'green' : m.tone === 'error' ? 'red' : m.tone === 'warning' ? 'amber' : 'grey'}>{m.label}</Tag>
                       </div>
                       <div className="ta-cell-sub">{formatDate(iv.date)} at {iv.time} · {iv.mode} · {iv.interviewer}</div>
-                      {iv.comments && iv.status !== ROUND_STATUS.SCHEDULED && <div className="ta-cell-sub" style={{ marginTop: 4 }}>Feedback: {iv.comments}</div>}
+                      {iv.comments && iv.status !== ROUND_STATUS.SCHEDULED && (
+                        <div className="ta-cell-sub ta-remark" style={{ marginTop: 4 }}>
+                          Remarks: {iv.comments}
+                          <span className={`ta-remark__tag ta-remark__tag--${iv.shareComments ? 'shared' : 'internal'}`}>
+                            {iv.shareComments ? 'Shared with candidate' : 'Internal only'}
+                          </span>
+                        </div>
+                      )}
                       {iv.status === ROUND_STATUS.SCHEDULED && (
                         <div style={{ marginTop: 8 }}>
                           <Button variant="ghost" icon="ClipboardCheck" onClick={() => setResultFor(iv)}>Record result</Button>
@@ -254,14 +266,13 @@ export default function TACandidateDetailPage() {
           )}
 
           {offer && (
-            <Card title="Offer" action={<Tag tone={{ neutral: 'grey', warning: 'amber', info: 'blue', success: 'green', error: 'red' }[OFFER_STATUS_META[offer.status].tone] || 'grey'}>{OFFER_STATUS_META[offer.status].label}</Tag>}>
+            <Card title="Extended offer" action={<Tag tone={{ neutral: 'grey', warning: 'amber', info: 'blue', success: 'green', error: 'red' }[OFFER_STATUS_META[offer.status].tone] || 'grey'}>{OFFER_STATUS_META[offer.status].label}</Tag>}>
+              <p className="ta-cell-sub" style={{ marginBottom: 12 }}>The offer letter is prepared and sent outside the app. These are the details on record.</p>
               <div className="ta-info">
-                <Info label="Job title" value={offer.jobTitle} />
+                <Info label="Position" value={offer.jobTitle} />
                 <Info label="Department" value={offer.department} />
-                <Info label="Joining date" value={formatDate(offer.joiningDate)} />
-                <Info label="Compensation" value={formatCurrencyINR(offer.compensation)} />
+                <Info label="Expected joining date" value={formatDate(offer.joiningDate)} />
                 <Info label="Reporting manager" value={offer.reportingManager} />
-                <Info label="Probation" value={offer.probationPeriod} />
               </div>
             </Card>
           )}
@@ -325,10 +336,10 @@ export default function TACandidateDetailPage() {
       {modal === 'offer' && (
         <OfferDrawer
           open onClose={() => setModal(null)} application={app} job={job} existingOffer={offer}
-          onSave={(payload, submitForApproval) => {
-            saveOffer(app.id, payload, submitForApproval);
+          onSave={(payload) => {
+            saveOffer(app.id, payload, true);
             setModal(null);
-            toast.success(submitForApproval ? 'Offer submitted for HR approval.' : 'Offer draft saved.');
+            toast.success('Extended offer recorded — awaiting the candidate\'s response.');
           }}
         />
       )}

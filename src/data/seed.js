@@ -214,6 +214,7 @@ function buildSyntheticCandidates(startSeq) {
         status: status === APP_STATUS.INTERVIEW_FAILED ? ROUND_STATUS.FAIL : done ? ROUND_STATUS.PASS : ROUND_STATUS.SCHEDULED,
         result: status === APP_STATUS.INTERVIEW_FAILED ? ROUND_STATUS.FAIL : done ? ROUND_STATUS.PASS : null,
         comments: done ? 'Solid problem solving.' : '',
+        shareComments: false,
       });
     }
 
@@ -365,6 +366,7 @@ export function buildSeed() {
       status: ROUND_STATUS.PASS,
       result: 'PASS',
       comments: 'Strong communication, aligned with role expectations.',
+      shareComments: true,
     },
     {
       id: uid('int'),

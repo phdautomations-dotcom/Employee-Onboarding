@@ -1,9 +1,9 @@
 {
   "app": "recruitment-onboarding-frontend",
-  "generatedAt": "2026-09-09T10:20:58.627Z",
+  "generatedAt": "2026-09-09T10:34:17.472Z",
   "stats": {
     "files": 111,
-    "edges": 381,
+    "edges": 380,
     "layers": {
       "entry": 2,
       "component": 51,
@@ -435,7 +435,6 @@
         "src/components/common/Icon.jsx"
       ],
       "importedBy": [
-        "src/components/workflow/OfferDrawer.jsx",
         "src/pages/shared/ProfilePage.jsx",
         "src/pages/shared/SettingsPage.jsx"
       ]
@@ -1549,7 +1548,7 @@
       "name": "InterviewResultModal.jsx",
       "dir": "src/components/workflow",
       "layer": "component",
-      "loc": 61,
+      "loc": 66,
       "summary": "",
       "exports": [
         "default (InterviewResultModal)"
@@ -1573,7 +1572,7 @@
       "name": "OfferDrawer.jsx",
       "dir": "src/components/workflow",
       "layer": "component",
-      "loc": 118,
+      "loc": 66,
       "summary": "",
       "exports": [
         "default (OfferDrawer)"
@@ -1585,7 +1584,6 @@
         "src/components/common/Modal.jsx",
         "src/components/common/Button.jsx",
         "src/components/common/Field.jsx",
-        "src/components/common/Card.jsx",
         "src/utils/format.js"
       ],
       "importedBy": [
@@ -1754,7 +1752,7 @@
       "name": "AppContext.jsx",
       "dir": "src/context",
       "layer": "context",
-      "loc": 746,
+      "loc": 748,
       "summary": "",
       "exports": [
         "AppProvider",
@@ -1863,7 +1861,7 @@
       "name": "seed.js",
       "dir": "src/data",
       "layer": "data",
-      "loc": 739,
+      "loc": 741,
       "summary": "",
       "exports": [
         "SEED_VERSION",
@@ -2222,7 +2220,7 @@
       "name": "MyApplicationPage.jsx",
       "dir": "src/pages/candidate",
       "layer": "page",
-      "loc": 491,
+      "loc": 490,
       "summary": "",
       "exports": [
         "default (MyApplicationPage)"
@@ -2543,7 +2541,7 @@
       "name": "TACandidateDetailPage.jsx",
       "dir": "src/pages/talentAcquisition",
       "layer": "page",
-      "loc": 338,
+      "loc": 349,
       "summary": "",
       "exports": [
         "default (TACandidateDetailPage)"
@@ -2608,7 +2606,7 @@
       "name": "TADashboard.jsx",
       "dir": "src/pages/talentAcquisition",
       "layer": "page",
-      "loc": 283,
+      "loc": 286,
       "summary": "",
       "exports": [
         "default (TADashboard)"
@@ -2826,7 +2824,7 @@
       "name": "ta.css",
       "dir": "src/styles",
       "layer": "style",
-      "loc": 1440,
+      "loc": 1461,
       "summary": "",
       "exports": [],
       "externals": [],
@@ -3388,10 +3386,6 @@
     {
       "source": "src/components/workflow/OfferDrawer.jsx",
       "target": "src/components/common/Field.jsx"
-    },
-    {
-      "source": "src/components/workflow/OfferDrawer.jsx",
-      "target": "src/components/common/Card.jsx"
     },
     {
       "source": "src/components/workflow/OfferDrawer.jsx",

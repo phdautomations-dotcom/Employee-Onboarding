@@ -8,7 +8,7 @@ import EmptyState from '../../components/ta/EmptyState.jsx';
 import { Field, Input } from '../../components/common/Field.jsx';
 import { useApp } from '../../context/AppContext.jsx';
 import { useToast } from '../../context/ToastContext.jsx';
-import { initialsOf, formatDate, formatCurrencyINR } from '../../utils/format.js';
+import { initialsOf, formatDate } from '../../utils/format.js';
 import {
   APP_STATUS,
   stageIndexForStatus,
@@ -333,8 +333,8 @@ export default function MyApplicationPage() {
                       {iv.mode === 'Online' && iv.link && iv.status === ROUND_STATUS.SCHEDULED && (
                         <a href={iv.link} target="_blank" rel="noreferrer" className="ta-link" style={{ marginTop: 4 }}>Join meeting link</a>
                       )}
-                      {iv.comments && iv.status !== ROUND_STATUS.SCHEDULED && (
-                        <div className="ta-cell-sub" style={{ marginTop: 4 }}>Feedback: {iv.comments}</div>
+                      {iv.comments && iv.shareComments && iv.status !== ROUND_STATUS.SCHEDULED && (
+                        <div className="ta-cell-sub" style={{ marginTop: 4 }}>Feedback from the panel: {iv.comments}</div>
                       )}
                     </div>
                   );
@@ -419,16 +419,15 @@ export default function MyApplicationPage() {
               action={<Tag tone={toneMap[OFFER_STATUS_META[offer.status].tone] || 'grey'}>{OFFER_STATUS_META[offer.status].label}</Tag>}
             >
               <p className="ta-cell-mute" style={{ lineHeight: 1.7, marginBottom: 14 }}>
-                Dear {offer.candidateName}, we are pleased to offer you the position of <strong>{offer.jobTitle}</strong> in
-                the {offer.department} team at Ccentrik, based in {offer.location}.
+                We are pleased to offer you the position of <strong>{offer.jobTitle}</strong>
+                {offer.department ? ` in the ${offer.department} team` : ''} at Ccentrik.
+                The full offer letter has been sent to your email.
               </p>
               <div className="ta-info" style={{ marginBottom: 14 }}>
-                <div className="ta-info__item"><span className="ta-info__label">Joining date</span><span className="ta-info__value">{formatDate(offer.joiningDate)}</span></div>
-                <div className="ta-info__item"><span className="ta-info__label">Employment type</span><span className="ta-info__value">{offer.employmentType}</span></div>
-                <div className="ta-info__item"><span className="ta-info__label">Annual compensation</span><span className="ta-info__value">{formatCurrencyINR(offer.compensation)}</span></div>
-                <div className="ta-info__item"><span className="ta-info__label">Reporting manager</span><span className="ta-info__value">{offer.reportingManager}</span></div>
-                <div className="ta-info__item"><span className="ta-info__label">Probation period</span><span className="ta-info__value">{offer.probationPeriod}</span></div>
-                <div className="ta-info__item"><span className="ta-info__label">Benefits</span><span className="ta-info__value">{offer.benefits}</span></div>
+                <div className="ta-info__item"><span className="ta-info__label">Expected joining date</span><span className="ta-info__value">{formatDate(offer.joiningDate)}</span></div>
+                {offer.reportingManager && (
+                  <div className="ta-info__item"><span className="ta-info__label">Reporting manager</span><span className="ta-info__value">{offer.reportingManager}</span></div>
+                )}
               </div>
               {offer.status === OFFER_STATUS.ISSUED && (
                 <>

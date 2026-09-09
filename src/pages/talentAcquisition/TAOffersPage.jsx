@@ -65,7 +65,7 @@ export default function TAOffersPage() {
                     <div className="text-xs text-secondary">{a.candidateId} · {a.jobTitle} · all documents verified</div>
                   </div>
                   <Button size="sm" icon="FileCheck" onClick={() => setPrepareApp(a)}>
-                    Prepare Offer
+                    Record extended offer
                   </Button>
                 </div>
               </div>
@@ -129,10 +129,10 @@ export default function TAOffersPage() {
           application={prepareApp}
           job={prepareApp.jobId ? findJob(prepareApp.jobId) : null}
           existingOffer={null}
-          onSave={(payload, submit) => {
-            saveOffer(prepareApp.id, payload, submit);
+          onSave={(payload) => {
+            saveOffer(prepareApp.id, payload, true);
             setPrepareApp(null);
-            toast.success(submit ? 'Offer submitted for HR approval.' : 'Offer draft saved.');
+            toast.success('Extended offer recorded — awaiting the candidate\'s response.');
           }}
         />
       )}

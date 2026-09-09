@@ -74,6 +74,7 @@ export default function TADashboard() {
   const { data, jobs } = useApp();
   const user = DEMO_USERS[ROLES.TA];
   const [period, setPeriod] = useState('all');
+  const [updatesOpen, setUpdatesOpen] = useState(true);
 
   // ----- DATA -----
   const apps = data.applications || [];
@@ -180,15 +181,17 @@ export default function TADashboard() {
 
       {candidateUpdates.length > 0 && (
         <section className="ta-updates">
-          <div className="ta-updates__head">
+          <button type="button" className="ta-updates__head" onClick={() => setUpdatesOpen((v) => !v)} aria-expanded={updatesOpen}>
             <span className="ta-updates__lead">
-              <Icon name="Bell" size={14} />
               <strong>Candidate updates</strong>
               <span className="ta-updates__count">{candidateUpdates.length}</span>
             </span>
-            <button className="ta-link" onClick={() => navigate('/ta/activity')}>View all</button>
-          </div>
-          <div className="ta-updates__list">
+            <span className="ta-updates__toggle">
+              <span className="ta-link" role="link" onClick={(e) => { e.stopPropagation(); navigate('/ta/activity'); }}>View all</span>
+              <Icon name={updatesOpen ? 'ChevronUp' : 'ChevronDown'} size={16} />
+            </span>
+          </button>
+          <div className="ta-updates__list" hidden={!updatesOpen}>
             {candidateUpdates.map((u) => (
               <button key={u.id} type="button" className="ta-updates__row" onClick={() => navigate(`/ta/candidates/${u.candidateId}`)}>
                 <span className="ta-updates__icon"><Icon name={UPDATE_ICON[u.title] || 'Bell'} size={14} /></span>
