@@ -3,17 +3,18 @@ import { useNavigate } from 'react-router-dom';
 import Icon from '../components/common/Icon.jsx';
 import { useApp } from '../context/AppContext.jsx';
 import { ROLES, ROLE_META } from '../constants/roles.js';
-import mark from '../assets/centrik-logo-white.png';
+import markWhite from '../assets/centrik-logo-white.png';
+import markColor from '../assets/ccentrik-logo.png';
 
 const DOMAIN = '@ccentrik.com';
 
 const JOURNEY = [
-  { label: 'Application', icon: 'FileText' },
+  { label: 'Applied', icon: 'FileText' },
   { label: 'Screening', icon: 'Eye' },
   { label: 'Interview', icon: 'CalendarDays' },
   { label: 'Offer', icon: 'FileCheck' },
   { label: 'Onboarding', icon: 'ClipboardCheck' },
-  { label: 'Active employee', icon: 'UserRoundCheck' },
+  { label: 'Employee', icon: 'UserRoundCheck' },
 ];
 
 /* No backend — infer the internal role from the username so the customer isn't
@@ -54,7 +55,7 @@ export default function LoginPage() {
   return (
     <div className="wsauth">
       <aside className="wsauth__aside">
-        <img className="wsauth__logo wsauth__logo--lg" src={mark} alt="Ccentrik" />
+        <img className="wsauth__logo wsauth__logo--lg" src={markWhite} alt="Ccentrik" />
 
         <div className="wsauth__pitch">
           <h1>From applicant to employee,<br /><span>one continuous workspace.</span></h1>
@@ -65,7 +66,7 @@ export default function LoginPage() {
           <span className="wsjourney__rail"><span className="wsjourney__pulse" /></span>
           {JOURNEY.map((s, i) => (
             <li className="wsjourney__step" key={s.label} style={{ '--i': i }}>
-              <span className="wsjourney__node"><Icon name={s.icon} size={14} /></span>
+              <span className="wsjourney__node"><Icon name={s.icon} size={20} /></span>
               <span className="wsjourney__label">{s.label}</span>
             </li>
           ))}
@@ -74,7 +75,7 @@ export default function LoginPage() {
 
       <main className="wsauth__main">
         <form className="wsauth__panel" onSubmit={submit} noValidate>
-          <img className="wsauth__logo wsauth__logo--sm" src={mark} alt="Ccentrik" />
+          <img className="wsauth__logo wsauth__logo--sm" src={markColor} alt="Ccentrik" />
           <h2>Welcome back</h2>
           <p className="wsauth__lede">Log in to Ccentrik Workspace</p>
 
