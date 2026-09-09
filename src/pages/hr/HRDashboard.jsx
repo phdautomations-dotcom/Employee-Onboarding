@@ -4,11 +4,12 @@ import TAHeader from '../../components/ta/TAHeader.jsx';
 import Card from '../../components/ta/Card.jsx';
 import KpiCard from '../../components/ta/KpiCard.jsx';
 import DonutChart from '../../components/ta/DonutChart.jsx';
+import StageJourney from '../../components/ta/StageJourney.jsx';
 import Tag from '../../components/ta/Tag.jsx';
 import Icon from '../../components/common/Icon.jsx';
 import { useApp } from '../../context/AppContext.jsx';
 import { DEMO_USERS, ROLES } from '../../constants/roles.js';
-import { APP_STATUS, hrStageRank, hrStageBadge } from '../../constants/statuses.js';
+import { APP_STATUS, hrStageRank } from '../../constants/statuses.js';
 import { timeAgo, formatDate } from '../../utils/format.js';
 
 const HANDOVER_PREVIEW = 3;
@@ -75,30 +76,30 @@ export default function HRDashboard() {
     },
   ];
 
-  // ===== Onboarding Aging — how long each candidate has been waiting for the
-  // next step (documents from them, or verification from HR). The "over 2 weeks"
-  // group is the chase-now list. =====
-  const WAITING_STATUSES = [APP_STATUS.ONBOARDING_PENDING, APP_STATUS.HR_VERIFICATION, APP_STATUS.HR_VERIFICATION_REJECTED];
-  const daysSince = (d) => Math.floor((Date.now() - new Date(d)) / 86400000);
-  const waiting = apps
-    .filter((a) => WAITING_STATUSES.includes(a.status))
-    .map((a) => {
-      const acts = activitiesFor(a.id);
-      const last = acts.reduce((m, x) => (x.at > m ? x.at : m), a.submittedAt);
-      return {
-        a,
-        name: `${a.personal.firstName} ${a.personal.lastName}`,
-        days: daysSince(last),
-        stage: hrStageBadge(a.status).label,
-        waitingOn: a.status === APP_STATUS.ONBOARDING_PENDING ? 'candidate' : 'HR review',
-      };
-    })
-    .sort((x, y) => y.days - x.days);
-  const ageBuckets = [
-    { label: 'Under a week', tone: 'green', to: '/hr/candidates?stage=onboarding', items: waiting.filter((w) => w.days < 7) },
-    { label: '1–2 weeks', tone: 'amber', to: '/hr/candidates?stage=verification', items: waiting.filter((w) => w.days >= 7 && w.days < 14) },
-    { label: 'Over 2 weeks', tone: 'red', to: '/hr/candidates?stage=verification', items: waiting.filter((w) => w.days >= 14) },
+  // ===== Onboarding Stage-wise Progress — four cumulative stages from accepted
+  // offer to onboarded. Each stage is a subset of the one before, so counts
+  // only fall; the bar is the share of the whole accepted cohort still at this
+  // stage or beyond, and every node links to the matching candidate filter. =====
+  const STAGE_DEFS = [
+    { label: 'Offer Accepted', icon: 'FileCheck', tone: 'violet', to: '/hr/candidates?stage=onboarding', pred: () => true },
+    { label: 'Forms Submitted', icon: 'Files', tone: 'blue', to: '/hr/candidates?stage=verification', pred: (a) => !!a.onboarding || hrStageRank(a.status) >= 3 },
+    { label: 'Verified & Scheduled', icon: 'CalendarCheck', tone: 'amber', to: '/hr/candidates?stage=joining', pred: (a) => hrStageRank(a.status) >= 4 },
+    { label: 'Onboarded', icon: 'UserRoundCheck', tone: 'green', to: '/hr/candidates?stage=onboarded', pred: (a) => hrStageRank(a.status) >= 5 },
   ];
+  const base = accepted.length || 1;
+  let stagePrev = accepted.length;
+  const journey = STAGE_DEFS.map((s) => {
+    const count = accepted.filter(s.pred).length;
+    const drop = stagePrev - count;
+    stagePrev = count;
+    return {
+      label: s.label, icon: s.icon, tone: s.tone, count,
+      pct: Math.round((count / base) * 100), drop,
+      onClick: () => navigate(s.to),
+    };
+  });
+  // Where onboarding is most held up right now.
+  const insightCount = pendingVerification.length;
 
   // ===== Onboarding by Department — which teams the incoming hires join, so HR
   // can line up equipment, access and inductions per team. =====
@@ -240,53 +241,44 @@ export default function HRDashboard() {
         </Card>
       </div>
 
-      <div className="ta-bento">
-        <Card
-          title="Onboarding Aging"
-          action={<span className="ta-cell-sub">{waiting.length} waiting on a next step</span>}
-        >
-          {waiting.length === 0 ? (
-            <p className="ta-cell-mute">Nothing is waiting — every onboarding candidate moved recently.</p>
-          ) : (
-            <div className="hr-aging">
-              {ageBuckets.map((b) => (
-                <button
-                  key={b.label}
-                  type="button"
-                  className="hr-aging__row"
-                  onClick={() => navigate(b.to)}
-                  disabled={b.items.length === 0}
-                >
-                  <span className={`hr-aging__dot hr-aging__dot--${b.tone}`} />
-                  <span className="hr-aging__label">{b.label}</span>
-                  <span className="hr-aging__count">{b.items.length}</span>
-                  <span className="ta-cell-sub hr-aging__names">
-                    {b.items.slice(0, 3).map((x) => x.name).join(', ') || '—'}
-                    {b.items.length > 3 ? ` +${b.items.length - 3}` : ''}
-                  </span>
-                </button>
-              ))}
-              {waiting[0].days >= 10 && (
-                <p className="hr-insight">
-                  <Icon name="AlertTriangle" size={13} />
-                  Oldest: <strong>{waiting[0].name}</strong> — {waiting[0].days} days waiting on {waiting[0].waitingOn}.
-                </p>
+      <Card
+        title="Onboarding Stage-wise Progress"
+        action={<button className="ta-link" onClick={() => navigate('/hr/candidates?stage=onboarding')}>View details →</button>}
+        bodyStyle={{ justifyContent: 'flex-start' }}
+      >
+        {accepted.length === 0 ? (
+          <p className="ta-cell-mute">No candidates are in the onboarding journey yet.</p>
+        ) : (
+          <>
+            <p className="ta-cell-sub" style={{ marginBottom: 14 }}>
+              {accepted.length} candidate{accepted.length === 1 ? '' : 's'} in the onboarding journey · {journey[journey.length - 1].count} onboarded
+            </p>
+            <StageJourney stages={journey} />
+            <p className="hr-insight">
+              <Icon name="Lightbulb" size={13} />
+              {insightCount > 0 ? (
+                <>
+                  <strong>{insightCount}</strong> candidate{insightCount === 1 ? ' is' : 's are'} currently pending document verification.
+                </>
+              ) : (
+                <>No candidates are stuck on document verification right now.</>
               )}
-            </div>
-          )}
-        </Card>
+              <button className="ta-link" onClick={() => navigate('/hr/candidates?stage=verification')}>View details →</button>
+            </p>
+          </>
+        )}
+      </Card>
 
-        <Card
-          title="Onboarding by Department"
-          action={<span className="ta-cell-sub">{notJoined.length} joining across {deptSlices.length} team{deptSlices.length === 1 ? '' : 's'}</span>}
-        >
-          {notJoined.length === 0 ? (
-            <p className="ta-cell-mute">No one is currently in onboarding.</p>
-          ) : (
-            <DonutChart slices={deptSlices} caption="joining" onSliceClick={() => navigate('/hr/candidates?stage=onboarding')} />
-          )}
-        </Card>
-      </div>
+      <Card
+        title="Onboarding by Department"
+        action={<span className="ta-cell-sub">{notJoined.length} joining across {deptSlices.length} team{deptSlices.length === 1 ? '' : 's'}</span>}
+      >
+        {notJoined.length === 0 ? (
+          <p className="ta-cell-mute">No one is currently in onboarding.</p>
+        ) : (
+          <DonutChart slices={deptSlices} caption="joining" onSliceClick={() => navigate('/hr/candidates?stage=onboarding')} />
+        )}
+      </Card>
     </>
   );
 }
