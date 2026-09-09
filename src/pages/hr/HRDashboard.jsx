@@ -4,7 +4,7 @@ import TAHeader from '../../components/ta/TAHeader.jsx';
 import Card from '../../components/ta/Card.jsx';
 import KpiCard from '../../components/ta/KpiCard.jsx';
 import DonutChart from '../../components/ta/DonutChart.jsx';
-import StageJourney from '../../components/ta/StageJourney.jsx';
+import LifecycleFunnel from '../../components/ta/LifecycleFunnel.jsx';
 import Tag from '../../components/ta/Tag.jsx';
 import Icon from '../../components/common/Icon.jsx';
 import { useApp } from '../../context/AppContext.jsx';
@@ -76,31 +76,59 @@ export default function HRDashboard() {
     },
   ];
 
-  // ===== Onboarding Stage-wise Progress — seven milestones from accepted offer
-  // to onboarded. Each stage is a subset of the one before, so counts only fall;
-  // the bar / % is the share of the accepted cohort still at that stage or
-  // beyond, and every node links to the matching candidate filter. =====
-  const handedOver = (a) => activitiesFor(a.id).some((x) => x.title === 'Handed Over to HR');
-  const STAGE_DEFS = [
-    { label: 'Accepted Offer', icon: 'FileCheck', tone: 'violet', to: '/hr/candidates?stage=onboarding', pred: () => true },
-    { label: 'HR Handover', icon: 'Send', tone: 'violet', to: '/hr/candidates?stage=onboarding', pred: handedOver },
-    { label: 'Onboarding Started', icon: 'ClipboardList', tone: 'blue', to: '/hr/candidates?stage=onboarding', pred: (a) => a.status !== APP_STATUS.OFFER_ACCEPTED },
-    { label: 'Documents Submitted', icon: 'Files', tone: 'blue', to: '/hr/candidates?stage=verification', pred: (a) => !!a.onboarding || hrStageRank(a.status) >= 3 },
-    { label: 'Documents Verified', icon: 'CheckCircle2', tone: 'teal', to: '/hr/candidates?stage=verification', pred: (a) => hrStageRank(a.status) >= 4 },
-    { label: 'Ready to Join', icon: 'CalendarCheck', tone: 'amber', to: '/hr/candidates?stage=joining', pred: (a) => hrStageRank(a.status) >= 4 && !!offerFor(a.id)?.joiningDate },
-    { label: 'Onboarded', icon: 'UserRoundCheck', tone: 'green', to: '/hr/candidates?stage=onboarded', pred: (a) => hrStageRank(a.status) >= 5 },
+  // ===== Employee Lifecycle Funnel — the post-recruitment journey only. `count`
+  // is how many have reached that phase (cumulative, so it only falls); `action`
+  // is the live HR queue at that phase. The phase with the largest queue is
+  // flagged as the bottleneck. =====
+  const rankOf = (a) => hrStageRank(a.status);
+  const daysSinceJoin = (e) => Math.floor((Date.now() - new Date(e.joiningDate)) / 86400000);
+  const onboardingEmps = employees.filter((e) => daysSinceJoin(e) <= 30);
+  const activeEmps = employees.filter((e) => daysSinceJoin(e) > 30);
+  const docsReturned = apps.filter((a) => a.status === APP_STATUS.HR_VERIFICATION_REJECTED).length;
+
+  const LC_DEFS = [
+    {
+      label: 'New Hire', to: '/hr/candidates?stage=onboarding',
+      count: accepted.length,
+      action: handovers.length,
+      note: handovers.length ? `${handovers.length} awaiting kickoff` : '',
+    },
+    {
+      label: 'Pre-Joining', to: '/hr/candidates?stage=verification',
+      count: accepted.filter((a) => rankOf(a) >= 3).length,
+      action: pendingVerification.length + docsReturned,
+      note: pendingVerification.length ? `${pendingVerification.length} to review` : '',
+    },
+    {
+      label: 'Joining', to: '/hr/candidates?stage=joining',
+      count: accepted.filter((a) => rankOf(a) >= 4).length,
+      action: joiningThisWeek,
+      note: joiningThisWeek ? `${joiningThisWeek} joining this week` : `${joiningPending} scheduled`,
+    },
+    {
+      label: 'Onboarding', to: '/hr/candidates?stage=onboarded',
+      count: employees.length,
+      action: 0,
+      note: onboardingEmps.length ? `${onboardingEmps.length} in first-month ramp` : '',
+    },
+    {
+      label: 'Active Employee', to: '/hr/employees',
+      count: activeEmps.length,
+      action: 0,
+      note: '',
+    },
   ];
-  const base = accepted.length || 1;
-  const journey = STAGE_DEFS.map((s) => {
-    const count = accepted.filter(s.pred).length;
-    return {
-      label: s.label, icon: s.icon, tone: s.tone, count,
-      pct: Math.round((count / base) * 100),
-      onClick: () => navigate(s.to),
-    };
-  });
-  // Where onboarding is most held up right now.
-  const insightCount = pendingVerification.length;
+  const lcBase = accepted.length || 1;
+  const lcBottleneck = LC_DEFS.reduce((best, s, i) => (s.action > LC_DEFS[best].action ? i : best), 0);
+  const lifecycle = LC_DEFS.map((s, i) => ({
+    label: s.label,
+    count: s.count,
+    pct: Math.round((s.count / lcBase) * 100),
+    note: s.note,
+    attention: i === lcBottleneck && s.action > 0,
+    onClick: () => navigate(s.to),
+  }));
+  const bottleneck = LC_DEFS[lcBottleneck];
 
   // ===== Onboarding by Department — which teams the incoming hires join, so HR
   // can line up equipment, access and inductions per team. =====
@@ -244,30 +272,23 @@ export default function HRDashboard() {
 
       <div className="ta-bento">
       <Card
-        title="Onboarding Stage-wise Progress"
+        title="Employee Lifecycle Funnel"
         action={<button className="ta-link" onClick={() => navigate('/hr/candidates?stage=onboarding')}>View details →</button>}
         bodyStyle={{ justifyContent: 'flex-start' }}
       >
         {accepted.length === 0 ? (
-          <p className="ta-cell-mute">No candidates are in the onboarding journey yet.</p>
+          <p className="ta-cell-mute">No employees are in the post-recruitment lifecycle yet.</p>
         ) : (
           <>
-            <p className="ta-cell-sub" style={{ marginBottom: 14 }}>
-              {accepted.length} candidate{accepted.length === 1 ? '' : 's'} in the onboarding journey · {journey[journey.length - 1].count} onboarded
+            <p className="ta-cell-sub" style={{ marginBottom: 10 }}>
+              {accepted.length} in the lifecycle · {accepted.length - employees.length} still onboarding
             </p>
-            <StageJourney stages={journey} />
-            <div className="hr-insight">
-              <span className="hr-insight__icon"><Icon name="Lightbulb" size={15} /></span>
-              <span className="hr-insight__body">
-                <strong>Key Insight</strong>
-                <span>
-                  {insightCount > 0
-                    ? `${insightCount} candidate${insightCount === 1 ? ' is' : 's are'} currently pending document verification.`
-                    : 'No candidates are stuck on document verification right now.'}
-                </span>
-              </span>
-              <button className="ta-link" onClick={() => navigate('/hr/candidates?stage=verification')}>View details →</button>
-            </div>
+            <LifecycleFunnel stages={lifecycle} />
+            <p className="ta-lc__foot">
+              <Icon name="AlertTriangle" size={12} />
+              <strong>{bottleneck.label}</strong> needs attention — {bottleneck.note}.
+              <button className="ta-link" onClick={() => navigate(bottleneck.to)}>Resolve →</button>
+            </p>
           </>
         )}
       </Card>
