@@ -27,6 +27,7 @@ const WHEN = {
 function eventMeta(title = '') {
   const t = title.toLowerCase();
   if (t.includes('reject') || t.includes('return') || t.includes('fail')) return { icon: 'XCircle', tone: 'red' };
+  if (t.includes('handed over') || t.includes('handover')) return { icon: 'Send', tone: 'violet' };
   if (t.includes('verif') || t.includes('accepted') || t.includes('approved') || t.includes('passed') || t.includes('completed')) return { icon: 'CheckCircle2', tone: 'green' };
   if (t.includes('joining') || t.includes('employee') || t.includes('onboarded')) return { icon: 'Rocket', tone: 'violet' };
   if (t.includes('offer')) return { icon: 'FileCheck', tone: 'blue' };

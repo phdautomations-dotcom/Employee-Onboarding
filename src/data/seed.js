@@ -221,6 +221,11 @@ function buildSyntheticCandidates(startSeq) {
         issuedAt: createdAt,
         decisionAt: offerStatus === OFFER_STATUS.ACCEPTED ? createdAt : null,
       });
+      if (offerStatus === OFFER_STATUS.ACCEPTED) {
+        const acceptedAt = new Date(Date.now() - Math.max(0, daysAgo - 18) * 86400000).toISOString();
+        out.activities.push({ id: uid('act'), applicationId: app.id, type: 'offer', title: 'Offer Accepted', description: 'Candidate accepted the offer.', at: acceptedAt, actor: `${first} ${last}` });
+        out.activities.push({ id: uid('act'), applicationId: app.id, type: 'onboarding', title: 'Handed Over to HR', description: `${first} ${last} accepted the offer for ${app.jobTitle} — HR now owns onboarding.`, at: acceptedAt, actor: 'System' });
+      }
     }
 
     // Sample onboarding-form payload for anyone past the "fill the forms" step,
@@ -686,6 +691,20 @@ export function buildSeed() {
     { id: uid('ntf'), role: 'hr', title: 'Onboarding forms submitted', body: 'Sameer Khan submitted onboarding details for verification.', at: '2026-08-11T10:00:00', read: false },
     { id: uid('ntf'), role: 'candidate', title: 'You have an offer', body: 'Divya, your offer for QA Automation Engineer has been issued.', at: '2026-07-30T09:00:00', read: false },
   ];
+
+  // TA → HR handover: HR is notified whenever a candidate accepts their offer.
+  applications
+    .filter((a) => a.status === APP_STATUS.ONBOARDING_PENDING)
+    .forEach((a) => {
+      notifications.unshift({
+        id: uid('ntf'),
+        role: 'hr',
+        title: 'New onboarding handover',
+        body: `${a.personal.firstName} ${a.personal.lastName} accepted their offer for ${a.jobTitle} — ready to start HR onboarding.`,
+        at: offers.find((o) => o.applicationId === a.id)?.decisionAt || new Date(Date.now() - 2 * 86400000).toISOString(),
+        read: false,
+      });
+    });
 
   return {
     applications,

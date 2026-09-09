@@ -398,8 +398,13 @@ export function AppProvider({ children }) {
         offer.decisionAt = new Date().toISOString();
         const app = draft.applications.find((a) => a.id === offer.applicationId);
         if (app) app.status = APP_STATUS.ONBOARDING_PENDING;
+        const role = app?.jobTitle || 'a role';
         logActivity(draft, offer.applicationId, 'offer', 'Offer Accepted', 'Candidate accepted the offer.', 'Candidate');
+        // TA → HR handover: both sides are notified when the offer is accepted.
+        logActivity(draft, offer.applicationId, 'onboarding', 'Handed Over to HR', `${offer.candidateName} accepted the offer for ${role} — HR now owns onboarding.`, 'System');
         notify(draft, ROLES.CANDIDATE, 'Almost there', 'Please fill in your onboarding details.');
+        notify(draft, ROLES.TA, 'Offer accepted', `${offer.candidateName} accepted the offer for ${role}. Handed over to HR for onboarding.`);
+        notify(draft, ROLES.HR, 'New onboarding handover', `${offer.candidateName} accepted their offer for ${role} — ready to start HR onboarding.`);
       });
     },
     [mutate]
