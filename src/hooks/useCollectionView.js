@@ -23,6 +23,10 @@ export function useCollectionView(data, { searchFields = [], pageSize = 8, initi
     });
   };
 
+  // Callers pass a fresh `searchFields` array literal on every render; turn it
+  // into a stable string so this memo only recomputes when it truly changes.
+  const searchKey = searchFields.map((f) => (typeof f === 'function' ? f.name || 'fn' : f)).join('|');
+
   const filtered = useMemo(() => {
     let out = [...(data || [])];
     if (query.trim()) {

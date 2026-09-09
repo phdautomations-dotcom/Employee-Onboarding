@@ -132,12 +132,13 @@ export function stageBadgeForStatus(status) {
    the candidates table's stage filter, so clicking a funnel stage shows exactly
    the candidates counted in it. Each stage is cumulative ("reached this stage
    or further"), which keeps the funnel monotonically non-increasing. */
+/* HR onboarding stages, in workflow order — HR owns candidates only from
+   "offer accepted" onward. `rank` is cumulative — a stage filter matches
+   everyone who reached it or further. Labels match the HR dashboard funnel. */
 export const HR_FUNNEL_STAGES = [
-  { key: 'reached_hr', label: 'Reached HR', icon: 'Files', tone: 'blue', rank: 0 },
-  { key: 'offer_sent', label: 'Offer Sent', icon: 'FileCheck', tone: 'violet', rank: 1 },
-  { key: 'onboarding', label: 'Onboarding', icon: 'ClipboardList', tone: 'amber', rank: 2 },
-  { key: 'verification', label: 'Verification', icon: 'Eye', tone: 'amber', rank: 3 },
-  { key: 'joining', label: 'Joining', icon: 'Clock3', tone: 'teal', rank: 4 },
+  { key: 'onboarding', label: 'Offer Accepted', icon: 'FileCheck', tone: 'violet', rank: 2 },
+  { key: 'verification', label: 'Joining Documents', icon: 'Files', tone: 'blue', rank: 3 },
+  { key: 'joining', label: 'Documents Verified', icon: 'CheckCircle2', tone: 'amber', rank: 4 },
   { key: 'onboarded', label: 'Onboarded', icon: 'UserRoundCheck', tone: 'green', rank: 5 },
 ];
 
@@ -157,6 +158,15 @@ const HR_STAGE_RANK = {
    never matches any HR funnel stage. */
 export function hrStageRank(status) {
   return HR_STAGE_RANK[status] ?? -1;
+}
+
+/* The HR onboarding stage a candidate is sitting in right now — same wording
+   as the dashboard's "HR Onboarding Progress" funnel. For the HR tables. */
+export function hrStageBadge(status) {
+  if (status === APP_STATUS.HR_VERIFICATION_REJECTED) return { label: 'Documents returned', tone: 'red' };
+  const rank = hrStageRank(status);
+  const stage = HR_FUNNEL_STAGES.find((s) => s.rank === rank);
+  return stage ? { label: stage.label, tone: stage.tone } : { label: 'Awaiting offer', tone: 'grey' };
 }
 
 /* Interview round status */
@@ -181,9 +191,11 @@ export const DOC_STATUS = {
   UPLOADED: 'UPLOADED',
   VERIFIED: 'VERIFIED',
   REJECTED: 'REJECTED',
+  WAIVED: 'WAIVED', // candidate gave a reason for not providing it (non-mandatory docs only)
 };
 export const DOC_STATUS_META = {
   PENDING: { label: 'Pending Upload', tone: 'neutral', icon: 'Clock3' },
+  WAIVED: { label: 'Reason provided', tone: 'warning', icon: 'MessageSquare' },
   UPLOADED: { label: 'Under Verification', tone: 'warning', icon: 'Eye' },
   VERIFIED: { label: 'Verified', tone: 'success', icon: 'CheckCircle2' },
   REJECTED: { label: 'Rejected', tone: 'error', icon: 'XCircle' },
@@ -204,12 +216,16 @@ export const OFFER_STATUS_META = {
 };
 
 export const REQUIRED_DOCUMENTS = [
-  { key: 'gov_id', label: 'Government ID', required: true, category: 'Identity' },
-  { key: 'photograph', label: 'Photograph', required: true, category: 'Identity' },
-  { key: 'education_cert', label: 'Education Certificate', required: true, category: 'Education' },
-  { key: 'experience_cert', label: 'Experience Certificate', required: true, category: 'Employment' },
-  { key: 'address_proof', label: 'Address Proof', required: true, category: 'Address' },
+  // `mandatory` docs must be uploaded — they cannot be skipped with a reason.
+  { key: 'gov_id', label: 'Government ID', required: true, mandatory: true, category: 'Identity' },
+  { key: 'photograph', label: 'Photograph', required: true, mandatory: true, category: 'Identity' },
+  { key: 'education_cert', label: 'Education Certificate', required: true, mandatory: true, category: 'Education' },
+  { key: 'experience_cert', label: 'Experience Certificate', required: true, mandatory: false, category: 'Employment' },
+  { key: 'address_proof', label: 'Address Proof', required: true, mandatory: false, category: 'Address' },
 ];
+
+export const MANDATORY_DOC_KEYS = REQUIRED_DOCUMENTS.filter((d) => d.mandatory).map((d) => d.key);
+export const isDocMandatory = (key) => MANDATORY_DOC_KEYS.includes(key);
 
 export const DOC_CATEGORIES = ['Identity', 'Education', 'Employment', 'Address'];
 

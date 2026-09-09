@@ -2,7 +2,7 @@ export const JOBS = [
   {
     id: 'JOB-1024',
     title: 'SAP Consultant',
-    department: 'Enterprise Solutions',
+    department: 'SAP Functional',
     location: 'Bengaluru, India',
     workMode: 'Hybrid',
     employmentType: 'Full-time',
@@ -24,7 +24,7 @@ export const JOBS = [
   {
     id: 'JOB-1025',
     title: 'Senior Frontend Engineer',
-    department: 'Product Engineering',
+    department: 'SAP ABAP',
     location: 'Remote, India',
     workMode: 'Remote',
     employmentType: 'Full-time',
@@ -46,7 +46,7 @@ export const JOBS = [
   {
     id: 'JOB-1026',
     title: 'Talent Acquisition Partner',
-    department: 'People & Culture',
+    department: 'Talent Acquisition',
     location: 'Mumbai, India',
     workMode: 'On-site',
     employmentType: 'Full-time',
@@ -68,7 +68,7 @@ export const JOBS = [
   {
     id: 'JOB-1027',
     title: 'Backend Engineer (Node.js)',
-    department: 'Product Engineering',
+    department: 'SAP ABAP',
     location: 'Hyderabad, India',
     workMode: 'Hybrid',
     employmentType: 'Full-time',
@@ -88,7 +88,7 @@ export const JOBS = [
   {
     id: 'JOB-1028',
     title: 'Product Designer',
-    department: 'Design',
+    department: 'SAP Functional',
     location: 'Bengaluru, India',
     workMode: 'Hybrid',
     employmentType: 'Full-time',
@@ -108,7 +108,7 @@ export const JOBS = [
   {
     id: 'JOB-1029',
     title: 'Data Analyst',
-    department: 'Business Intelligence',
+    department: 'SAP Functional',
     location: 'Pune, India',
     workMode: 'On-site',
     employmentType: 'Full-time',
@@ -128,7 +128,7 @@ export const JOBS = [
   {
     id: 'JOB-1030',
     title: 'QA Automation Engineer',
-    department: 'Quality Engineering',
+    department: 'SAP ABAP',
     location: 'Remote, India',
     workMode: 'Remote',
     employmentType: 'Full-time',
@@ -148,7 +148,7 @@ export const JOBS = [
   {
     id: 'JOB-1031',
     title: 'DevOps Engineer',
-    department: 'Platform',
+    department: 'SAP ABAP',
     location: 'Bengaluru, India',
     workMode: 'Hybrid',
     employmentType: 'Full-time',
@@ -168,7 +168,7 @@ export const JOBS = [
   {
     id: 'JOB-1032',
     title: 'HR Operations Specialist',
-    department: 'People & Culture',
+    department: 'Human Resource',
     location: 'Mumbai, India',
     workMode: 'On-site',
     employmentType: 'Full-time',
@@ -188,7 +188,7 @@ export const JOBS = [
   {
     id: 'JOB-1033',
     title: 'Engineering Manager',
-    department: 'Product Engineering',
+    department: 'SAP ABAP',
     location: 'Bengaluru, India',
     workMode: 'Hybrid',
     employmentType: 'Full-time',
@@ -208,7 +208,7 @@ export const JOBS = [
   {
     id: 'JOB-1034',
     title: 'Business Analyst',
-    department: 'Enterprise Solutions',
+    department: 'Sales',
     location: 'Chennai, India',
     workMode: 'Hybrid',
     employmentType: 'Full-time',
@@ -228,7 +228,7 @@ export const JOBS = [
   {
     id: 'JOB-1035',
     title: 'Customer Success Manager',
-    department: 'Customer Success',
+    department: 'Sales',
     location: 'Remote, India',
     workMode: 'Remote',
     employmentType: 'Full-time',

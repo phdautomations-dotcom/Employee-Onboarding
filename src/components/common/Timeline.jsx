@@ -1,38 +1,49 @@
 import Icon from './Icon.jsx';
 import { formatDateTime } from '../../utils/format.js';
 
-const TYPE_ICON = {
-  application: 'FileText',
-  review: 'Eye',
-  approve: 'CheckCircle2',
-  return: 'RotateCcw',
-  reject: 'XCircle',
-  interview: 'CalendarDays',
-  documents: 'Files',
-  offer: 'FileCheck',
-  onboarding: 'UserRoundCheck',
+/* Icon + colour tone per activity type. */
+export const TYPE_META = {
+  application: { icon: 'FileText', tone: 'blue' },
+  review: { icon: 'Eye', tone: 'violet' },
+  approve: { icon: 'CheckCircle2', tone: 'green' },
+  return: { icon: 'RotateCcw', tone: 'amber' },
+  reject: { icon: 'XCircle', tone: 'red' },
+  interview: { icon: 'CalendarDays', tone: 'violet' },
+  documents: { icon: 'Files', tone: 'teal' },
+  offer: { icon: 'FileCheck', tone: 'blue' },
+  onboarding: { icon: 'UserRoundCheck', tone: 'green' },
 };
 
-export function ActivityTimeline({ items }) {
+export function ActivityTimeline({ items, onSelect }) {
   if (!items?.length) {
-    return <p className="text-secondary text-small">No activity recorded yet.</p>;
+    return <p className="ta-cell-mute">No activity recorded yet.</p>;
   }
   return (
-    <div className="timeline">
-      {items.map((it) => (
-        <div className="timeline__item" key={it.id}>
-          <div className="timeline__dot">
-            <Icon name={TYPE_ICON[it.type] || 'CircleDot'} size={16} />
-          </div>
-          <div className="timeline__content">
-            <div className="timeline__title">{it.title}</div>
-            {it.description && <div className="text-small text-secondary">{it.description}</div>}
-            <div className="timeline__meta">
-              {formatDateTime(it.at)} · {it.actor}
+    <div className="act-feed">
+      {items.map((it) => {
+        const m = TYPE_META[it.type] || { icon: 'CircleDot', tone: 'grey' };
+        const Row = onSelect ? 'button' : 'div';
+        return (
+          <Row
+            key={it.id}
+            type={onSelect ? 'button' : undefined}
+            className={`act-feed__item${onSelect ? ' act-feed__item--link' : ''}`}
+            onClick={onSelect ? () => onSelect(it) : undefined}
+          >
+            <span className={`act-feed__icon act-feed__icon--${m.tone}`}>
+              <Icon name={m.icon} size={14} />
+            </span>
+            <div className="act-feed__body">
+              <div className="act-feed__head">
+                <span className="act-feed__title">{it.title}</span>
+                <span className="act-feed__when">{formatDateTime(it.at)} · {it.actor}</span>
+              </div>
+              {it.description && <div className="act-feed__desc">{it.description}</div>}
             </div>
-          </div>
-        </div>
-      ))}
+            {onSelect && <Icon name="ArrowRight" size={14} className="act-feed__go" />}
+          </Row>
+        );
+      })}
     </div>
   );
 }

@@ -24,6 +24,6 @@ export const ROLE_META = {
 
 export const DEMO_USERS = {
   [ROLES.CANDIDATE]: { id: 'U-CAND', name: 'Guest Candidate', initials: 'GC' },
-  [ROLES.TA]: { id: 'U-TA-01', name: 'Priya Nair', initials: 'PN' },
-  [ROLES.HR]: { id: 'U-HR-01', name: 'Arjun Mehta', initials: 'AM' },
+  [ROLES.TA]: { id: 'U-TA-01', name: 'Himanshu Singh', initials: 'HS' },
+  [ROLES.HR]: { id: 'U-HR-01', name: 'Anisha Rawat', initials: 'AR' },
 };

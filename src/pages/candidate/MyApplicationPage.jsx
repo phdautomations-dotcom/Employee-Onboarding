@@ -5,11 +5,10 @@ import Button from '../../components/ta/Button.jsx';
 import Card from '../../components/ta/Card.jsx';
 import Tag from '../../components/ta/Tag.jsx';
 import EmptyState from '../../components/ta/EmptyState.jsx';
-import { ConfirmDialog } from '../../components/common/Modal.jsx';
 import { Field, Input } from '../../components/common/Field.jsx';
 import { useApp } from '../../context/AppContext.jsx';
 import { useToast } from '../../context/ToastContext.jsx';
-import { initialsOf, formatDate, formatCurrencyINR } from '../../utils/format.js';
+import { initialsOf, formatDate } from '../../utils/format.js';
 import {
   APP_STATUS,
   stageIndexForStatus,
@@ -21,6 +20,7 @@ import {
   DOC_CATEGORIES,
   OFFER_STATUS,
   OFFER_STATUS_META,
+  isDocMandatory,
 } from '../../constants/statuses.js';
 
 const DOC_STAGES = [
@@ -172,9 +172,10 @@ export default function MyApplicationPage() {
   const toast = useToast();
   const {
     data, getApplication, interviewsFor, documentsFor, offerFor, employeeFor, activitiesFor,
-    resubmitApplication, uploadDocument, acceptOffer, declineOffer, submitOnboardingForms,
+    resubmitApplication, uploadDocument, waiveDocument, submitOnboardingForms,
   } = useApp();
-  const [declineOpen, setDeclineOpen] = useState(false);
+  const [reasonFor, setReasonFor] = useState(null); // document id the candidate is explaining
+  const [reasonText, setReasonText] = useState('');
 
   const app = data.myApplicationId ? getApplication(data.myApplicationId) : null;
 
@@ -211,9 +212,17 @@ export default function MyApplicationPage() {
   const progress = notSelected ? 0 : Math.round(((candIdx + 1) / CANDIDATE_STEPS.length) * 100);
 
   const showDocuments = DOC_STAGES.includes(status);
-  const verifiedCount = documents.filter((d) => d.status === DOC_STATUS.VERIFIED).length;
+  const verifiedCount = documents.filter((d) => [DOC_STATUS.VERIFIED, DOC_STATUS.WAIVED].includes(d.status)).length;
   const pendingDocs = documents.filter((d) => [DOC_STATUS.PENDING, DOC_STATUS.REJECTED].includes(d.status)).length;
   const hint = nextStep(status, pendingDocs);
+
+  const submitReason = () => {
+    if (!reasonText.trim()) return;
+    waiveDocument(reasonFor, reasonText.trim());
+    toast.success('Reason submitted — our team will review it.');
+    setReasonFor(null);
+    setReasonText('');
+  };
 
   return (
     <div className="cx-page">
@@ -324,8 +333,8 @@ export default function MyApplicationPage() {
                       {iv.mode === 'Online' && iv.link && iv.status === ROUND_STATUS.SCHEDULED && (
                         <a href={iv.link} target="_blank" rel="noreferrer" className="ta-link" style={{ marginTop: 4 }}>Join meeting link</a>
                       )}
-                      {iv.comments && iv.status !== ROUND_STATUS.SCHEDULED && (
-                        <div className="ta-cell-sub" style={{ marginTop: 4 }}>Feedback: {iv.comments}</div>
+                      {iv.comments && iv.shareComments && iv.status !== ROUND_STATUS.SCHEDULED && (
+                        <div className="ta-cell-sub" style={{ marginTop: 4 }}>Feedback from the panel: {iv.comments}</div>
                       )}
                     </div>
                   );
@@ -338,10 +347,12 @@ export default function MyApplicationPage() {
             <Card
               id="sec-documents"
               title="Required documents"
-              action={<Tag tone={verifiedCount === documents.length ? 'green' : 'amber'}>{verifiedCount} of {documents.length} verified</Tag>}
+              action={<Tag tone={verifiedCount === documents.length ? 'green' : 'amber'}>{verifiedCount} of {documents.length} done</Tag>}
             >
               <p className="ta-cell-sub" style={{ marginBottom: 14 }}>
-                Upload each document below. Our team verifies them manually — the status updates here.
+                Upload each document below — our team verifies them manually.
+                Documents marked <span className="cx-req">*</span> are mandatory and must be uploaded.
+                For the others, if you cannot provide one, add a short reason instead.
               </p>
               {DOC_CATEGORIES.filter((cat) => documents.some((d) => d.category === cat)).map((cat) => (
                 <div key={cat} style={{ marginBottom: 14 }}>
@@ -349,19 +360,48 @@ export default function MyApplicationPage() {
                   <div className="ta-stack" style={{ gap: 8 }}>
                     {documents.filter((d) => d.category === cat).map((doc) => {
                       const m = DOC_STATUS_META[doc.status];
+                      const mandatory = isDocMandatory(doc.key);
+                      const canAct = [DOC_STATUS.PENDING, DOC_STATUS.REJECTED, DOC_STATUS.WAIVED].includes(doc.status);
                       return (
                         <div className="ta-docrow" key={doc.id} id={`doc-${doc.id}`}>
                           <span className="ta-docrow__icon"><Icon name="FileText" size={15} /></span>
                           <div className="grow" style={{ minWidth: 0 }}>
-                            <div className="ta-cell-strong">{doc.label}</div>
-                            <div className="ta-cell-sub">{doc.fileName || 'No file uploaded'}</div>
+                            <div className="ta-cell-strong">
+                              {doc.label}{mandatory && <span className="cx-req" title="Mandatory"> *</span>}
+                            </div>
+                            <div className="ta-cell-sub">{doc.fileName || (doc.status === DOC_STATUS.WAIVED ? 'Not provided' : 'No file uploaded')}</div>
                             {doc.status === DOC_STATUS.REJECTED && doc.rejectionReason && (
                               <div className="ta-cell-sub" style={{ color: 'var(--tag-red-fg)' }}>Rejected: {doc.rejectionReason}</div>
                             )}
+                            {doc.status === DOC_STATUS.WAIVED && doc.skipReason && (
+                              <div className="ta-cell-sub" style={{ color: 'var(--tag-amber-fg)' }}>Reason: {doc.skipReason}</div>
+                            )}
+                            {reasonFor === doc.id && (
+                              <div className="cx-docreason">
+                                <textarea
+                                  className="cx-docreason__input"
+                                  rows={2}
+                                  placeholder={`Why can't you provide the ${doc.label.toLowerCase()}?`}
+                                  value={reasonText}
+                                  onChange={(e) => setReasonText(e.target.value)}
+                                />
+                                <div className="cx-docreason__btns">
+                                  <button className="ta-btn ta-btn--sm" onClick={submitReason} disabled={!reasonText.trim()}>Submit reason</button>
+                                  <button className="ta-btn ta-btn--ghost ta-btn--sm" onClick={() => { setReasonFor(null); setReasonText(''); }}>Cancel</button>
+                                </div>
+                              </div>
+                            )}
                           </div>
                           <Tag tone={toneMap[m.tone] || 'grey'}>{m.label}</Tag>
-                          {[DOC_STATUS.PENDING, DOC_STATUS.REJECTED].includes(doc.status) && (
-                            <DocUpload label={doc.label} onFile={(f) => { uploadDocument(doc.id, f); toast.success(`${doc.label} uploaded — now under verification.`); }} />
+                          {canAct && reasonFor !== doc.id && (
+                            <span className="cx-docacts">
+                              <DocUpload label={doc.label} onFile={(f) => { uploadDocument(doc.id, f); toast.success(`${doc.label} uploaded — now under verification.`); }} />
+                              {!mandatory && doc.status !== DOC_STATUS.WAIVED && (
+                                <button className="ta-btn ta-btn--ghost ta-btn--sm" onClick={() => { setReasonFor(doc.id); setReasonText(''); }}>
+                                  Can't provide
+                                </button>
+                              )}
+                            </span>
                           )}
                         </div>
                       );
@@ -379,26 +419,33 @@ export default function MyApplicationPage() {
               action={<Tag tone={toneMap[OFFER_STATUS_META[offer.status].tone] || 'grey'}>{OFFER_STATUS_META[offer.status].label}</Tag>}
             >
               <p className="ta-cell-mute" style={{ lineHeight: 1.7, marginBottom: 14 }}>
-                Dear {offer.candidateName}, we are pleased to offer you the position of <strong>{offer.jobTitle}</strong> in
-                the {offer.department} team at Ccentrik, based in {offer.location}.
+                We are pleased to offer you the position of <strong>{offer.jobTitle}</strong>
+                {offer.department ? ` in the ${offer.department} team` : ''} at Ccentrik.
+                The full offer letter has been sent to your email.
               </p>
               <div className="ta-info" style={{ marginBottom: 14 }}>
-                <div className="ta-info__item"><span className="ta-info__label">Joining date</span><span className="ta-info__value">{formatDate(offer.joiningDate)}</span></div>
-                <div className="ta-info__item"><span className="ta-info__label">Employment type</span><span className="ta-info__value">{offer.employmentType}</span></div>
-                <div className="ta-info__item"><span className="ta-info__label">Annual compensation</span><span className="ta-info__value">{formatCurrencyINR(offer.compensation)}</span></div>
-                <div className="ta-info__item"><span className="ta-info__label">Reporting manager</span><span className="ta-info__value">{offer.reportingManager}</span></div>
-                <div className="ta-info__item"><span className="ta-info__label">Probation period</span><span className="ta-info__value">{offer.probationPeriod}</span></div>
-                <div className="ta-info__item"><span className="ta-info__label">Benefits</span><span className="ta-info__value">{offer.benefits}</span></div>
+                <div className="ta-info__item"><span className="ta-info__label">Expected joining date</span><span className="ta-info__value">{formatDate(offer.joiningDate)}</span></div>
+                {offer.reportingManager && (
+                  <div className="ta-info__item"><span className="ta-info__label">Reporting manager</span><span className="ta-info__value">{offer.reportingManager}</span></div>
+                )}
               </div>
               {offer.status === OFFER_STATUS.ISSUED && (
-                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                  <Button icon="CheckCircle2" onClick={() => { acceptOffer(offer.id); toast.success('Offer accepted. Welcome aboard!'); }}>Accept offer</Button>
-                  <Button variant="ghost" icon="XCircle" onClick={() => setDeclineOpen(true)}>Reject offer</Button>
-                  <Button variant="ghost" icon="Download" onClick={() => toast.info('Offer letter download is simulated in this prototype.')}>Download</Button>
-                </div>
+                <>
+                  <div className="ta-note ta-note--info" style={{ marginBottom: 10 }}>
+                    <Icon name="Mail" size={15} />
+                    <span>
+                      Your offer letter has been emailed to you. To <strong>accept</strong> or <strong>decline</strong>,
+                      reply to that email. Your recruiter will confirm your response here.
+                    </span>
+                  </div>
+                  <Button variant="ghost" icon="Download" onClick={() => toast.info('Offer letter download is simulated in this prototype.')}>Download offer letter</Button>
+                </>
               )}
               {offer.status === OFFER_STATUS.ACCEPTED && (
-                <div className="ta-note ta-note--ok"><Icon name="CheckCircle2" size={15} /> You accepted this offer. HR will reach out with joining formalities.</div>
+                <div className="ta-note ta-note--ok"><Icon name="CheckCircle2" size={15} /> Your acceptance is confirmed. HR will reach out with joining formalities.</div>
+              )}
+              {offer.status === OFFER_STATUS.DECLINED && (
+                <div className="ta-note ta-note--warn"><Icon name="XCircle" size={15} /> This offer was declined.</div>
               )}
             </Card>
           )}
@@ -437,16 +484,6 @@ export default function MyApplicationPage() {
             </Card>
           )}
       </div>
-
-      <ConfirmDialog
-        open={declineOpen}
-        onClose={() => setDeclineOpen(false)}
-        title="Reject this offer?"
-        message="This cannot be undone. The hiring team will be notified that you have declined the offer."
-        confirmLabel="Yes, reject offer"
-        tone="danger"
-        onConfirm={() => { declineOffer(offer.id); setDeclineOpen(false); toast.success('Offer declined.'); }}
-      />
     </div>
   );
 }

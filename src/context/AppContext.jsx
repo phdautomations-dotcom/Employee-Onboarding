@@ -1,6 +1,6 @@
-import { createContext, useCallback, useContext, useMemo } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useLocalStorage } from '../hooks/useLocalStorage.js';
-import { buildSeed } from '../data/seed.js';
+import { buildSeed, SEED_VERSION } from '../data/seed.js';
 import { JOBS, findJob } from '../data/jobs.js';
 import {
   APP_STATUS,
@@ -8,6 +8,7 @@ import {
   DOC_STATUS,
   OFFER_STATUS,
   REQUIRED_DOCUMENTS,
+  isDocMandatory,
 } from '../constants/statuses.js';
 import { ROLES } from '../constants/roles.js';
 import {
@@ -27,7 +28,17 @@ export function AppProvider({ children }) {
   const [data, setData] = useLocalStorage(DATA_KEY, () => buildSeed());
   const [role, setRole] = useLocalStorage(ROLE_KEY, null);
 
-  const state = typeof data === 'function' ? buildSeed() : data;
+  // Demo data from an older seed shape is rebuilt automatically — the storage
+  // key stays the same, we just re-seed when the version inside it is behind.
+  const stored = typeof data === 'function' ? null : data;
+  const isStale = !stored || stored.seedVersion !== SEED_VERSION;
+  const [reseeded] = useState(() => (isStale ? buildSeed() : null));
+  useEffect(() => {
+    if (isStale) setData(reseeded);
+    // run once on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  const state = isStale ? reseeded : stored;
 
   /* ---------- internal helpers ---------- */
   const mutate = useCallback(
@@ -63,9 +74,24 @@ export function AppProvider({ children }) {
     });
   };
 
-  const allRequiredDocsVerified = (draft, applicationId) => {
+  // A required doc is "cleared" when it's verified, or (for non-mandatory docs)
+  // when the candidate has given a reason for not providing it.
+  const allRequiredDocsCleared = (draft, applicationId) => {
     const docs = draft.documents.filter((d) => d.applicationId === applicationId && d.required);
-    return docs.length > 0 && docs.every((d) => d.status === DOC_STATUS.VERIFIED);
+    if (docs.length === 0) return false;
+    return docs.every(
+      (d) => d.status === DOC_STATUS.VERIFIED || (d.status === DOC_STATUS.WAIVED && !isDocMandatory(d.key))
+    );
+  };
+
+  const maybeAdvanceDocs = (draft, applicationId) => {
+    if (!allRequiredDocsCleared(draft, applicationId)) return;
+    const app = draft.applications.find((a) => a.id === applicationId);
+    if (app && app.status === APP_STATUS.DOC_VERIFICATION) {
+      app.status = APP_STATUS.DOCS_VERIFIED;
+      logActivity(draft, app.id, 'documents', 'All Documents Verified', 'All mandatory documents verified. Offer preparation is now available.', 'Himanshu Singh');
+      notify(draft, ROLES.TA, 'Documents verified', `All documents cleared for ${app.personal.firstName} ${app.personal.lastName}. Prepare offer.`);
+    }
   };
 
   /* ---------- candidate: submit application ---------- */
@@ -89,7 +115,7 @@ export function AppProvider({ children }) {
           source: form.source || 'Direct',
           status: APP_STATUS.SUBMITTED,
           submittedAt: new Date().toISOString(),
-          assignedTo: 'Priya Nair',
+          assignedTo: 'Himanshu Singh',
           autofilled: form.autofilled || [],
           returnReason: null,
           rejectReason: null,
@@ -170,7 +196,7 @@ export function AppProvider({ children }) {
         const app = draft.applications.find((a) => a.id === applicationId);
         if (!app || app.status !== APP_STATUS.SUBMITTED) return;
         app.status = APP_STATUS.TA_REVIEW;
-        logActivity(draft, applicationId, 'review', 'TA Review Started', 'Talent Acquisition began reviewing the application.', 'Priya Nair');
+        logActivity(draft, applicationId, 'review', 'TA Review Started', 'Talent Acquisition began reviewing the application.', 'Himanshu Singh');
       });
     },
     [mutate]
@@ -182,7 +208,7 @@ export function AppProvider({ children }) {
         const app = draft.applications.find((a) => a.id === applicationId);
         if (!app) return;
         app.status = APP_STATUS.INTERVIEW_PLANNING;
-        logActivity(draft, applicationId, 'approve', 'Application Approved', 'TA approved the candidate and moved them to Interview Planning.', 'Priya Nair');
+        logActivity(draft, applicationId, 'approve', 'Application Approved', 'TA approved the candidate and moved them to Interview Planning.', 'Himanshu Singh');
         notify(draft, ROLES.CANDIDATE, 'Application approved', `Your application for ${app.jobTitle} was approved. Interview scheduling is next.`);
       });
     },
@@ -196,7 +222,7 @@ export function AppProvider({ children }) {
         if (!app) return;
         app.status = APP_STATUS.RETURNED;
         app.returnReason = reason;
-        logActivity(draft, applicationId, 'return', 'Application Returned', `Returned to candidate: ${reason}`, 'Priya Nair');
+        logActivity(draft, applicationId, 'return', 'Application Returned', `Returned to candidate: ${reason}`, 'Himanshu Singh');
         notify(draft, ROLES.CANDIDATE, 'Action needed on your application', reason);
       });
     },
@@ -210,7 +236,7 @@ export function AppProvider({ children }) {
         if (!app) return;
         app.status = APP_STATUS.REJECTED;
         app.rejectReason = reason;
-        logActivity(draft, applicationId, 'reject', 'Application Rejected', `Rejected: ${reason}`, 'Priya Nair');
+        logActivity(draft, applicationId, 'reject', 'Application Rejected', `Rejected: ${reason}`, 'Himanshu Singh');
         notify(draft, ROLES.CANDIDATE, 'Application update', `Your application for ${app.jobTitle} was not taken forward.`);
       });
     },
@@ -240,11 +266,12 @@ export function AppProvider({ children }) {
           status: ROUND_STATUS.SCHEDULED,
           result: null,
           comments: '',
+          shareComments: false, // remarks are internal unless the TA chooses to share them
         });
         if (app.status === APP_STATUS.INTERVIEW_PLANNING || app.status === APP_STATUS.INTERVIEW_PASSED) {
           app.status = APP_STATUS.INTERVIEW_IN_PROGRESS;
         }
-        logActivity(draft, applicationId, 'interview', `${payload.type} Scheduled`, `Round ${round} scheduled for ${payload.date} at ${payload.time} (${payload.mode}).`, 'Priya Nair');
+        logActivity(draft, applicationId, 'interview', `${payload.type} Scheduled`, `Round ${round} scheduled for ${payload.date} at ${payload.time} (${payload.mode}).`, 'Himanshu Singh');
         notify(draft, ROLES.CANDIDATE, 'Interview scheduled', `${payload.type} (Round ${round}) on ${payload.date} at ${payload.time}.`);
       });
     },
@@ -252,33 +279,34 @@ export function AppProvider({ children }) {
   );
 
   const recordInterviewResult = useCallback(
-    (interviewId, { result, comments }) => {
+    (interviewId, { result, comments, shareComments = false }) => {
       mutate((draft) => {
         const iv = draft.interviews.find((i) => i.id === interviewId);
         if (!iv) return;
         iv.result = result;
         iv.comments = comments;
+        iv.shareComments = !!shareComments;
         iv.status = result; // PASS | FAIL | HOLD
         const app = draft.applications.find((a) => a.id === iv.applicationId);
         if (!app) return;
 
         if (result === ROUND_STATUS.FAIL) {
           app.status = APP_STATUS.INTERVIEW_FAILED;
-          logActivity(draft, app.id, 'interview', `${iv.type} — Failed`, `Round ${iv.round} result recorded: Fail.`, 'Priya Nair');
+          logActivity(draft, app.id, 'interview', `${iv.type} — Failed`, `Round ${iv.round} result recorded: Fail.`, 'Himanshu Singh');
           notify(draft, ROLES.CANDIDATE, 'Interview update', `Unfortunately you did not clear the ${iv.type}.`);
           return;
         }
         if (result === ROUND_STATUS.HOLD) {
-          logActivity(draft, app.id, 'interview', `${iv.type} — On Hold`, `Round ${iv.round} result recorded: Hold.`, 'Priya Nair');
+          logActivity(draft, app.id, 'interview', `${iv.type} — On Hold`, `Round ${iv.round} result recorded: Hold.`, 'Himanshu Singh');
           return;
         }
         // PASS
-        logActivity(draft, app.id, 'interview', `${iv.type} — Passed`, `Round ${iv.round} result recorded: Pass.`, 'Priya Nair');
+        logActivity(draft, app.id, 'interview', `${iv.type} — Passed`, `Round ${iv.round} result recorded: Pass.`, 'Himanshu Singh');
         const rounds = draft.interviews.filter((i) => i.applicationId === app.id);
         const pending = rounds.some((r) => r.status === ROUND_STATUS.SCHEDULED || r.status === ROUND_STATUS.COMPLETED);
         if (!pending) {
           app.status = APP_STATUS.INTERVIEW_PASSED;
-          logActivity(draft, app.id, 'interview', 'All Scheduled Rounds Passed', 'Add another round or move the candidate to document verification.', 'Priya Nair');
+          logActivity(draft, app.id, 'interview', 'All Scheduled Rounds Passed', 'Add another round or move the candidate to document verification.', 'Himanshu Singh');
         }
       });
     },
@@ -291,7 +319,7 @@ export function AppProvider({ children }) {
         const app = draft.applications.find((a) => a.id === applicationId);
         if (!app || app.status !== APP_STATUS.INTERVIEW_PASSED) return;
         app.status = APP_STATUS.DOC_VERIFICATION;
-        logActivity(draft, applicationId, 'documents', 'Moved to Document Verification', 'All required interview rounds passed.', 'Priya Nair');
+        logActivity(draft, applicationId, 'documents', 'Moved to Document Verification', 'All required interview rounds passed.', 'Himanshu Singh');
         notify(draft, ROLES.CANDIDATE, 'Interviews cleared', 'Please upload your verification documents.');
       });
     },
@@ -309,6 +337,7 @@ export function AppProvider({ children }) {
         doc.uploadedAt = new Date().toISOString();
         doc.rejectionReason = null;
         doc.verifiedAt = null;
+        doc.skipReason = null;
         logActivity(draft, doc.applicationId, 'documents', 'Document Uploaded', `${doc.label} uploaded and is under verification.`, 'Candidate');
         notify(draft, ROLES.TA, 'Document uploaded', `${doc.label} uploaded for verification.`);
       });
@@ -324,15 +353,28 @@ export function AppProvider({ children }) {
         doc.status = DOC_STATUS.VERIFIED;
         doc.verifiedAt = new Date().toISOString();
         doc.rejectionReason = null;
-        logActivity(draft, doc.applicationId, 'documents', 'Document Verified', `${doc.label} verified.`, 'Priya Nair');
-        if (allRequiredDocsVerified(draft, doc.applicationId)) {
-          const app = draft.applications.find((a) => a.id === doc.applicationId);
-          if (app && app.status === APP_STATUS.DOC_VERIFICATION) {
-            app.status = APP_STATUS.DOCS_VERIFIED;
-            logActivity(draft, app.id, 'documents', 'All Documents Verified', 'All mandatory documents verified. Offer preparation is now available.', 'Priya Nair');
-            notify(draft, ROLES.TA, 'Documents verified', `All documents verified for ${app.personal.firstName} ${app.personal.lastName}. Prepare offer.`);
-          }
-        }
+        doc.skipReason = null;
+        logActivity(draft, doc.applicationId, 'documents', 'Document Verified', `${doc.label} verified.`, 'Himanshu Singh');
+        maybeAdvanceDocs(draft, doc.applicationId);
+      });
+    },
+    [mutate]
+  );
+
+  /* ---------- candidate: give a reason for a document they can't provide ---------- */
+  const waiveDocument = useCallback(
+    (documentId, reason) => {
+      mutate((draft) => {
+        const doc = draft.documents.find((d) => d.id === documentId);
+        if (!doc || isDocMandatory(doc.key)) return; // mandatory docs must be uploaded
+        doc.status = DOC_STATUS.WAIVED;
+        doc.skipReason = reason;
+        doc.fileName = null;
+        doc.uploadedAt = null;
+        doc.verifiedAt = null;
+        logActivity(draft, doc.applicationId, 'documents', 'Document Not Provided', `${doc.label} — reason: ${reason}`, 'Candidate');
+        notify(draft, ROLES.TA, 'Document reason submitted', `${doc.label} not provided by the candidate — a reason was given.`);
+        maybeAdvanceDocs(draft, doc.applicationId);
       });
     },
     [mutate]
@@ -346,7 +388,7 @@ export function AppProvider({ children }) {
         doc.status = DOC_STATUS.REJECTED;
         doc.rejectionReason = reason;
         doc.verifiedAt = null;
-        logActivity(draft, doc.applicationId, 'documents', 'Document Rejected', `${doc.label} rejected: ${reason}`, 'Priya Nair');
+        logActivity(draft, doc.applicationId, 'documents', 'Document Rejected', `${doc.label} rejected: ${reason}`, 'Himanshu Singh');
         notify(draft, ROLES.CANDIDATE, 'Document rejected', `${doc.label}: ${reason}`);
       });
     },
@@ -373,16 +415,16 @@ export function AppProvider({ children }) {
         }
         Object.assign(offer, payload);
         if (submitForApproval) {
-          // Offer goes straight to the candidate — HR no longer gates this step.
+          // The letter is prepared and emailed outside the app — this just records it.
           offer.status = OFFER_STATUS.ISSUED;
           offer.issuedAt = new Date().toISOString();
           app.status = APP_STATUS.OFFER_ISSUED;
-          logActivity(draft, applicationId, 'offer', 'Offer Sent to Candidate', 'TA prepared and sent the offer.', 'Priya Nair');
-          notify(draft, ROLES.CANDIDATE, 'You have an offer', `Your offer for ${offer.jobTitle} has been sent.`);
+          logActivity(draft, applicationId, 'offer', 'Offer Extended', 'TA recorded that the offer letter was sent to the candidate by email.', 'Himanshu Singh');
+          notify(draft, ROLES.CANDIDATE, 'You have an offer', `Your offer for ${offer.jobTitle} has been emailed to you.`);
         } else {
           offer.status = OFFER_STATUS.DRAFT;
           app.status = APP_STATUS.OFFER_DRAFT;
-          logActivity(draft, applicationId, 'offer', 'Offer Draft Saved', 'TA saved a draft of the offer.', 'Priya Nair');
+          logActivity(draft, applicationId, 'offer', 'Offer Draft Saved', 'TA saved a draft of the offer.', 'Himanshu Singh');
         }
       });
     },
@@ -398,8 +440,34 @@ export function AppProvider({ children }) {
         offer.decisionAt = new Date().toISOString();
         const app = draft.applications.find((a) => a.id === offer.applicationId);
         if (app) app.status = APP_STATUS.ONBOARDING_PENDING;
+        const role = app?.jobTitle || 'a role';
         logActivity(draft, offer.applicationId, 'offer', 'Offer Accepted', 'Candidate accepted the offer.', 'Candidate');
+        // TA → HR handover: both sides are notified when the offer is accepted.
+        logActivity(draft, offer.applicationId, 'onboarding', 'Handed Over to HR', `${offer.candidateName} accepted the offer for ${role} — HR now owns onboarding.`, 'System');
         notify(draft, ROLES.CANDIDATE, 'Almost there', 'Please fill in your onboarding details.');
+        notify(draft, ROLES.TA, 'Offer accepted', `${offer.candidateName} accepted the offer for ${role}. Handed over to HR for onboarding.`);
+        notify(draft, ROLES.HR, 'New onboarding handover', `${offer.candidateName} accepted their offer for ${role} — ready to start HR onboarding.`);
+      });
+    },
+    [mutate]
+  );
+
+  /* ---------- TA confirms the candidate accepted the offer (they reply by email,
+     not in the app) — same effect as the candidate accepting it directly. ---------- */
+  const confirmOfferAccepted = useCallback(
+    (offerId) => {
+      mutate((draft) => {
+        const offer = draft.offers.find((o) => o.id === offerId);
+        if (!offer || offer.status === OFFER_STATUS.ACCEPTED) return;
+        offer.status = OFFER_STATUS.ACCEPTED;
+        offer.decisionAt = new Date().toISOString();
+        const app = draft.applications.find((a) => a.id === offer.applicationId);
+        if (app) app.status = APP_STATUS.ONBOARDING_PENDING;
+        const role = app?.jobTitle || 'a role';
+        logActivity(draft, offer.applicationId, 'offer', 'Offer Acceptance Confirmed', `TA confirmed ${offer.candidateName} accepted the offer for ${role} (received by email).`, 'Himanshu Singh');
+        logActivity(draft, offer.applicationId, 'onboarding', 'Handed Over to HR', `${offer.candidateName} accepted the offer for ${role} — HR now owns onboarding.`, 'System');
+        notify(draft, ROLES.CANDIDATE, 'Onboarding started', 'Your acceptance is confirmed. Please fill in your onboarding details.');
+        notify(draft, ROLES.HR, 'New onboarding handover', `${offer.candidateName} accepted their offer for ${role} — ready to start HR onboarding.`);
       });
     },
     [mutate]
@@ -442,7 +510,7 @@ export function AppProvider({ children }) {
         const app = draft.applications.find((a) => a.id === applicationId);
         if (!app) return;
         app.status = APP_STATUS.JOINING_PENDING;
-        logActivity(draft, applicationId, 'onboarding', 'Onboarding Verified', 'HR verified the onboarding details.', 'Arjun Mehta');
+        logActivity(draft, applicationId, 'onboarding', 'Onboarding Verified', 'HR verified the onboarding details.', 'Anisha Rawat');
         notify(draft, ROLES.CANDIDATE, 'Onboarding verified', 'Your onboarding details have been verified. Joining is pending.');
       });
     },
@@ -456,7 +524,7 @@ export function AppProvider({ children }) {
         if (!app) return;
         app.status = APP_STATUS.HR_VERIFICATION_REJECTED;
         app.onboardingRejectReason = reason;
-        logActivity(draft, applicationId, 'onboarding', 'Onboarding Returned by HR', reason, 'Arjun Mehta');
+        logActivity(draft, applicationId, 'onboarding', 'Onboarding Returned by HR', reason, 'Anisha Rawat');
         notify(draft, ROLES.CANDIDATE, 'Onboarding details returned', reason);
       });
     },
@@ -464,8 +532,9 @@ export function AppProvider({ children }) {
   );
 
   const completeJoining = useCallback(
-    (applicationId) => {
+    (applicationId, teamRole) => {
       const employeeId = makeEmployeeId((state.counters?.employee || 0) + 1);
+      const role = (teamRole || '').trim();
       mutate((draft) => {
         const app = draft.applications.find((a) => a.id === applicationId);
         if (!app) return;
@@ -478,16 +547,38 @@ export function AppProvider({ children }) {
           name: `${app.personal.firstName} ${app.personal.lastName}`,
           position: app.jobTitle,
           department: offer?.department || '—',
+          teamRole: role || null,
           joiningDate: offer?.joiningDate || null,
           createdAt: new Date().toISOString(),
         });
-        logActivity(draft, applicationId, 'onboarding', 'Joining Completed', 'HR marked joining as completed.', 'Arjun Mehta');
+        const joined = role
+          ? `HR marked joining as completed and assigned the ${role} team role.`
+          : 'HR marked joining as completed.';
+        logActivity(draft, applicationId, 'onboarding', 'Joining Completed', joined, 'Anisha Rawat');
         logActivity(draft, applicationId, 'onboarding', 'Employee Created', `Employee record ${employeeId} created.`, 'System');
         notify(draft, ROLES.CANDIDATE, 'Welcome aboard', `Your employee ID is ${employeeId}.`);
       });
       return employeeId;
     },
     [mutate, state.counters]
+  );
+
+  /* ---------- HR: assign a team role to an employee ---------- */
+  const assignEmployeeRole = useCallback(
+    (employeeId, teamRole) => {
+      const clean = (teamRole || '').trim();
+      mutate((draft) => {
+        const emp = draft.employees.find((e) => e.id === employeeId);
+        if (!emp) return;
+        const previous = emp.teamRole || null;
+        emp.teamRole = clean || null;
+        const desc = clean
+          ? `${emp.name} assigned to ${clean}${previous && previous !== clean ? ` (was ${previous})` : ''}.`
+          : `${emp.name}'s team role was cleared.`;
+        logActivity(draft, emp.applicationId, 'onboarding', 'Team Role Assigned', desc, 'Anisha Rawat');
+      });
+    },
+    [mutate]
   );
 
   const markNotificationsRead = useCallback(
@@ -531,7 +622,7 @@ export function AppProvider({ children }) {
           type: 'application',
           title: 'Job Created',
           description: `${job.title} (${job.id}) opened in ${job.department}.`,
-          actor: 'Priya Nair',
+          actor: 'Himanshu Singh',
           at: new Date().toISOString(),
         });
       });
@@ -542,6 +633,14 @@ export function AppProvider({ children }) {
 
   const resetDemo = useCallback(() => {
     setData(buildSeed());
+  }, [setData]);
+
+  // Guided demo: fresh seed with no candidate application yet, so the walk-through
+  // can start from "apply for a job".
+  const startGuidedDemo = useCallback(() => {
+    const fresh = buildSeed();
+    fresh.myApplicationId = null;
+    setData(fresh);
   }, [setData]);
 
   /* ---------- selectors ---------- */
@@ -583,16 +682,20 @@ export function AppProvider({ children }) {
       uploadDocument,
       verifyDocument,
       rejectDocument,
+      waiveDocument,
       saveOffer,
       acceptOffer,
+      confirmOfferAccepted,
       declineOffer,
       submitOnboardingForms,
       verifyOnboarding,
       rejectOnboarding,
       completeJoining,
+      assignEmployeeRole,
       createJob,
       markNotificationsRead,
       resetDemo,
+      startGuidedDemo,
     }),
     [
       role,
@@ -613,15 +716,19 @@ export function AppProvider({ children }) {
       uploadDocument,
       verifyDocument,
       rejectDocument,
+      waiveDocument,
       saveOffer,
       acceptOffer,
+      confirmOfferAccepted,
       declineOffer,
       submitOnboardingForms,
       verifyOnboarding,
       rejectOnboarding,
       completeJoining,
+      assignEmployeeRole,
       markNotificationsRead,
       resetDemo,
+      startGuidedDemo,
     ]
   );
 

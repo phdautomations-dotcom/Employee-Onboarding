@@ -1,6 +1,5 @@
 import Icon from '../common/Icon.jsx';
 import EmptyState from './EmptyState.jsx';
-import Pager from './Pager.jsx';
 
 /* Premium data table inside a card.
    - `columns`  : [{ key, label, sortable }]
@@ -8,9 +7,17 @@ import Pager from './Pager.jsx';
    - `renderRow`: (row) => <tr>...</tr>
    - `sort`,`onSort` : optional sorting ({ key, dir })
    - `title`, `action` : optional card header
-   - `pager`    : optional { page, pageSize, total, onPage }
+   - `pager`    : { page, pageSize, total, onPage } — drives the Prev/Next bar
+                  shown under the table (the numbered pager lives on the Toolbar)
    - `empty`    : props for EmptyState when there are no rows */
 export default function DataGrid({ columns, rows, renderRow, sort, onSort, title, action, pager, empty }) {
+  const pages = pager ? Math.max(1, Math.ceil(pager.total / pager.pageSize)) : 1;
+
+  const goto = (p) => {
+    pager.onPage(Math.min(pages, Math.max(1, p)));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
     <div className="ta-table-card">
       {(title || action) && (
@@ -48,7 +55,17 @@ export default function DataGrid({ columns, rows, renderRow, sort, onSort, title
         </div>
       )}
 
-      {pager && rows.length > 0 && <Pager {...pager} />}
+      {pager && rows.length > 0 && pages > 1 && (
+        <div className="ta-gridnav">
+          <button type="button" className="ta-btn ta-btn--ghost" disabled={pager.page <= 1} onClick={() => goto(pager.page - 1)}>
+            <Icon name="ChevronLeft" size={15} /> Previous
+          </button>
+          <span className="ta-gridnav__pos">Page {pager.page} of {pages}</span>
+          <button type="button" className="ta-btn ta-btn--ghost" disabled={pager.page >= pages} onClick={() => goto(pager.page + 1)}>
+            Next <Icon name="ChevronRight" size={15} />
+          </button>
+        </div>
+      )}
     </div>
   );
 }

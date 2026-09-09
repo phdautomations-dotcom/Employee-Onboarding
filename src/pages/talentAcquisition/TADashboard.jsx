@@ -14,7 +14,23 @@ import {
   OFFER_STATUS,
   stageIndexForStatus,
 } from '../../constants/statuses.js';
-import { countInWindow, trendPercent, weeklyCounts, groupCounts, noticePeriodDays } from '../../utils/metrics.js';
+import { countInWindow, trendPercent, groupCounts, noticePeriodDays } from '../../utils/metrics.js';
+import { timeAgo } from '../../utils/format.js';
+
+/* Activity entries that come from the candidate's own actions — these are the
+   "something changed, take a look" updates the TA shouldn't have to hunt for. */
+const CANDIDATE_UPDATE_TITLES = new Set([
+  'Application Submitted', 'Application Resubmitted', 'Document Uploaded',
+  'Document Not Provided', 'Onboarding Forms Submitted', 'Offer Accepted',
+]);
+const UPDATE_ICON = {
+  'Application Submitted': 'FileText',
+  'Application Resubmitted': 'RotateCcw',
+  'Document Uploaded': 'Upload',
+  'Document Not Provided': 'MessageSquare',
+  'Onboarding Forms Submitted': 'ClipboardList',
+  'Offer Accepted': 'CheckCircle2',
+};
 
 /* The five pipeline stages shown in the funnel + list, with the index in
    PIPELINE_STAGES a candidate must have reached to be counted. */
@@ -58,11 +74,23 @@ export default function TADashboard() {
   const { data, jobs } = useApp();
   const user = DEMO_USERS[ROLES.TA];
   const [period, setPeriod] = useState('all');
+  const [updatesOpen, setUpdatesOpen] = useState(true);
 
   // ----- DATA -----
   const apps = data.applications || [];
   const interviews = data.interviews || [];
   const offers = data.offers || [];
+  const activities = data.activities || [];
+
+  // Candidate-driven updates, newest first, resolved to a clickable candidate.
+  const appById = new Map(apps.map((a) => [a.id, a]));
+  const candidateUpdates = activities
+    .filter((a) => CANDIDATE_UPDATE_TITLES.has(a.title) && appById.has(a.applicationId))
+    .slice(0, 6)
+    .map((a) => {
+      const app = appById.get(a.applicationId);
+      return { ...a, candidateId: app.candidateId, who: `${app.personal.firstName} ${app.personal.lastName}` };
+    });
 
   // ----- FILTERING -----
   // Applications inside the selected time period (used by the pipeline + source chart).
@@ -86,31 +114,32 @@ export default function TADashboard() {
   const interviewsDone = interviews.filter((i) => i.status !== ROUND_STATUS.SCHEDULED).length;
   const offersAccepted = offers.filter((o) => o.status === OFFER_STATUS.ACCEPTED).length;
 
+  const scheduledInterviews = interviews.filter((i) => i.status === ROUND_STATUS.SCHEDULED).length;
   const kpis = [
     {
       icon: 'Users', label: 'Total Candidates', accent: 'blue', value: apps.length,
+      meter: { value: activeForNotice.length, max: Math.max(1, apps.length) },
       trend: trendPercent(countInWindow(apps, 'submittedAt', 0), countInWindow(apps, 'submittedAt', 1)),
-      note: 'Since the first application',
-      spark: weeklyCounts(apps, 'submittedAt', 8),
+      note: `${activeForNotice.length} still active in the pipeline`,
       onClick: () => navigate('/ta/candidates'),
     },
     {
       icon: 'Briefcase', label: 'Open Jobs', accent: 'violet', value: jobs.length,
-      note: `${jobsWithApplicants} receiving applicants`,
+      meter: { value: jobsWithApplicants, max: Math.max(1, jobs.length) },
+      note: `${jobsWithApplicants} of ${jobs.length} receiving applicants`,
       onClick: () => navigate('/ta/jobs'),
     },
     {
-      icon: 'CalendarDays', label: 'Interviews Scheduled', accent: 'amber',
-      value: interviews.filter((i) => i.status === ROUND_STATUS.SCHEDULED).length,
+      icon: 'CalendarDays', label: 'Interviews Scheduled', accent: 'amber', value: scheduledInterviews,
+      meter: { value: interviewsDone, max: Math.max(1, interviewsDone + scheduledInterviews) },
       trend: trendPercent(countInWindow(interviews, 'date', 0), countInWindow(interviews, 'date', 1)),
       note: `${interviewsDone} completed so far`,
-      spark: weeklyCounts(interviews, 'date', 8),
     },
     {
       icon: 'FileCheck', label: 'Offers Extended', accent: 'green', value: extendedOffers.length,
+      meter: { value: offersAccepted, max: Math.max(1, extendedOffers.length) },
       trend: trendPercent(countInWindow(extendedOffers, 'createdAt', 0), countInWindow(extendedOffers, 'createdAt', 1)),
       note: `${offersAccepted} accepted`,
-      spark: weeklyCounts(extendedOffers, 'createdAt', 8),
     },
   ];
 
@@ -150,6 +179,35 @@ export default function TADashboard() {
         {kpis.map((k) => <KpiCard key={k.label} {...k} />)}
       </div>
 
+      {candidateUpdates.length > 0 && (
+        <section className="ta-updates">
+          <button type="button" className="ta-updates__head" onClick={() => setUpdatesOpen((v) => !v)} aria-expanded={updatesOpen}>
+            <span className="ta-updates__lead">
+              <strong>Candidate updates</strong>
+              <span className="ta-updates__count">{candidateUpdates.length}</span>
+            </span>
+            <span className="ta-updates__toggle">
+              <span className="ta-link" role="link" onClick={(e) => { e.stopPropagation(); navigate('/ta/activity'); }}>View all</span>
+              <Icon name={updatesOpen ? 'ChevronUp' : 'ChevronDown'} size={16} />
+            </span>
+          </button>
+          {updatesOpen && (
+            <div className="ta-updates__list">
+              {candidateUpdates.map((u) => (
+                <button key={u.id} type="button" className="ta-updates__row" onClick={() => navigate(`/ta/candidates/${u.candidateId}`)}>
+                  <span className="ta-updates__icon"><Icon name={UPDATE_ICON[u.title] || 'Bell'} size={14} /></span>
+                  <span className="ta-updates__body">
+                    <span className="ta-updates__title">{u.who} — {u.title}</span>
+                    <span className="ta-cell-sub">{u.description}</span>
+                  </span>
+                  <span className="ta-updates__when">{timeAgo(u.at)} <Icon name="ArrowRight" size={13} /></span>
+                </button>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
+
       <div className="ta-bento">
         <Card title="Candidates Pipeline" action={periodSelect}>
           <div className="ta-pipe-wrap">
@@ -179,7 +237,19 @@ export default function TADashboard() {
           {sourceSlices.length === 0 ? (
             <p className="ta-cell-mute">No applications in this period.</p>
           ) : (
-            <DonutChart slices={sourceSlices} caption="Total" />
+            <>
+              <DonutChart slices={sourceSlices} caption="Total" />
+              {(() => {
+                const total = sourceSlices.reduce((s, x) => s + x.value, 0) || 1;
+                const top = [...sourceSlices].sort((a, b) => b.value - a.value)[0];
+                return (
+                  <div className="ta-donut-note">
+                    <span className="ta-legend__dot" style={{ background: top.color }} />
+                    <span><strong>{top.label}</strong> is the leading channel — {Math.round((top.value / total) * 100)}% of applications in this period.</span>
+                  </div>
+                );
+              })()}
+            </>
           )}
         </Card>
       </div>

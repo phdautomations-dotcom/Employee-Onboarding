@@ -79,7 +79,7 @@ check('TA review started -> TA_REVIEW', ctx.getApplication(appId)?.status === 'T
 await run(() => ctx.approveApplication(appId));
 check('TA approve -> INTERVIEW_PLANNING', ctx.getApplication(appId)?.status === 'INTERVIEW_PLANNING');
 
-await run(() => ctx.scheduleInterview(appId, { type: 'HR Interview', interviewer: 'Priya Nair', date: '2026-09-10', time: '10:00', mode: 'Online', link: 'https://x', location: '', notes: '' }));
+await run(() => ctx.scheduleInterview(appId, { type: 'HR Interview', interviewer: 'Himanshu Singh', date: '2026-09-10', time: '10:00', mode: 'Online', link: 'https://x', location: '', notes: '' }));
 check('Interview scheduled + visible to candidate', ctx.interviewsFor(appId).length === 1 && ctx.interviewsFor(appId)[0].status === 'SCHEDULED');
 check('Status -> INTERVIEW_IN_PROGRESS', ctx.getApplication(appId)?.status === 'INTERVIEW_IN_PROGRESS');
 

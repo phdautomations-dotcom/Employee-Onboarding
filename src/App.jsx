@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import AppRoutes from './routes/AppRoutes.jsx';
 import ToastContainer from './components/common/ToastContainer.jsx';
+import DemoFlow from './components/demo/DemoFlow.jsx';
 import { useApp } from './context/AppContext.jsx';
 import { ROLES } from './constants/roles.js';
 
@@ -27,6 +28,7 @@ export default function App() {
       <RoleFromQuery />
       <AppRoutes />
       <ToastContainer />
+      <DemoFlow />
     </>
   );
 }

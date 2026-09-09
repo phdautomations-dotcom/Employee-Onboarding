@@ -4,7 +4,6 @@ import Icon from '../../components/common/Icon.jsx';
 import TAHeader from '../../components/ta/TAHeader.jsx';
 import DataGrid from '../../components/ta/DataGrid.jsx';
 import Toolbar from '../../components/ta/Toolbar.jsx';
-import Avatar from '../../components/ta/Avatar.jsx';
 import Tag from '../../components/ta/Tag.jsx';
 import { useApp } from '../../context/AppContext.jsx';
 import { useCollectionView } from '../../hooks/useCollectionView.js';
@@ -98,7 +97,7 @@ export default function TACandidatesPage() {
 
   const view = useCollectionView(rows, {
     searchFields: ['name', 'email', 'candidateId', 'job'],
-    pageSize: 12,
+    pageSize: 30,
     initialSort: { key: 'submittedAt', dir: 'desc' },
     initialFilters: Object.keys(initialFilters).length ? initialFilters : undefined,
   });
@@ -144,7 +143,6 @@ export default function TACandidatesPage() {
       <TAHeader title="Candidates" subtitle="Manage and track candidates through the recruitment process." />
 
       <Toolbar
-        search={{ value: view.query, onChange: view.setQuery, placeholder: 'Search candidates by name, email or ID…' }}
         filters={[
           { label: 'Stage', value: stage, onChange: setStage, options: Object.entries(STAGE_GROUPS).map(([value, g]) => ({ value, label: g.label })) },
           { label: 'Job', value: activeJob, onChange: (v) => view.setFilter('job', v), options: jobOptions },
@@ -154,6 +152,7 @@ export default function TACandidatesPage() {
         ]}
         chips={chips}
         onClearAll={chips.length > 1 ? clearAll : undefined}
+        pager={{ page: view.page, pageSize: view.pageSize, total: view.total, onPage: view.setPage }}
       />
 
       <DataGrid
@@ -168,13 +167,8 @@ export default function TACandidatesPage() {
           return (
             <tr key={r.id} onClick={() => navigate(`/ta/candidates/${r.candidateId}`)} style={{ cursor: 'pointer' }}>
               <td>
-                <span className="ta-cell-cand">
-                  <Avatar name={r.name} />
-                  <span>
-                    <span className="ta-cell-cand__name">{r.name}</span><br />
-                    <span className="ta-cell-cand__sub">{r.email}</span>
-                  </span>
-                </span>
+                <span className="ta-cell-cand__name">{r.name}</span><br />
+                <span className="ta-cell-cand__sub">{r.email}</span>
               </td>
               <td>
                 <span className="ta-cell-strong">{r.job}</span><br />
@@ -188,7 +182,7 @@ export default function TACandidatesPage() {
               <td>
                 <span className="ta-rowactions" onClick={(e) => e.stopPropagation()}>
                   <a className="ta-iconbtn" href={`mailto:${r.email}`} aria-label={`Email ${r.name}`}><Icon name="Mail" size={15} /></a>
-                  <button className="ta-iconbtn" onClick={() => navigate(`/ta/candidates/${r.candidateId}`)} aria-label="Open candidate"><Icon name="ArrowRight" size={15} /></button>
+                  <button className="ta-iconbtn" onClick={() => navigate(`/ta/candidates/${r.candidateId}`)} aria-label="Open candidate"><Icon name="ChevronRight" size={17} /></button>
                 </span>
               </td>
             </tr>

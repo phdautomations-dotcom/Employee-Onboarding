@@ -9,7 +9,7 @@ import OfferDrawer from '../../components/workflow/OfferDrawer.jsx';
 import { EmptyState } from '../../components/common/States.jsx';
 import { useApp } from '../../context/AppContext.jsx';
 import { useToast } from '../../context/ToastContext.jsx';
-import { APP_STATUS, OFFER_STATUS_META } from '../../constants/statuses.js';
+import { APP_STATUS, OFFER_STATUS, OFFER_STATUS_META } from '../../constants/statuses.js';
 import { findJob } from '../../data/jobs.js';
 import { formatDate, formatCurrencyINR } from '../../utils/format.js';
 
@@ -23,7 +23,7 @@ const COLUMNS = [
 ];
 
 export default function TAOffersPage() {
-  const { data, getApplication, offerFor, saveOffer } = useApp();
+  const { data, getApplication, offerFor, saveOffer, confirmOfferAccepted } = useApp();
   const toast = useToast();
   const navigate = useNavigate();
   const [q, setQ] = useState('');
@@ -65,7 +65,7 @@ export default function TAOffersPage() {
                     <div className="text-xs text-secondary">{a.candidateId} · {a.jobTitle} · all documents verified</div>
                   </div>
                   <Button size="sm" icon="FileCheck" onClick={() => setPrepareApp(a)}>
-                    Prepare Offer
+                    Record extended offer
                   </Button>
                 </div>
               </div>
@@ -101,9 +101,20 @@ export default function TAOffersPage() {
                 <td>{formatCurrencyINR(r.compensation)}</td>
                 <td><Badge tone={m.tone} icon={m.icon}>{m.label}</Badge></td>
                 <td>
-                  <Button size="sm" variant="secondary" icon="Eye" onClick={() => navigate(`/ta/candidates/${r.candidateId}`)}>
-                    Open
-                  </Button>
+                  <div className="row gap-2">
+                    {r.status === OFFER_STATUS.ISSUED && (
+                      <Button
+                        size="sm"
+                        icon="CheckCircle2"
+                        onClick={() => { confirmOfferAccepted(r.id); toast.success(`${r.candidate}'s acceptance confirmed — handed over to HR.`); }}
+                      >
+                        Confirm accepted
+                      </Button>
+                    )}
+                    <Button size="sm" variant="secondary" icon="Eye" onClick={() => navigate(`/ta/candidates/${r.candidateId}`)}>
+                      Open
+                    </Button>
+                  </div>
                 </td>
               </tr>
             );
@@ -118,10 +129,10 @@ export default function TAOffersPage() {
           application={prepareApp}
           job={prepareApp.jobId ? findJob(prepareApp.jobId) : null}
           existingOffer={null}
-          onSave={(payload, submit) => {
-            saveOffer(prepareApp.id, payload, submit);
+          onSave={(payload) => {
+            saveOffer(prepareApp.id, payload, true);
             setPrepareApp(null);
-            toast.success(submit ? 'Offer submitted for HR approval.' : 'Offer draft saved.');
+            toast.success('Extended offer recorded — awaiting the candidate\'s response.');
           }}
         />
       )}

@@ -1,8 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import Button from '../../components/ta/Button.jsx';
-import EmptyState from '../../components/ta/EmptyState.jsx';
-import JobCard from '../../components/JobCard.jsx';
-import JobFilters from '../../components/JobFilters.jsx';
+import JobBrowser from '../../components/JobBrowser.jsx';
 import { useApp } from '../../context/AppContext.jsx';
 import { useJobFilters } from '../../hooks/useJobFilters.js';
 
@@ -21,20 +19,7 @@ export default function JobsPage() {
         <Button variant="ghost" icon="FileText" onClick={() => navigate('/candidate/apply')}>Submit general application</Button>
       </div>
 
-      <JobFilters f={f} />
-
-      {f.filtered.length === 0 ? (
-        <EmptyState
-          icon="SearchX"
-          title="No opportunities match your filters"
-          message="Try a different keyword or clear your filters."
-          action={<Button variant="ghost" onClick={f.clear}>Clear filters</Button>}
-        />
-      ) : (
-        <div className="cx-joblist">
-          {f.filtered.map((job) => <JobCard key={job.id} job={job} />)}
-        </div>
-      )}
+      <JobBrowser f={f} />
     </div>
   );
 }

@@ -1,28 +1,62 @@
 import Icon from './common/Icon.jsx';
 import { EXPERIENCE_OPTIONS } from '../hooks/useJobFilters.js';
 
-/* Search + filter row for the public job list. Takes the object from
-   useJobFilters() and wires each control to it. */
+/* Filter panel for the job browser — sits in the right column, sticky. */
 export default function JobFilters({ f }) {
-  const sel = (value, onChange, label, options) => (
-    <select className="ta-input ta-input--select" style={{ width: 'auto', minWidth: 140 }} value={value} onChange={(e) => onChange(e.target.value)} aria-label={label}>
-      <option value="all">{label}: All</option>
-      {options.map((o) => (typeof o === 'string'
-        ? <option key={o} value={o}>{o}</option>
-        : <option key={o.value} value={o.value}>{o.label}</option>))}
-    </select>
+  const select = (label, value, onChange, options) => (
+    <div className="cx-ff__field">
+      <span className={value !== 'all' ? 'is-active' : ''}>{label}</span>
+      <select className="ta-select cx-ff__select" value={value} onChange={(e) => onChange(e.target.value)}>
+        <option value="all">All</option>
+        {options.map((o) => (typeof o === 'string'
+          ? <option key={o} value={o}>{o}</option>
+          : <option key={o.value} value={o.value}>{o.label}</option>))}
+      </select>
+    </div>
   );
 
-  return (
-    <div className="ta-toolbar">
-      <div className="ta-search ta-search--wide">
-        <Icon name="Search" size={16} />
-        <input value={f.q} placeholder="Search by job title, skill or keyword" onChange={(e) => f.setQ(e.target.value)} />
+  const chips = (label, value, onChange, options) => {
+    if (options.length < 2) return null;
+    return (
+      <div className="cx-ff__field">
+        <span className={value !== 'all' ? 'is-active' : ''}>{label}</span>
+        <div className="cx-ff__chips">
+          {options.map((o) => {
+            const v = typeof o === 'string' ? o : o.value;
+            const l = typeof o === 'string' ? o : o.label;
+            const on = value === v;
+            return (
+              <button
+                key={v}
+                type="button"
+                className={`cx-ff__chip${on ? ' is-on' : ''}`}
+                onClick={() => onChange(on ? 'all' : v)}
+              >
+                {on && <Icon name="Check" size={12} />}
+                {l}
+              </button>
+            );
+          })}
+        </div>
       </div>
-      {sel(f.dept, f.setDept, 'Department', f.facets.departments)}
-      {sel(f.mode, f.setMode, 'Location', f.facets.modes)}
-      {sel(f.type, f.setType, 'Type', f.facets.types)}
-      {sel(f.exp, f.setExp, 'Experience', EXPERIENCE_OPTIONS)}
-    </div>
+    );
+  };
+
+  return (
+    <aside className="cx-ff">
+      <div className="cx-ff__head">
+        <span><span className="cx-ff__headicon"><Icon name="SlidersHorizontal" size={13} /></span> Filters</span>
+        {f.active && <button type="button" className="ta-link" onClick={f.clear}>Clear all</button>}
+      </div>
+
+      {select('Department', f.dept, f.setDept, f.facets.departments)}
+      {chips('Work location', f.mode, f.setMode, f.facets.modes)}
+      {chips('Employment type', f.type, f.setType, f.facets.types)}
+      {chips('Experience', f.exp, f.setExp, EXPERIENCE_OPTIONS)}
+
+      <div className="cx-ff__foot">
+        <strong>{f.filtered.length}</strong> of {f.facets.total} roles match
+      </div>
+    </aside>
   );
 }
