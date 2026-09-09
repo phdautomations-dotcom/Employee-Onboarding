@@ -191,18 +191,20 @@ export default function TADashboard() {
               <Icon name={updatesOpen ? 'ChevronUp' : 'ChevronDown'} size={16} />
             </span>
           </button>
-          <div className="ta-updates__list" hidden={!updatesOpen}>
-            {candidateUpdates.map((u) => (
-              <button key={u.id} type="button" className="ta-updates__row" onClick={() => navigate(`/ta/candidates/${u.candidateId}`)}>
-                <span className="ta-updates__icon"><Icon name={UPDATE_ICON[u.title] || 'Bell'} size={14} /></span>
-                <span className="ta-updates__body">
-                  <span className="ta-updates__title">{u.who} — {u.title}</span>
-                  <span className="ta-cell-sub">{u.description}</span>
-                </span>
-                <span className="ta-updates__when">{timeAgo(u.at)} <Icon name="ArrowRight" size={13} /></span>
-              </button>
-            ))}
-          </div>
+          {updatesOpen && (
+            <div className="ta-updates__list">
+              {candidateUpdates.map((u) => (
+                <button key={u.id} type="button" className="ta-updates__row" onClick={() => navigate(`/ta/candidates/${u.candidateId}`)}>
+                  <span className="ta-updates__icon"><Icon name={UPDATE_ICON[u.title] || 'Bell'} size={14} /></span>
+                  <span className="ta-updates__body">
+                    <span className="ta-updates__title">{u.who} — {u.title}</span>
+                    <span className="ta-cell-sub">{u.description}</span>
+                  </span>
+                  <span className="ta-updates__when">{timeAgo(u.at)} <Icon name="ArrowRight" size={13} /></span>
+                </button>
+              ))}
+            </div>
+          )}
         </section>
       )}
 
