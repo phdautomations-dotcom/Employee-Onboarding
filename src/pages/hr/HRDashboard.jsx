@@ -284,7 +284,7 @@ export default function HRDashboard() {
               {accepted.length} in the lifecycle · {accepted.length - employees.length} still onboarding
             </p>
             <LifecycleFunnel stages={lifecycle} />
-            <p className="ta-lc__foot">
+            <p className="ta-funnel__foot">
               <Icon name="AlertTriangle" size={12} />
               <strong>{bottleneck.label}</strong> needs attention — {bottleneck.note}.
               <button className="ta-link" onClick={() => navigate(bottleneck.to)}>Resolve →</button>
