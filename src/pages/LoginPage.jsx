@@ -7,6 +7,15 @@ import mark from '../assets/centrik-logo-white.png';
 
 const DOMAIN = '@ccentrik.com';
 
+const JOURNEY = [
+  { label: 'Application', icon: 'FileText' },
+  { label: 'Screening', icon: 'Eye' },
+  { label: 'Interview', icon: 'CalendarDays' },
+  { label: 'Offer', icon: 'FileCheck' },
+  { label: 'Onboarding', icon: 'ClipboardCheck' },
+  { label: 'Active employee', icon: 'UserRoundCheck' },
+];
+
 /* No backend — infer the internal role from the username so the customer isn't
    asked to pick one. Routing / guards / session are unchanged. */
 function roleFromUser(username) {
@@ -46,14 +55,21 @@ export default function LoginPage() {
     <div className="wsauth">
       <aside className="wsauth__aside">
         <img className="wsauth__logo wsauth__logo--lg" src={mark} alt="Ccentrik" />
-        <h1>
-          One internal workspace for<br />
-          <span>HR, hiring &amp; every employee.</span>
-        </h1>
-        <p>
-          From a candidate&rsquo;s first application to an employee&rsquo;s day&#8209;to&#8209;day &mdash;
-          Talent Acquisition, HR and the whole team work in one place.
-        </p>
+
+        <div className="wsauth__pitch">
+          <h1>From applicant to employee,<br /><span>one continuous workspace.</span></h1>
+          <p>Talent Acquisition, HR and every team member — working the same journey, end to end.</p>
+        </div>
+
+        <ol className="wsjourney" aria-hidden="true">
+          <span className="wsjourney__rail"><span className="wsjourney__pulse" /></span>
+          {JOURNEY.map((s, i) => (
+            <li className="wsjourney__step" key={s.label} style={{ '--i': i }}>
+              <span className="wsjourney__node"><Icon name={s.icon} size={14} /></span>
+              <span className="wsjourney__label">{s.label}</span>
+            </li>
+          ))}
+        </ol>
       </aside>
 
       <main className="wsauth__main">
