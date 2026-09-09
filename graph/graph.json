@@ -1,9 +1,9 @@
 {
   "app": "recruitment-onboarding-frontend",
-  "generatedAt": "2026-09-09T16:16:45.993Z",
+  "generatedAt": "2026-09-09T17:02:49.461Z",
   "stats": {
-    "files": 113,
-    "edges": 385,
+    "files": 112,
+    "edges": 381,
     "layers": {
       "entry": 2,
       "component": 51,
@@ -15,18 +15,18 @@
       "hook": 3,
       "style": 3,
       "layout": 3,
-      "page": 28,
+      "page": 27,
       "util": 4
     }
   },
   "routes": [
     {
       "path": "/",
-      "component": "HomePage"
+      "component": "LoginPage"
     },
     {
       "path": "/login",
-      "component": "LoginPage"
+      "component": "Navigate"
     },
     {
       "path": "/candidate",
@@ -176,7 +176,7 @@
     },
     {
       "id": "src/context/AppContext.jsx",
-      "importers": 32
+      "importers": 31
     },
     {
       "id": "src/utils/format.js",
@@ -188,14 +188,14 @@
     },
     {
       "id": "src/components/common/Button.jsx",
-      "importers": 14
-    },
-    {
-      "id": "src/constants/roles.js",
-      "importers": 14
+      "importers": 13
     },
     {
       "id": "src/components/ta/Button.jsx",
+      "importers": 13
+    },
+    {
+      "id": "src/constants/roles.js",
       "importers": 13
     },
     {
@@ -411,7 +411,6 @@
         "src/components/workflow/OfferDrawer.jsx",
         "src/components/workflow/ReasonModal.jsx",
         "src/components/workflow/ScheduleInterviewModal.jsx",
-        "src/pages/LoginPage.jsx",
         "src/pages/shared/DocumentsReview.jsx",
         "src/pages/shared/SettingsPage.jsx",
         "src/pages/talentAcquisition/TAInterviewsPage.jsx",
@@ -594,6 +593,7 @@
         "src/components/ta/EmptyState.jsx",
         "src/components/ta/Field.jsx",
         "src/components/ta/KpiCard.jsx",
+        "src/components/ta/LifecycleFunnel.jsx",
         "src/components/ta/Pager.jsx",
         "src/components/ta/StatBar.jsx",
         "src/components/ta/Tag.jsx",
@@ -601,7 +601,6 @@
         "src/components/workflow/RecruitmentTimeline.jsx",
         "src/layouts/HRLayout.jsx",
         "src/layouts/TALayout.jsx",
-        "src/pages/HomePage.jsx",
         "src/pages/LoginPage.jsx",
         "src/pages/candidate/ApplicationSuccessPage.jsx",
         "src/pages/candidate/ApplyPage.jsx",
@@ -857,7 +856,7 @@
       "name": "DemoFlow.jsx",
       "dir": "src/components/demo",
       "layer": "component",
-      "loc": 471,
+      "loc": 466,
       "summary": "",
       "exports": [
         "default (DemoFlow)"
@@ -992,7 +991,7 @@
       "name": "ProfileMenu.jsx",
       "dir": "src/components/navigation",
       "layer": "navigation",
-      "loc": 89,
+      "loc": 90,
       "summary": "",
       "exports": [
         "default (ProfileMenu)"
@@ -1344,15 +1343,15 @@
       "name": "LifecycleFunnel.jsx",
       "dir": "src/components/ta",
       "layer": "component",
-      "loc": 86,
+      "loc": 49,
       "summary": "",
       "exports": [
         "default (LifecycleFunnel)"
       ],
-      "externals": [
-        "react"
+      "externals": [],
+      "imports": [
+        "src/components/common/Icon.jsx"
       ],
-      "imports": [],
       "importedBy": [
         "src/pages/hr/HRDashboard.jsx"
       ]
@@ -1685,7 +1684,6 @@
         "src/components/navigation/TATopbar.jsx",
         "src/components/navigation/Topbar.jsx",
         "src/context/AppContext.jsx",
-        "src/pages/HomePage.jsx",
         "src/pages/LoginPage.jsx",
         "src/pages/hr/HRDashboard.jsx",
         "src/pages/shared/ProfilePage.jsx",
@@ -1783,7 +1781,6 @@
         "src/components/routing/RoleRoute.jsx",
         "src/layouts/HRLayout.jsx",
         "src/main.jsx",
-        "src/pages/HomePage.jsx",
         "src/pages/LoginPage.jsx",
         "src/pages/candidate/ApplyPage.jsx",
         "src/pages/candidate/CandidateProfilePage.jsx",
@@ -2052,33 +2049,11 @@
       "importedBy": []
     },
     {
-      "id": "src/pages/HomePage.jsx",
-      "name": "HomePage.jsx",
-      "dir": "src/pages",
-      "layer": "page",
-      "loc": 151,
-      "summary": "",
-      "exports": [
-        "default (HomePage)"
-      ],
-      "externals": [
-        "react-router-dom"
-      ],
-      "imports": [
-        "src/components/common/Icon.jsx",
-        "src/context/AppContext.jsx",
-        "src/constants/roles.js"
-      ],
-      "importedBy": [
-        "src/routes/AppRoutes.jsx"
-      ]
-    },
-    {
       "id": "src/pages/LoginPage.jsx",
       "name": "LoginPage.jsx",
       "dir": "src/pages",
       "layer": "page",
-      "loc": 72,
+      "loc": 135,
       "summary": "",
       "exports": [
         "default (LoginPage)"
@@ -2089,7 +2064,6 @@
       ],
       "imports": [
         "src/components/common/Icon.jsx",
-        "src/components/common/Button.jsx",
         "src/context/AppContext.jsx",
         "src/constants/roles.js"
       ],
@@ -2805,7 +2779,7 @@
       "name": "AppRoutes.jsx",
       "dir": "src/routes",
       "layer": "route",
-      "loc": 114,
+      "loc": 113,
       "summary": "",
       "exports": [
         "default (AppRoutes)"
@@ -2819,7 +2793,6 @@
         "src/layouts/HRLayout.jsx",
         "src/components/routing/RoleRoute.jsx",
         "src/pages/LoginPage.jsx",
-        "src/pages/HomePage.jsx",
         "src/pages/candidate/LandingPage.jsx",
         "src/pages/candidate/JobsPage.jsx",
         "src/pages/candidate/JobDetailsPage.jsx",
@@ -2853,7 +2826,7 @@
       "name": "home.css",
       "dir": "src/styles",
       "layer": "style",
-      "loc": 196,
+      "loc": 142,
       "summary": "",
       "exports": [],
       "externals": [],
@@ -2867,7 +2840,7 @@
       "name": "ta.css",
       "dir": "src/styles",
       "layer": "style",
-      "loc": 1518,
+      "loc": 1521,
       "summary": "",
       "exports": [],
       "externals": [],
@@ -3323,6 +3296,10 @@
       "target": "src/components/common/Icon.jsx"
     },
     {
+      "source": "src/components/ta/LifecycleFunnel.jsx",
+      "target": "src/components/common/Icon.jsx"
+    },
+    {
       "source": "src/components/ta/Pager.jsx",
       "target": "src/components/common/Icon.jsx"
     },
@@ -3579,24 +3556,8 @@
       "target": "src/styles/home.css"
     },
     {
-      "source": "src/pages/HomePage.jsx",
-      "target": "src/components/common/Icon.jsx"
-    },
-    {
-      "source": "src/pages/HomePage.jsx",
-      "target": "src/context/AppContext.jsx"
-    },
-    {
-      "source": "src/pages/HomePage.jsx",
-      "target": "src/constants/roles.js"
-    },
-    {
       "source": "src/pages/LoginPage.jsx",
       "target": "src/components/common/Icon.jsx"
-    },
-    {
-      "source": "src/pages/LoginPage.jsx",
-      "target": "src/components/common/Button.jsx"
     },
     {
       "source": "src/pages/LoginPage.jsx",
@@ -4429,10 +4390,6 @@
     {
       "source": "src/routes/AppRoutes.jsx",
       "target": "src/pages/LoginPage.jsx"
-    },
-    {
-      "source": "src/routes/AppRoutes.jsx",
-      "target": "src/pages/HomePage.jsx"
     },
     {
       "source": "src/routes/AppRoutes.jsx",

@@ -128,15 +128,6 @@ export default function DemoFlow() {
   const stoppedRef = useRef(false);
   const runningRef = useRef(false);
 
-  // Auto-play when the landing page's "Watch the demo run" sent us here.
-  useEffect(() => {
-    let armed = false;
-    try { armed = localStorage.getItem('talentflow.demo.autostart') === '1'; localStorage.removeItem('talentflow.demo.autostart'); } catch { /* ignore */ }
-    if (armed) { setOpen(true); const t = setTimeout(() => runBot(), 900); return () => clearTimeout(t); }
-    return undefined;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   const trackedApp = data?.myApplicationId ? getApplication(data.myApplicationId) : null;
   const pos = trackedApp ? (ORD[trackedApp.status] ?? 0) : 0;
   const docsUploaded = trackedApp

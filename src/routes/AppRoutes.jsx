@@ -11,7 +11,6 @@ import HRLayout from '../layouts/HRLayout.jsx';
 import RoleRoute from '../components/routing/RoleRoute.jsx';
 
 import LoginPage from '../pages/LoginPage.jsx';
-import HomePage from '../pages/HomePage.jsx';
 
 import LandingPage from '../pages/candidate/LandingPage.jsx';
 import JobsPage from '../pages/candidate/JobsPage.jsx';
@@ -43,8 +42,8 @@ import ProfilePage from '../pages/shared/ProfilePage.jsx';
 export default function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<HomePage />} />
-      <Route path="/login" element={<LoginPage />} />
+      <Route path="/" element={<LoginPage />} />
+      <Route path="/login" element={<Navigate to="/" replace />} />
 
       {/* Candidate / public */}
       <Route element={<CandidateLayout />}>
