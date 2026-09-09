@@ -242,6 +242,7 @@ export default function HRDashboard() {
         </Card>
       </div>
 
+      <div className="ta-bento">
       <Card
         title="Onboarding Stage-wise Progress"
         action={<button className="ta-link" onClick={() => navigate('/hr/candidates?stage=onboarding')}>View details →</button>}
@@ -281,6 +282,7 @@ export default function HRDashboard() {
           <DonutChart slices={deptSlices} caption="joining" onSliceClick={() => navigate('/hr/candidates?stage=onboarding')} />
         )}
       </Card>
+      </div>
     </>
   );
 }
