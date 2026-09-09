@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import Icon from '../common/Icon.jsx';
 import { useApp } from '../../context/AppContext.jsx';
 import { ROLES } from '../../constants/roles.js';
@@ -107,6 +107,7 @@ function fieldByLabel(root, text) {
 
 export default function DemoFlow() {
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const app = useApp();
   const { data, getApplication, documentsFor, setRole, startGuidedDemo } = app;
 
@@ -390,6 +391,9 @@ export default function DemoFlow() {
       <span className="botcursor__ring" />
     </div>
   ) : null;
+
+  // Hide the launcher on the marketing / sign-in screens (unless mid-run).
+  if (!playing && (pathname === '/' || pathname === '/login')) return null;
 
   if (playing) {
     return (
