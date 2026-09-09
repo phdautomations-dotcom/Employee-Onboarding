@@ -24,6 +24,7 @@ import {
   PIPELINE_STAGES,
   stageIndexForStatus,
   stageBadgeForStatus,
+  isDocMandatory,
 } from '../../constants/statuses.js';
 import { formatDate, formatCurrencyINR } from '../../utils/format.js';
 
@@ -53,7 +54,7 @@ export default function TACandidateDetailPage() {
     getApplicationByCandidate, interviewsFor, documentsFor, offerFor, employeeFor, activitiesFor,
     startReview, approveApplication, returnApplication, rejectApplication,
     scheduleInterview, recordInterviewResult, advanceToDocuments,
-    verifyDocument, rejectDocument, saveOffer,
+    verifyDocument, rejectDocument, saveOffer, confirmOfferAccepted,
   } = useApp();
 
   const app = getApplicationByCandidate(candidateId);
@@ -127,6 +128,11 @@ export default function TACandidateDetailPage() {
           {CAN_OFFER.includes(app.status) && (
             <Button icon="FileCheck" onClick={() => setModal('offer')}>{offer ? 'Edit offer' : 'Prepare offer'}</Button>
           )}
+          {app.status === APP_STATUS.OFFER_ISSUED && offer && (
+            <Button icon="CheckCircle2" onClick={() => act(() => confirmOfferAccepted(offer.id), 'Offer acceptance confirmed — handed over to HR.')}>
+              Confirm offer accepted
+            </Button>
+          )}
           <a className="ta-btn ta-btn--ghost" href={`mailto:${p.email}`}><Icon name="Mail" size={15} /> Contact</a>
         </div>
       </div>
@@ -140,6 +146,12 @@ export default function TACandidateDetailPage() {
 
       {app.status === APP_STATUS.RETURNED && (
         <div className="ta-note ta-note--warn"><Icon name="RotateCcw" size={15} /> Returned to candidate: {app.returnReason}</div>
+      )}
+      {app.status === APP_STATUS.OFFER_ISSUED && (
+        <div className="ta-note ta-note--info">
+          <Icon name="Mail" size={15} />
+          <span>Offer letter sent. When the candidate replies by email to accept, click <strong>Confirm offer accepted</strong> to hand over to HR.</span>
+        </div>
       )}
       {rejected && (
         <div className="ta-note ta-note--err"><Icon name="XCircle" size={15} /> Application rejected{app.rejectReason ? `: ${app.rejectReason}` : ''}</div>
@@ -214,12 +226,16 @@ export default function TACandidateDetailPage() {
                 {documents.map((doc) => {
                   const m = DOC_STATUS_META[doc.status];
                   const tone = { info: 'blue', success: 'green', error: 'red', warning: 'amber', neutral: 'grey' }[m.tone] || 'grey';
+                  const mandatory = isDocMandatory(doc.key);
                   return (
                     <div className="ta-docrow" key={doc.id}>
                       <span className="ta-docrow__icon"><Icon name="FileText" size={16} /></span>
                       <div className="grow">
-                        <div className="ta-cell-strong">{doc.label}</div>
-                        <div className="ta-cell-sub">{doc.fileName || 'No file uploaded'}{doc.status === DOC_STATUS.REJECTED && doc.rejectionReason ? ` · ${doc.rejectionReason}` : ''}</div>
+                        <div className="ta-cell-strong">{doc.label}{mandatory && <span className="cx-req" title="Mandatory"> *</span>}</div>
+                        <div className="ta-cell-sub">{doc.fileName || (doc.status === DOC_STATUS.WAIVED ? 'Not provided by candidate' : 'No file uploaded')}{doc.status === DOC_STATUS.REJECTED && doc.rejectionReason ? ` · ${doc.rejectionReason}` : ''}</div>
+                        {doc.status === DOC_STATUS.WAIVED && doc.skipReason && (
+                          <div className="ta-cell-sub" style={{ color: 'var(--tag-amber-fg)' }}>Candidate's reason: {doc.skipReason}</div>
+                        )}
                       </div>
                       <Tag tone={tone}>{m.label}</Tag>
                       {canVerifyDocs && [DOC_STATUS.UPLOADED, DOC_STATUS.VERIFIED].includes(doc.status) && (

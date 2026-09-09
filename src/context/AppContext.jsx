@@ -8,6 +8,7 @@ import {
   DOC_STATUS,
   OFFER_STATUS,
   REQUIRED_DOCUMENTS,
+  isDocMandatory,
 } from '../constants/statuses.js';
 import { ROLES } from '../constants/roles.js';
 import {
@@ -73,9 +74,24 @@ export function AppProvider({ children }) {
     });
   };
 
-  const allRequiredDocsVerified = (draft, applicationId) => {
+  // A required doc is "cleared" when it's verified, or (for non-mandatory docs)
+  // when the candidate has given a reason for not providing it.
+  const allRequiredDocsCleared = (draft, applicationId) => {
     const docs = draft.documents.filter((d) => d.applicationId === applicationId && d.required);
-    return docs.length > 0 && docs.every((d) => d.status === DOC_STATUS.VERIFIED);
+    if (docs.length === 0) return false;
+    return docs.every(
+      (d) => d.status === DOC_STATUS.VERIFIED || (d.status === DOC_STATUS.WAIVED && !isDocMandatory(d.key))
+    );
+  };
+
+  const maybeAdvanceDocs = (draft, applicationId) => {
+    if (!allRequiredDocsCleared(draft, applicationId)) return;
+    const app = draft.applications.find((a) => a.id === applicationId);
+    if (app && app.status === APP_STATUS.DOC_VERIFICATION) {
+      app.status = APP_STATUS.DOCS_VERIFIED;
+      logActivity(draft, app.id, 'documents', 'All Documents Verified', 'All mandatory documents verified. Offer preparation is now available.', 'Himanshu Singh');
+      notify(draft, ROLES.TA, 'Documents verified', `All documents cleared for ${app.personal.firstName} ${app.personal.lastName}. Prepare offer.`);
+    }
   };
 
   /* ---------- candidate: submit application ---------- */
@@ -319,6 +335,7 @@ export function AppProvider({ children }) {
         doc.uploadedAt = new Date().toISOString();
         doc.rejectionReason = null;
         doc.verifiedAt = null;
+        doc.skipReason = null;
         logActivity(draft, doc.applicationId, 'documents', 'Document Uploaded', `${doc.label} uploaded and is under verification.`, 'Candidate');
         notify(draft, ROLES.TA, 'Document uploaded', `${doc.label} uploaded for verification.`);
       });
@@ -334,15 +351,28 @@ export function AppProvider({ children }) {
         doc.status = DOC_STATUS.VERIFIED;
         doc.verifiedAt = new Date().toISOString();
         doc.rejectionReason = null;
+        doc.skipReason = null;
         logActivity(draft, doc.applicationId, 'documents', 'Document Verified', `${doc.label} verified.`, 'Himanshu Singh');
-        if (allRequiredDocsVerified(draft, doc.applicationId)) {
-          const app = draft.applications.find((a) => a.id === doc.applicationId);
-          if (app && app.status === APP_STATUS.DOC_VERIFICATION) {
-            app.status = APP_STATUS.DOCS_VERIFIED;
-            logActivity(draft, app.id, 'documents', 'All Documents Verified', 'All mandatory documents verified. Offer preparation is now available.', 'Himanshu Singh');
-            notify(draft, ROLES.TA, 'Documents verified', `All documents verified for ${app.personal.firstName} ${app.personal.lastName}. Prepare offer.`);
-          }
-        }
+        maybeAdvanceDocs(draft, doc.applicationId);
+      });
+    },
+    [mutate]
+  );
+
+  /* ---------- candidate: give a reason for a document they can't provide ---------- */
+  const waiveDocument = useCallback(
+    (documentId, reason) => {
+      mutate((draft) => {
+        const doc = draft.documents.find((d) => d.id === documentId);
+        if (!doc || isDocMandatory(doc.key)) return; // mandatory docs must be uploaded
+        doc.status = DOC_STATUS.WAIVED;
+        doc.skipReason = reason;
+        doc.fileName = null;
+        doc.uploadedAt = null;
+        doc.verifiedAt = null;
+        logActivity(draft, doc.applicationId, 'documents', 'Document Not Provided', `${doc.label} — reason: ${reason}`, 'Candidate');
+        notify(draft, ROLES.TA, 'Document reason submitted', `${doc.label} not provided by the candidate — a reason was given.`);
+        maybeAdvanceDocs(draft, doc.applicationId);
       });
     },
     [mutate]
@@ -414,6 +444,27 @@ export function AppProvider({ children }) {
         logActivity(draft, offer.applicationId, 'onboarding', 'Handed Over to HR', `${offer.candidateName} accepted the offer for ${role} — HR now owns onboarding.`, 'System');
         notify(draft, ROLES.CANDIDATE, 'Almost there', 'Please fill in your onboarding details.');
         notify(draft, ROLES.TA, 'Offer accepted', `${offer.candidateName} accepted the offer for ${role}. Handed over to HR for onboarding.`);
+        notify(draft, ROLES.HR, 'New onboarding handover', `${offer.candidateName} accepted their offer for ${role} — ready to start HR onboarding.`);
+      });
+    },
+    [mutate]
+  );
+
+  /* ---------- TA confirms the candidate accepted the offer (they reply by email,
+     not in the app) — same effect as the candidate accepting it directly. ---------- */
+  const confirmOfferAccepted = useCallback(
+    (offerId) => {
+      mutate((draft) => {
+        const offer = draft.offers.find((o) => o.id === offerId);
+        if (!offer || offer.status === OFFER_STATUS.ACCEPTED) return;
+        offer.status = OFFER_STATUS.ACCEPTED;
+        offer.decisionAt = new Date().toISOString();
+        const app = draft.applications.find((a) => a.id === offer.applicationId);
+        if (app) app.status = APP_STATUS.ONBOARDING_PENDING;
+        const role = app?.jobTitle || 'a role';
+        logActivity(draft, offer.applicationId, 'offer', 'Offer Acceptance Confirmed', `TA confirmed ${offer.candidateName} accepted the offer for ${role} (received by email).`, 'Himanshu Singh');
+        logActivity(draft, offer.applicationId, 'onboarding', 'Handed Over to HR', `${offer.candidateName} accepted the offer for ${role} — HR now owns onboarding.`, 'System');
+        notify(draft, ROLES.CANDIDATE, 'Onboarding started', 'Your acceptance is confirmed. Please fill in your onboarding details.');
         notify(draft, ROLES.HR, 'New onboarding handover', `${offer.candidateName} accepted their offer for ${role} — ready to start HR onboarding.`);
       });
     },
@@ -629,8 +680,10 @@ export function AppProvider({ children }) {
       uploadDocument,
       verifyDocument,
       rejectDocument,
+      waiveDocument,
       saveOffer,
       acceptOffer,
+      confirmOfferAccepted,
       declineOffer,
       submitOnboardingForms,
       verifyOnboarding,
@@ -661,8 +714,10 @@ export function AppProvider({ children }) {
       uploadDocument,
       verifyDocument,
       rejectDocument,
+      waiveDocument,
       saveOffer,
       acceptOffer,
+      confirmOfferAccepted,
       declineOffer,
       submitOnboardingForms,
       verifyOnboarding,

@@ -1,6 +1,6 @@
 {
   "app": "recruitment-onboarding-frontend",
-  "generatedAt": "2026-09-09T07:20:53.587Z",
+  "generatedAt": "2026-09-09T10:20:58.627Z",
   "stats": {
     "files": 111,
     "edges": 381,
@@ -180,7 +180,7 @@
     },
     {
       "id": "src/utils/format.js",
-      "importers": 25
+      "importers": 26
     },
     {
       "id": "src/constants/statuses.js",
@@ -660,7 +660,6 @@
         "src/components/workflow/OfferDrawer.jsx",
         "src/components/workflow/ReasonModal.jsx",
         "src/components/workflow/ScheduleInterviewModal.jsx",
-        "src/pages/candidate/MyApplicationPage.jsx",
         "src/pages/shared/SettingsPage.jsx"
       ]
     },
@@ -1696,7 +1695,7 @@
       "name": "statuses.js",
       "dir": "src/constants",
       "layer": "constant",
-      "loc": 228,
+      "loc": 234,
       "summary": "============================================================ Centralized status system. Every status has: label, tone (badge variant), icon (lucide name). ============================================================",
       "exports": [
         "APP_STATUS",
@@ -1715,6 +1714,8 @@
         "OFFER_STATUS",
         "OFFER_STATUS_META",
         "REQUIRED_DOCUMENTS",
+        "MANDATORY_DOC_KEYS",
+        "isDocMandatory",
         "DOC_CATEGORIES",
         "INTERVIEW_TYPES",
         "INTERVIEW_MODES"
@@ -1753,7 +1754,7 @@
       "name": "AppContext.jsx",
       "dir": "src/context",
       "layer": "context",
-      "loc": 691,
+      "loc": 746,
       "summary": "",
       "exports": [
         "AppProvider",
@@ -2221,7 +2222,7 @@
       "name": "MyApplicationPage.jsx",
       "dir": "src/pages/candidate",
       "layer": "page",
-      "loc": 453,
+      "loc": 491,
       "summary": "",
       "exports": [
         "default (MyApplicationPage)"
@@ -2236,7 +2237,6 @@
         "src/components/ta/Card.jsx",
         "src/components/ta/Tag.jsx",
         "src/components/ta/EmptyState.jsx",
-        "src/components/common/Modal.jsx",
         "src/components/common/Field.jsx",
         "src/context/AppContext.jsx",
         "src/context/ToastContext.jsx",
@@ -2543,7 +2543,7 @@
       "name": "TACandidateDetailPage.jsx",
       "dir": "src/pages/talentAcquisition",
       "layer": "page",
-      "loc": 322,
+      "loc": 338,
       "summary": "",
       "exports": [
         "default (TACandidateDetailPage)"
@@ -2608,7 +2608,7 @@
       "name": "TADashboard.jsx",
       "dir": "src/pages/talentAcquisition",
       "layer": "page",
-      "loc": 231,
+      "loc": 283,
       "summary": "",
       "exports": [
         "default (TADashboard)"
@@ -2627,7 +2627,8 @@
         "src/context/AppContext.jsx",
         "src/constants/roles.js",
         "src/constants/statuses.js",
-        "src/utils/metrics.js"
+        "src/utils/metrics.js",
+        "src/utils/format.js"
       ],
       "importedBy": [
         "src/routes/AppRoutes.jsx"
@@ -2746,7 +2747,7 @@
       "name": "TAOffersPage.jsx",
       "dir": "src/pages/talentAcquisition",
       "layer": "page",
-      "loc": 131,
+      "loc": 142,
       "summary": "",
       "exports": [
         "default (TAOffersPage)"
@@ -2825,7 +2826,7 @@
       "name": "ta.css",
       "dir": "src/styles",
       "layer": "style",
-      "loc": 1389,
+      "loc": 1440,
       "summary": "",
       "exports": [],
       "externals": [],
@@ -2873,6 +2874,7 @@
         "src/pages/shared/DocumentsReview.jsx",
         "src/pages/talentAcquisition/TACandidateDetailPage.jsx",
         "src/pages/talentAcquisition/TACandidatesPage.jsx",
+        "src/pages/talentAcquisition/TADashboard.jsx",
         "src/pages/talentAcquisition/TAInterviewsPage.jsx",
         "src/pages/talentAcquisition/TAJobDetailPage.jsx",
         "src/pages/talentAcquisition/TAJobsPage.jsx",
@@ -3697,10 +3699,6 @@
     },
     {
       "source": "src/pages/candidate/MyApplicationPage.jsx",
-      "target": "src/components/common/Modal.jsx"
-    },
-    {
-      "source": "src/pages/candidate/MyApplicationPage.jsx",
       "target": "src/components/common/Field.jsx"
     },
     {
@@ -4182,6 +4180,10 @@
     {
       "source": "src/pages/talentAcquisition/TADashboard.jsx",
       "target": "src/utils/metrics.js"
+    },
+    {
+      "source": "src/pages/talentAcquisition/TADashboard.jsx",
+      "target": "src/utils/format.js"
     },
     {
       "source": "src/pages/talentAcquisition/TADocumentsPage.jsx",

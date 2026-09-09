@@ -191,9 +191,11 @@ export const DOC_STATUS = {
   UPLOADED: 'UPLOADED',
   VERIFIED: 'VERIFIED',
   REJECTED: 'REJECTED',
+  WAIVED: 'WAIVED', // candidate gave a reason for not providing it (non-mandatory docs only)
 };
 export const DOC_STATUS_META = {
   PENDING: { label: 'Pending Upload', tone: 'neutral', icon: 'Clock3' },
+  WAIVED: { label: 'Reason provided', tone: 'warning', icon: 'MessageSquare' },
   UPLOADED: { label: 'Under Verification', tone: 'warning', icon: 'Eye' },
   VERIFIED: { label: 'Verified', tone: 'success', icon: 'CheckCircle2' },
   REJECTED: { label: 'Rejected', tone: 'error', icon: 'XCircle' },
@@ -214,12 +216,16 @@ export const OFFER_STATUS_META = {
 };
 
 export const REQUIRED_DOCUMENTS = [
-  { key: 'gov_id', label: 'Government ID', required: true, category: 'Identity' },
-  { key: 'photograph', label: 'Photograph', required: true, category: 'Identity' },
-  { key: 'education_cert', label: 'Education Certificate', required: true, category: 'Education' },
-  { key: 'experience_cert', label: 'Experience Certificate', required: true, category: 'Employment' },
-  { key: 'address_proof', label: 'Address Proof', required: true, category: 'Address' },
+  // `mandatory` docs must be uploaded — they cannot be skipped with a reason.
+  { key: 'gov_id', label: 'Government ID', required: true, mandatory: true, category: 'Identity' },
+  { key: 'photograph', label: 'Photograph', required: true, mandatory: true, category: 'Identity' },
+  { key: 'education_cert', label: 'Education Certificate', required: true, mandatory: true, category: 'Education' },
+  { key: 'experience_cert', label: 'Experience Certificate', required: true, mandatory: false, category: 'Employment' },
+  { key: 'address_proof', label: 'Address Proof', required: true, mandatory: false, category: 'Address' },
 ];
+
+export const MANDATORY_DOC_KEYS = REQUIRED_DOCUMENTS.filter((d) => d.mandatory).map((d) => d.key);
+export const isDocMandatory = (key) => MANDATORY_DOC_KEYS.includes(key);
 
 export const DOC_CATEGORIES = ['Identity', 'Education', 'Employment', 'Address'];
 

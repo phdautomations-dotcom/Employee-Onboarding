@@ -9,7 +9,7 @@ import OfferDrawer from '../../components/workflow/OfferDrawer.jsx';
 import { EmptyState } from '../../components/common/States.jsx';
 import { useApp } from '../../context/AppContext.jsx';
 import { useToast } from '../../context/ToastContext.jsx';
-import { APP_STATUS, OFFER_STATUS_META } from '../../constants/statuses.js';
+import { APP_STATUS, OFFER_STATUS, OFFER_STATUS_META } from '../../constants/statuses.js';
 import { findJob } from '../../data/jobs.js';
 import { formatDate, formatCurrencyINR } from '../../utils/format.js';
 
@@ -23,7 +23,7 @@ const COLUMNS = [
 ];
 
 export default function TAOffersPage() {
-  const { data, getApplication, offerFor, saveOffer } = useApp();
+  const { data, getApplication, offerFor, saveOffer, confirmOfferAccepted } = useApp();
   const toast = useToast();
   const navigate = useNavigate();
   const [q, setQ] = useState('');
@@ -101,9 +101,20 @@ export default function TAOffersPage() {
                 <td>{formatCurrencyINR(r.compensation)}</td>
                 <td><Badge tone={m.tone} icon={m.icon}>{m.label}</Badge></td>
                 <td>
-                  <Button size="sm" variant="secondary" icon="Eye" onClick={() => navigate(`/ta/candidates/${r.candidateId}`)}>
-                    Open
-                  </Button>
+                  <div className="row gap-2">
+                    {r.status === OFFER_STATUS.ISSUED && (
+                      <Button
+                        size="sm"
+                        icon="CheckCircle2"
+                        onClick={() => { confirmOfferAccepted(r.id); toast.success(`${r.candidate}'s acceptance confirmed — handed over to HR.`); }}
+                      >
+                        Confirm accepted
+                      </Button>
+                    )}
+                    <Button size="sm" variant="secondary" icon="Eye" onClick={() => navigate(`/ta/candidates/${r.candidateId}`)}>
+                      Open
+                    </Button>
+                  </div>
                 </td>
               </tr>
             );

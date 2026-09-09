@@ -15,6 +15,22 @@ import {
   stageIndexForStatus,
 } from '../../constants/statuses.js';
 import { countInWindow, trendPercent, groupCounts, noticePeriodDays } from '../../utils/metrics.js';
+import { timeAgo } from '../../utils/format.js';
+
+/* Activity entries that come from the candidate's own actions — these are the
+   "something changed, take a look" updates the TA shouldn't have to hunt for. */
+const CANDIDATE_UPDATE_TITLES = new Set([
+  'Application Submitted', 'Application Resubmitted', 'Document Uploaded',
+  'Document Not Provided', 'Onboarding Forms Submitted', 'Offer Accepted',
+]);
+const UPDATE_ICON = {
+  'Application Submitted': 'FileText',
+  'Application Resubmitted': 'RotateCcw',
+  'Document Uploaded': 'Upload',
+  'Document Not Provided': 'MessageSquare',
+  'Onboarding Forms Submitted': 'ClipboardList',
+  'Offer Accepted': 'CheckCircle2',
+};
 
 /* The five pipeline stages shown in the funnel + list, with the index in
    PIPELINE_STAGES a candidate must have reached to be counted. */
@@ -63,6 +79,17 @@ export default function TADashboard() {
   const apps = data.applications || [];
   const interviews = data.interviews || [];
   const offers = data.offers || [];
+  const activities = data.activities || [];
+
+  // Candidate-driven updates, newest first, resolved to a clickable candidate.
+  const appById = new Map(apps.map((a) => [a.id, a]));
+  const candidateUpdates = activities
+    .filter((a) => CANDIDATE_UPDATE_TITLES.has(a.title) && appById.has(a.applicationId))
+    .slice(0, 6)
+    .map((a) => {
+      const app = appById.get(a.applicationId);
+      return { ...a, candidateId: app.candidateId, who: `${app.personal.firstName} ${app.personal.lastName}` };
+    });
 
   // ----- FILTERING -----
   // Applications inside the selected time period (used by the pipeline + source chart).
@@ -150,6 +177,31 @@ export default function TADashboard() {
       <div className="ta-kpi-row">
         {kpis.map((k) => <KpiCard key={k.label} {...k} />)}
       </div>
+
+      {candidateUpdates.length > 0 && (
+        <section className="ta-updates">
+          <div className="ta-updates__head">
+            <span className="ta-updates__lead">
+              <Icon name="Bell" size={14} />
+              <strong>Candidate updates</strong>
+              <span className="ta-updates__count">{candidateUpdates.length}</span>
+            </span>
+            <button className="ta-link" onClick={() => navigate('/ta/activity')}>View all</button>
+          </div>
+          <div className="ta-updates__list">
+            {candidateUpdates.map((u) => (
+              <button key={u.id} type="button" className="ta-updates__row" onClick={() => navigate(`/ta/candidates/${u.candidateId}`)}>
+                <span className="ta-updates__icon"><Icon name={UPDATE_ICON[u.title] || 'Bell'} size={14} /></span>
+                <span className="ta-updates__body">
+                  <span className="ta-updates__title">{u.who} — {u.title}</span>
+                  <span className="ta-cell-sub">{u.description}</span>
+                </span>
+                <span className="ta-updates__when">{timeAgo(u.at)} <Icon name="ArrowRight" size={13} /></span>
+              </button>
+            ))}
+          </div>
+        </section>
+      )}
 
       <div className="ta-bento">
         <Card title="Candidates Pipeline" action={periodSelect}>
