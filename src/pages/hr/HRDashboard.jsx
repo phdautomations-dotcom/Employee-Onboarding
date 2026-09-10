@@ -19,7 +19,7 @@ export default function HRDashboard() {
   const { data, offerFor, activitiesFor } = useApp();
   const user = DEMO_USERS[ROLES.HR];
   const taName = DEMO_USERS[ROLES.TA].name;
-  const [handoverOpen, setHandoverOpen] = useState(true);   // collapse the whole list
+  const [handoverOpen, setHandoverOpen] = useState(false);  // collapsed by default
   const [handoverAll, setHandoverAll] = useState(false);    // show every row past the preview
 
   // ----- DATA -----
