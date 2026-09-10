@@ -27,6 +27,7 @@ import {
   isDocMandatory,
 } from '../../constants/statuses.js';
 import { formatDate, formatCurrencyINR } from '../../utils/format.js';
+import { collapseDocActivity } from '../../utils/activity.js';
 
 function Info({ label, value }) {
   return (
@@ -82,7 +83,7 @@ export default function TACandidateDetailPage() {
   const documents = documentsFor(app.id);
   const offer = offerFor(app.id);
   const employee = employeeFor(app.id);
-  const activities = activitiesFor(app.id);
+  const activities = collapseDocActivity(activitiesFor(app.id), documents.length);
   const badge = stageBadgeForStatus(app.status);
 
   const stageIdx = Math.max(0, stageIndexForStatus(app.status));

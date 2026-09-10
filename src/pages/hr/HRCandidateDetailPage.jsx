@@ -21,6 +21,7 @@ import {
   stageBadgeForStatus,
 } from '../../constants/statuses.js';
 import { formatDate, formatCurrencyINR } from '../../utils/format.js';
+import { collapseDocActivity } from '../../utils/activity.js';
 
 // The old system's tone names ('info'/'success'/...) don't match Tag's tone
 // names ('blue'/'green'/...) — map them once, same as the TA detail page does.
@@ -63,7 +64,7 @@ export default function HRCandidateDetailPage() {
   const documents = documentsFor(app.id);
   const offer = offerFor(app.id);
   const employee = employeeFor(app.id);
-  const activities = activitiesFor(app.id);
+  const activities = collapseDocActivity(activitiesFor(app.id), documents.length);
   const badge = stageBadgeForStatus(app.status);
 
   const stageIdx = Math.max(0, stageIndexForStatus(app.status));

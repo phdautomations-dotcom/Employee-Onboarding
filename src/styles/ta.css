@@ -273,7 +273,7 @@
 .ta-kpi--link:hover { border-color: color-mix(in srgb, var(--k-fg) 40%, var(--ta-line)); }
 .ta-kpi--link:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--ta-blue-wash); }
 .ta-kpi__head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
-.ta-kpi__label { font-size: 12px; font-weight: 600; color: var(--ta-text-mute); letter-spacing: 0.01em; }
+.ta-kpi__label { font-size: 13px; font-weight: 700; color: #0c0e13; letter-spacing: -0.01em; }
 .ta-kpi__icon {
   width: 28px; height: 28px; border-radius: 8px; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;

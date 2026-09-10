@@ -8,6 +8,7 @@ import EmptyState from '../../components/ta/EmptyState.jsx';
 import Icon from '../../components/common/Icon.jsx';
 import { useApp } from '../../context/AppContext.jsx';
 import { APP_STATUS } from '../../constants/statuses.js';
+import { collapseDocActivity } from '../../utils/activity.js';
 
 const cap = (s) => s[0].toUpperCase() + s.slice(1);
 
@@ -94,6 +95,7 @@ export default function ActivityFeed({ base = '/hr', scope = 'hr' }) {
       if (!g) { g = { key, items: [] }; out.push(g); }
       g.items.push(it);
     });
+    out.forEach((g) => { g.items = collapseDocActivity(g.items); });
     return out;
   }, [items]);
 
