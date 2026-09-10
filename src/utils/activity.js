@@ -66,3 +66,43 @@ export function collapseDocActivity(activities = [], docTotal = 0) {
 
   return out;
 }
+
+/* Merge a run of consecutive same-title, same-application events into one,
+   keeping the original title (so the icon lookup still works). Used for the
+   dashboard "Candidate updates" list, e.g. six "Document Uploaded" rows for
+   one candidate become a single "5 documents uploaded — …" row. */
+export function mergeConsecutive(activities = [], titles = []) {
+  const set = new Set(titles);
+  const out = [];
+
+  for (let i = 0; i < activities.length; i += 1) {
+    const a = activities[i];
+    if (!set.has(a.title)) {
+      out.push(a);
+      continue;
+    }
+
+    const run = [a];
+    while (
+      i + 1 < activities.length
+      && activities[i + 1].title === a.title
+      && activities[i + 1].applicationId === a.applicationId
+    ) {
+      run.push(activities[i + 1]);
+      i += 1;
+    }
+    if (run.length === 1) {
+      out.push(a);
+      continue;
+    }
+
+    const verb = /uploaded/i.test(a.description || '') ? 'uploaded' : 'updated';
+    const names = run.map((r) => fileName(r.description)).filter(Boolean);
+    out.push({
+      ...run[0],
+      description: `${run.length} documents ${verb} — ${names.join(', ')}`,
+    });
+  }
+
+  return out;
+}

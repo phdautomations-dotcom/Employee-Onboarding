@@ -16,6 +16,7 @@ import {
 } from '../../constants/statuses.js';
 import { countInWindow, trendPercent, groupCounts, noticePeriodDays } from '../../utils/metrics.js';
 import { timeAgo } from '../../utils/format.js';
+import { mergeConsecutive } from '../../utils/activity.js';
 
 /* Activity entries that come from the candidate's own actions — these are the
    "something changed, take a look" updates the TA shouldn't have to hunt for. */
@@ -74,7 +75,7 @@ export default function TADashboard() {
   const { data, jobs } = useApp();
   const user = DEMO_USERS[ROLES.TA];
   const [period, setPeriod] = useState('all');
-  const [updatesOpen, setUpdatesOpen] = useState(true);
+  const [updatesOpen, setUpdatesOpen] = useState(false);
 
   // ----- DATA -----
   const apps = data.applications || [];
@@ -84,8 +85,10 @@ export default function TADashboard() {
 
   // Candidate-driven updates, newest first, resolved to a clickable candidate.
   const appById = new Map(apps.map((a) => [a.id, a]));
-  const candidateUpdates = activities
-    .filter((a) => CANDIDATE_UPDATE_TITLES.has(a.title) && appById.has(a.applicationId))
+  const candidateUpdates = mergeConsecutive(
+    activities.filter((a) => CANDIDATE_UPDATE_TITLES.has(a.title) && appById.has(a.applicationId)),
+    ['Document Uploaded', 'Document Not Provided'],
+  )
     .slice(0, 6)
     .map((a) => {
       const app = appById.get(a.applicationId);
