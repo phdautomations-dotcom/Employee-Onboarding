@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
 /* Stage funnel — coloured trapezoid bands that narrow down the pipeline.
-   Hover a band: it lifts, the rest dim, and a tooltip shows the numbers.
+   Hover a band: it lifts, glints, and the rest dim. The % sits to its right.
    `stages` = [{ label, value }] in pipeline order.
    `labelMode`: 'pct' (share of the first stage, default) or 'count' (raw number). */
 const RAMP = ['#4b7bf7', '#8b7ff0', '#f6a04a', '#46c98a', '#a5ddc2', '#c7e8d6'];
@@ -64,12 +64,6 @@ export default function FunnelChart({ stages, labelMode = 'pct', onSegmentClick 
           );
         })}
       </svg>
-
-      {hover != null && (
-        <div className="ta-charttip" style={{ top: `${((hover + 0.5) / stages.length) * 100}%` }}>
-          <b>{stages[hover].label}</b> · {stages[hover].value} ({pct(stages[hover])}%)
-        </div>
-      )}
     </div>
   );
 }

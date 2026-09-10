@@ -810,13 +810,6 @@
 .ta-funnel { display: block; width: 100%; max-width: 290px; height: auto; margin: 0 auto; }
 .ta-funnel__pct { font-size: 10px; font-weight: 700; fill: var(--ta-text-mute); font-variant-numeric: tabular-nums; }
 .ta-funnel__band { transition: transform 0.15s ease, opacity 0.15s ease; cursor: default; }
-.ta-charttip {
-  position: absolute; left: 50%; transform: translate(-50%, -50%);
-  background: #161a23; color: #fff; font-size: 11px; font-weight: 500;
-  padding: 5px 9px; border-radius: 7px; white-space: nowrap; pointer-events: none;
-  box-shadow: var(--ta-shadow-hover); z-index: 4;
-}
-.ta-charttip b { font-weight: 700; }
 
 /* ---------- Donut ---------- */
 .ta-donut-wrap { display: grid; grid-template-columns: 168px 1fr; gap: 26px; align-items: center; }
