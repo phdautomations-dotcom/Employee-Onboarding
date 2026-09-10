@@ -38,6 +38,20 @@ function Info({ label, value }) {
   );
 }
 
+/* Numbered heading for a workflow step: a circled number that turns into a
+   tick when the step is done and highlights while it's the current step. */
+function StepTitle({ n, label, state }) {
+  return (
+    <span className="ta-step">
+      <span className={`ta-step__num ta-step__num--${state}`}>
+        {state === 'done' ? <Icon name="Check" size={13} /> : n}
+      </span>
+      <span>Step {n} · {label}</span>
+      {state === 'current' && <span className="ta-step__now">In progress</span>}
+    </span>
+  );
+}
+
 const IN_REVIEW = [APP_STATUS.SUBMITTED, APP_STATUS.TA_REVIEW];
 const IN_INTERVIEW = [APP_STATUS.INTERVIEW_PLANNING, APP_STATUS.INTERVIEW_IN_PROGRESS, APP_STATUS.INTERVIEW_PASSED];
 const CAN_OFFER = [APP_STATUS.DOCS_VERIFIED, APP_STATUS.OFFER_DRAFT];
@@ -95,6 +109,14 @@ export default function TACandidateDetailPage() {
 
   const act = (fn, msg) => { fn(); toast.success(msg); };
 
+  // Workflow step states — pipeline index: 1 review, 2 interview, 3 documents, 4 offer.
+  const cur = stageIdx;
+  const stepState = (idx) => (cur > idx ? 'done' : cur === idx ? 'current' : 'upcoming');
+  const s1 = rejected ? 'current' : cur >= 2 ? 'done' : 'current';
+  const s2 = rejected ? (cur >= 2 ? 'done' : 'upcoming') : stepState(2);
+  const s3 = stepState(3);
+  const s4 = stepState(4);
+
   return (
     <>
       <TAHeader
@@ -113,32 +135,6 @@ export default function TACandidateDetailPage() {
           </div>
         </div>
         <div className="ta-profile-head__actions">
-          {IN_REVIEW.includes(app.status) && (
-            <>
-              <Button icon="CheckCircle2" onClick={() => act(() => approveApplication(app.id), 'Application approved — moved to interview planning.')}>Approve</Button>
-              <Button variant="ghost" icon="RotateCcw" onClick={() => setModal('return')}>Return</Button>
-              <Button variant="ghost" icon="XCircle" onClick={() => setModal('reject')}>Reject</Button>
-            </>
-          )}
-          {IN_INTERVIEW.includes(app.status) && (
-            <Button icon="CalendarPlus" onClick={() => setModal('schedule')}>Schedule interview</Button>
-          )}
-          {app.status === APP_STATUS.INTERVIEW_PASSED && (
-            <Button icon="ArrowRight" onClick={() => act(() => advanceToDocuments(app.id), 'Moved to document verification.')}>Proceed to documents</Button>
-          )}
-          {CAN_OFFER.includes(app.status) && (
-            <Button icon="FileCheck" onClick={() => setModal('offer')}>{offer ? 'Update offer' : 'Record extended offer'}</Button>
-          )}
-          {app.status === APP_STATUS.OFFER_ISSUED && offer && (
-            <>
-              <Button icon="CheckCircle2" onClick={() => act(() => confirmOfferAccepted(offer.id), 'Offer acceptance confirmed — handed over to HR.')}>
-                Confirm accepted
-              </Button>
-              <Button variant="ghost" icon="XCircle" onClick={() => act(() => declineOffer(offer.id), 'Marked as declined.')}>
-                Mark declined
-              </Button>
-            </>
-          )}
           <a className="ta-btn ta-btn--ghost" href={`mailto:${p.email}`}><Icon name="Mail" size={15} /> Contact</a>
         </div>
       </div>
@@ -176,31 +172,40 @@ export default function TACandidateDetailPage() {
             </div>
           </Card>
 
-          <Card title="Professional experience">
-            <div className="ta-info">
-              <Info label="Current title" value={pr.currentJobTitle} />
-              <Info label="Current company" value={pr.currentCompany} />
-              <Info label="Total experience" value={pr.totalExperience ? `${pr.totalExperience} years` : '—'} />
-              <Info label="Relevant experience" value={pr.relevantExperience ? `${pr.relevantExperience} years` : '—'} />
-              <Info label="Notice period" value={pr.noticePeriod} />
-              <Info label="Expected CTC" value={formatCurrencyINR(pr.expectedCTC)} />
-            </div>
+          {/* Step 1 — Application review */}
+          <Card title={<StepTitle n={1} label="Application Review" state={s1} />}>
+            {IN_REVIEW.includes(app.status) ? (
+              <>
+                <p className="ta-cell-sub" style={{ marginBottom: 12 }}>
+                  Check the profile against the role, then take the candidate forward to interviews or send the application back.
+                </p>
+                <div className="ta-btnrow">
+                  <Button icon="CheckCircle2" onClick={() => act(() => approveApplication(app.id), 'Application approved — moved to interview planning.')}>Approve</Button>
+                  <Button variant="ghost" icon="RotateCcw" onClick={() => setModal('return')}>Return</Button>
+                  <Button variant="ghost" icon="XCircle" onClick={() => setModal('reject')}>Reject</Button>
+                </div>
+              </>
+            ) : app.status === APP_STATUS.RETURNED ? (
+              <p className="ta-cell-sub">Returned to the candidate: {app.returnReason || 'awaiting an updated application.'}</p>
+            ) : rejected ? (
+              <p className="ta-cell-sub">Application was not taken forward{app.rejectReason ? `: ${app.rejectReason}` : '.'}</p>
+            ) : (
+              <p className="ta-cell-sub">Approved — the candidate moved forward to interviews.</p>
+            )}
           </Card>
 
-          <Card title="Skills & education">
-            <div className="ta-skills" style={{ marginBottom: 16 }}>
-              {(pr.skills || []).length ? pr.skills.map((s) => <span key={s} className="ta-skill">{s}</span>) : <span className="ta-cell-mute">No skills listed</span>}
-            </div>
-            {(app.education || []).map((e, i) => (
-              <div key={e.id || i} className="ta-info__item" style={{ marginBottom: 8 }}>
-                <span className="ta-info__label">{e.qualification || `Education ${i + 1}`}</span>
-                <span className="ta-info__value">{[e.university, e.specialization, e.year].filter(Boolean).join(' · ') || '—'}</span>
-              </div>
-            ))}
-          </Card>
-
-          {interviews.length > 0 && (
-            <Card title="Interviews">
+          {/* Step 2 — Interview */}
+          <Card
+            title={<StepTitle n={2} label="Interview Scheduling" state={s2} />}
+            action={IN_INTERVIEW.includes(app.status) ? (
+              <Button variant="ghost" icon="CalendarPlus" onClick={() => setModal('schedule')}>Schedule round</Button>
+            ) : null}
+          >
+            {s2 === 'upcoming' ? (
+              <p className="ta-cell-mute">Opens once the application is approved.</p>
+            ) : interviews.length === 0 ? (
+              <p className="ta-cell-sub">No round scheduled yet — use <b>Schedule round</b> to set up the first interview.</p>
+            ) : (
               <div className="ta-stack">
                 {interviews.map((iv) => {
                   const m = ROUND_STATUS_META[iv.status];
@@ -227,14 +232,27 @@ export default function TACandidateDetailPage() {
                     </div>
                   );
                 })}
+                {app.status === APP_STATUS.INTERVIEW_PASSED && (
+                  <div style={{ marginTop: 4 }}>
+                    <Button icon="ArrowRight" onClick={() => act(() => advanceToDocuments(app.id), 'Moved to document verification.')}>Proceed to documents</Button>
+                  </div>
+                )}
               </div>
-            </Card>
-          )}
+            )}
+          </Card>
 
-          {showDocs && (
-            <Card title="Documents" action={<Tag tone={documents.every((d) => d.status === DOC_STATUS.VERIFIED) ? 'green' : 'amber'}>
-              {documents.filter((d) => d.status === DOC_STATUS.VERIFIED).length}/{documents.length} verified
-            </Tag>}>
+          {/* Step 3 — Document verification */}
+          <Card
+            title={<StepTitle n={3} label="Document Verification" state={s3} />}
+            action={showDocs ? (
+              <Tag tone={documents.every((d) => d.status === DOC_STATUS.VERIFIED) ? 'green' : 'amber'}>
+                {documents.filter((d) => d.status === DOC_STATUS.VERIFIED).length}/{documents.length} verified
+              </Tag>
+            ) : null}
+          >
+            {!showDocs ? (
+              <p className="ta-cell-mute">Opens once all interview rounds are cleared.</p>
+            ) : (
               <div className="ta-stack">
                 {documents.map((doc) => {
                   const m = DOC_STATUS_META[doc.status];
@@ -263,20 +281,47 @@ export default function TACandidateDetailPage() {
                   );
                 })}
               </div>
-            </Card>
-          )}
+            )}
+          </Card>
 
-          {offer && (
-            <Card title="Extended offer" action={<Tag tone={{ neutral: 'grey', warning: 'amber', info: 'blue', success: 'green', error: 'red' }[OFFER_STATUS_META[offer.status].tone] || 'grey'}>{OFFER_STATUS_META[offer.status].label}</Tag>}>
-              <p className="ta-cell-sub" style={{ marginBottom: 12 }}>The offer letter is prepared and sent outside the app. These are the details on record.</p>
-              <div className="ta-info">
-                <Info label="Position" value={offer.jobTitle} />
-                <Info label="Department" value={offer.department} />
-                <Info label="Expected joining date" value={formatDate(offer.joiningDate)} />
-                <Info label="Reporting manager" value={offer.reportingManager} />
-              </div>
-            </Card>
-          )}
+          {/* Step 4 — Offer */}
+          <Card
+            title={<StepTitle n={4} label="Offer" state={s4} />}
+            action={offer ? (
+              <Tag tone={{ neutral: 'grey', warning: 'amber', info: 'blue', success: 'green', error: 'red' }[OFFER_STATUS_META[offer.status].tone] || 'grey'}>{OFFER_STATUS_META[offer.status].label}</Tag>
+            ) : null}
+          >
+            {s4 === 'upcoming' && !offer ? (
+              <p className="ta-cell-mute">Available once documents are verified.</p>
+            ) : (
+              <>
+                {offer ? (
+                  <>
+                    <p className="ta-cell-sub" style={{ marginBottom: 12 }}>The offer letter is prepared and sent outside the app. These are the details on record.</p>
+                    <div className="ta-info">
+                      <Info label="Position" value={offer.jobTitle} />
+                      <Info label="Department" value={offer.department} />
+                      <Info label="Expected joining date" value={formatDate(offer.joiningDate)} />
+                      <Info label="Reporting manager" value={offer.reportingManager} />
+                    </div>
+                  </>
+                ) : (
+                  <p className="ta-cell-sub" style={{ marginBottom: 12 }}>Documents are verified. Record the offer details once the letter has been sent.</p>
+                )}
+                <div className="ta-btnrow" style={{ marginTop: offer ? 14 : 0 }}>
+                  {CAN_OFFER.includes(app.status) && (
+                    <Button icon="FileCheck" onClick={() => setModal('offer')}>{offer ? 'Update offer' : 'Record extended offer'}</Button>
+                  )}
+                  {app.status === APP_STATUS.OFFER_ISSUED && offer && (
+                    <>
+                      <Button icon="CheckCircle2" onClick={() => act(() => confirmOfferAccepted(offer.id), 'Offer acceptance confirmed — handed over to HR.')}>Confirm accepted</Button>
+                      <Button variant="ghost" icon="XCircle" onClick={() => act(() => declineOffer(offer.id), 'Marked as declined.')}>Mark declined</Button>
+                    </>
+                  )}
+                </div>
+              </>
+            )}
+          </Card>
         </div>
 
         <div className="ta-stack">
@@ -287,6 +332,29 @@ export default function TACandidateDetailPage() {
               <Info label="Current location" value={p.currentLocation} />
               <Info label="Preferred location" value={p.preferredLocation} />
             </div>
+          </Card>
+
+          <Card title="Professional experience">
+            <div className="ta-info ta-info--1">
+              <Info label="Current title" value={pr.currentJobTitle} />
+              <Info label="Current company" value={pr.currentCompany} />
+              <Info label="Total experience" value={pr.totalExperience ? `${pr.totalExperience} years` : '—'} />
+              <Info label="Relevant experience" value={pr.relevantExperience ? `${pr.relevantExperience} years` : '—'} />
+              <Info label="Notice period" value={pr.noticePeriod} />
+              <Info label="Expected CTC" value={formatCurrencyINR(pr.expectedCTC)} />
+            </div>
+          </Card>
+
+          <Card title="Skills & education">
+            <div className="ta-skills" style={{ marginBottom: 16 }}>
+              {(pr.skills || []).length ? pr.skills.map((s) => <span key={s} className="ta-skill">{s}</span>) : <span className="ta-cell-mute">No skills listed</span>}
+            </div>
+            {(app.education || []).map((e, i) => (
+              <div key={e.id || i} className="ta-info__item" style={{ marginBottom: 8 }}>
+                <span className="ta-info__label">{e.qualification || `Education ${i + 1}`}</span>
+                <span className="ta-info__value">{[e.university, e.specialization, e.year].filter(Boolean).join(' · ') || '—'}</span>
+              </div>
+            ))}
           </Card>
 
           <Card title="Activity">
