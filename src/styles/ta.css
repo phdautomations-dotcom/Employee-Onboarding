@@ -1312,6 +1312,27 @@
 .cx-page__title { font-size: clamp(19px, 2.2vw, 23px); font-weight: 700; }
 .cx-page__sub { font-size: 13px; color: var(--ta-text-soft); margin-top: 4px; max-width: 70ch; }
 
+/* job detail — title on the left, key facts fill the space on the right */
+.cx-jobhead {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 20px 40px; flex-wrap: wrap;
+  margin-bottom: clamp(14px, 2vw, 20px);
+}
+.cx-jobhead__main { min-width: 240px; flex: 1; }
+.cx-jobhead__facts {
+  margin: 6px 0 0; padding: 0;
+  display: flex; flex-wrap: wrap; gap: 12px 30px;
+}
+.cx-jobhead__facts > div {
+  display: flex; flex-direction: column; gap: 3px;
+  padding-left: 16px; border-left: 2px solid var(--ta-line);
+}
+.cx-jobhead__facts dt {
+  font-size: 10.5px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.03em; color: var(--ta-text-mute);
+}
+.cx-jobhead__facts dd { margin: 0; font-size: 13px; font-weight: 600; white-space: nowrap; }
+
 .cx-footer { border-top: 1px solid var(--ta-line); background: var(--ta-surface); }
 .cx-footer__inner { max-width: var(--cx-max); margin: 0 auto; padding: 16px var(--cx-pad); font-size: 11.5px; color: var(--ta-text-mute); }
 
