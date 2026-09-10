@@ -302,17 +302,26 @@
 .ta-wizard__tab {
   display: inline-flex; align-items: center; gap: 8px;
   padding: 6px 14px 6px 7px; border-radius: 999px;
-  border: 1px solid var(--ta-line); background: var(--ta-surface);
+  border: 1px solid var(--ta-line);
+  background-color: var(--ta-surface);
+  background-image: linear-gradient(115deg, transparent 0%, var(--ta-blue-wash) 30%, transparent 56%, transparent 100%);
+  background-size: 260% 100%; background-position: 100% 0;
   box-shadow: var(--ta-shadow);
   font: inherit; font-size: 12.5px; font-weight: 650; color: var(--ta-text-soft);
-  cursor: pointer; transition: transform 0.14s ease, box-shadow 0.14s ease, background 0.14s ease, color 0.14s ease, border-color 0.14s ease;
+  cursor: pointer;
+  transition: transform 0.14s ease, box-shadow 0.14s ease, color 0.14s ease, border-color 0.14s ease, background-position 0.55s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .ta-wizard__tab .ta-step__num { width: 20px; height: 20px; font-size: 11px; box-shadow: none; }
-.ta-wizard__tab:hover { transform: translateY(-1px); border-color: #dbe4fb; color: var(--ta-text); box-shadow: var(--ta-shadow-hover); }
+.ta-wizard__tab:hover { transform: translateY(-1px); border-color: #dbe4fb; color: var(--ta-text); box-shadow: var(--ta-shadow-hover); background-position: 38% 0; }
+.ta-wizard__tab:active { background-position: 0 0; }
 .ta-wizard__tab.is-active {
-  background: linear-gradient(135deg, #4c7bf7, var(--ta-blue)); border-color: transparent; color: #fff;
+  border-color: transparent; color: #fff;
+  background-color: var(--ta-blue);
+  background-image: linear-gradient(115deg, var(--ta-blue) 0%, #6b9bff 26%, var(--ta-blue) 52%, var(--ta-blue-ink) 100%);
+  background-size: 260% 100%; background-position: 100% 0;
   box-shadow: 0 8px 18px -7px rgba(59, 110, 245, 0.6);
 }
+.ta-wizard__tab.is-active:hover { background-position: 38% 0; }
 .ta-wizard__tab.is-active .ta-step__num { background: rgba(255, 255, 255, 0.24); color: #fff; }
 .ta-wizard__tablabel { white-space: nowrap; }
 .ta-wizard__panelhead {
@@ -351,18 +360,22 @@
 .ta-ptab {
   display: flex; align-items: center; gap: 10px;
   padding: 10px 13px; border-radius: 13px;
-  border: 1px solid var(--ta-line); background: var(--ta-surface);
+  border: 1px solid var(--ta-line);
+  background-color: var(--ta-surface);
+  background-image: linear-gradient(115deg, transparent 0%, var(--ta-blue-wash) 32%, transparent 58%, transparent 100%);
+  background-size: 260% 100%; background-position: 100% 0;
   box-shadow: var(--ta-shadow);
   font: inherit; font-size: 12.5px; font-weight: 650; color: var(--ta-text-soft);
   cursor: pointer; text-align: left; line-height: 1.2;
-  transition: transform 0.14s ease, box-shadow 0.14s ease, border-color 0.14s ease, color 0.14s ease;
+  transition: transform 0.14s ease, box-shadow 0.14s ease, border-color 0.14s ease, color 0.14s ease, background-position 0.55s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .ta-ptab svg {
   width: 30px; height: 30px; padding: 7px; box-sizing: border-box; flex-shrink: 0;
   border-radius: 9px; background: var(--ta-blue-wash); color: var(--ta-blue);
   transition: background 0.14s ease, color 0.14s ease;
 }
-.ta-ptab:hover { transform: translateY(-2px); box-shadow: var(--ta-shadow-hover); border-color: #dbe4fb; color: var(--ta-text); }
+.ta-ptab:hover { transform: translateY(-2px); box-shadow: var(--ta-shadow-hover); border-color: #dbe4fb; color: var(--ta-text); background-position: 38% 0; }
+.ta-ptab:active { background-position: 0 0; }
 .ta-ptab.is-active {
   border-color: var(--ta-blue); color: var(--ta-blue-ink);
   box-shadow: inset 0 0 0 1px var(--ta-blue), 0 8px 20px -10px rgba(59, 110, 245, 0.35);
