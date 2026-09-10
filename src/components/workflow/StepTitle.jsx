@@ -6,7 +6,7 @@ export default function StepTitle({ n, label, state }) {
   return (
     <span className="ta-step">
       <span className={`ta-step__num ta-step__num--${state}`}>
-        {state === 'done' ? <Icon name="Check" size={13} /> : n}
+        {state === 'done' ? <Icon name="Check" size={15} strokeWidth={3} /> : n}
       </span>
       <span>Step {n} · {label}</span>
       {state === 'current' && <span className="ta-step__now">In progress</span>}

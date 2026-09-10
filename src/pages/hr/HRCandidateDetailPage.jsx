@@ -271,8 +271,8 @@ export default function HRCandidateDetailPage() {
                     className={`ta-wizard__tab${n === activeStep ? ' is-active' : ''}`}
                     onClick={() => goStep(n)}
                   >
-                    <span className={`ta-step__num ta-step__num--${st}`}>
-                      {st === 'done' ? <Icon name="Check" size={12} /> : n}
+                    <span className={`ta-step__num ta-step__num--${n === activeStep ? 'current' : st}`}>
+                      {st === 'done' && n !== activeStep ? <Icon name="Check" size={13} strokeWidth={3} /> : n}
                     </span>
                     <span className="ta-wizard__tablabel">{label}</span>
                   </button>
