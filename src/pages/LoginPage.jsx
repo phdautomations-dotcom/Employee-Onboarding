@@ -9,12 +9,12 @@ import markColor from '../assets/ccentrik-logo.png';
 const DOMAIN = '@ccentrik.com';
 
 const JOURNEY = [
-  { label: 'Applied', icon: 'FileText' },
-  { label: 'Screening', icon: 'Eye' },
-  { label: 'Interview', icon: 'CalendarDays' },
-  { label: 'Offer', icon: 'FileCheck' },
-  { label: 'Onboarding', icon: 'ClipboardCheck' },
-  { label: 'Employee', icon: 'UserRoundCheck' },
+  { label: 'Applied', icon: 'FileText', desc: 'All in one place', c: '#60a5fa', c2: '#2563eb' },
+  { label: 'Screening', icon: 'Eye', desc: 'Find the right fit', c: '#a78bfa', c2: '#7c3aed' },
+  { label: 'Interview', icon: 'CalendarDays', desc: 'Coordinate with ease', c: '#f472b6', c2: '#db2777' },
+  { label: 'Offer', icon: 'FileCheck', desc: 'Move forward fast', c: '#fbbf24', c2: '#f59e0b' },
+  { label: 'Onboarding', icon: 'ClipboardCheck', desc: 'Set up for success', c: '#4ade80', c2: '#16a34a' },
+  { label: 'Employee', icon: 'UserRound', desc: 'Grow together', c: '#2dd4bf', c2: '#0d9488' },
 ];
 
 /* No backend — infer the internal role from the username so the customer isn't
@@ -55,22 +55,48 @@ export default function LoginPage() {
   return (
     <div className="wsauth">
       <aside className="wsauth__aside">
+        <span className="wsauth__blob wsauth__blob--1" aria-hidden="true" />
+        <span className="wsauth__blob wsauth__blob--2" aria-hidden="true" />
+        <span className="wsauth__blob wsauth__blob--3" aria-hidden="true" />
+
+        <figure className="wsfloat wsfloat--in" aria-hidden="true">
+          <span className="wsfloat__avatar"><Icon name="UserRound" size={17} /></span>
+          <span className="wsfloat__body"><b>New Applicant</b><i /><i /></span>
+        </figure>
+        <figure className="wsfloat wsfloat--out" aria-hidden="true">
+          <span className="wsfloat__avatar"><Icon name="UserRoundCheck" size={17} /></span>
+          <span className="wsfloat__body"><b>Welcome to the team!</b></span>
+          <span className="wsfloat__check"><Icon name="Check" size={11} /></span>
+        </figure>
+
         <img className="wsauth__logo wsauth__logo--lg" src={markWhite} alt="Ccentrik" />
 
         <div className="wsauth__pitch">
           <h1>From applicant to employee,<br /><span>one continuous workspace.</span></h1>
-          <p>Talent Acquisition, HR and every team member — working the same journey, end to end.</p>
+          <p>Simplify hiring. Empower people. Build what&rsquo;s next.</p>
         </div>
+
+        <span className="wsauth__tick" aria-hidden="true" />
 
         <ol className="wsjourney" aria-hidden="true">
           <span className="wsjourney__rail"><span className="wsjourney__pulse" /></span>
           {JOURNEY.map((s, i) => (
-            <li className="wsjourney__step" key={s.label} style={{ '--i': i }}>
-              <span className="wsjourney__node"><Icon name={s.icon} size={20} /></span>
+            <li
+              className="wsjourney__step"
+              key={s.label}
+              style={{ '--i': i, '--c': s.c, '--c2': s.c2 }}
+            >
+              <span className="wsjourney__node"><Icon name={s.icon} size={19} /></span>
               <span className="wsjourney__label">{s.label}</span>
+              <span className="wsjourney__desc">{s.desc}</span>
+              {i < JOURNEY.length - 1 && (
+                <span className="wsjourney__sep"><Icon name="ChevronRight" size={13} /></span>
+              )}
             </li>
           ))}
         </ol>
+
+        <p className="wsauth__tags" aria-hidden="true">People<span>·</span>Process<span>·</span>Progress</p>
       </aside>
 
       <main className="wsauth__main">
