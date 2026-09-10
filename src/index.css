@@ -112,6 +112,14 @@
 *, *::before, *::after { box-sizing: border-box; }
 html, body, #root { height: 100%; }
 
+/* The UI is designed a touch dense — render it at 90% by default so "100%"
+   browser zoom shows what used to need a manual zoom-out. Full size on
+   small screens where every pixel counts. Full-viewport layouts divide
+   their `100vh` by the same factor so they still fill the screen. */
+:root { --app-zoom: 0.9; }
+@media (max-width: 900px) { :root { --app-zoom: 1; } }
+html { zoom: var(--app-zoom); }
+
 body {
   margin: 0;
   font-family: var(--font-family);

@@ -42,7 +42,7 @@
 
 .ta-shell {
   display: flex;
-  min-height: 100vh;
+  min-height: calc(100vh / var(--app-zoom, 1));
   width: 100%;
   max-width: 100vw;
   overflow-x: hidden;
@@ -1213,7 +1213,7 @@
 .cx {
   --cx-max: 1440px;
   --cx-pad: clamp(16px, 4vw, 36px);
-  min-height: 100vh; display: flex; flex-direction: column;
+  min-height: calc(100vh / var(--app-zoom, 1)); display: flex; flex-direction: column;
   background: #f5f7fb; color: var(--ta-text); font-size: 13px;
 }
 .cx h1, .cx h2, .cx h3 { letter-spacing: -0.02em; }
