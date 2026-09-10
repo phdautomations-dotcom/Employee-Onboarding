@@ -27,6 +27,7 @@ import {
 } from '../../constants/statuses.js';
 import { formatDate, formatCurrencyINR } from '../../utils/format.js';
 import { collapseDocActivity } from '../../utils/activity.js';
+import StepTitle from '../../components/workflow/StepTitle.jsx';
 
 function Info({ label, value }) {
   return (
@@ -34,20 +35,6 @@ function Info({ label, value }) {
       <span className="ta-info__label">{label}</span>
       <span className="ta-info__value">{value || '—'}</span>
     </div>
-  );
-}
-
-/* Numbered heading for a workflow step: a circled number that turns into a
-   tick when the step is done and highlights while it's the current step. */
-function StepTitle({ n, label, state }) {
-  return (
-    <span className="ta-step">
-      <span className={`ta-step__num ta-step__num--${state}`}>
-        {state === 'done' ? <Icon name="Check" size={13} /> : n}
-      </span>
-      <span>Step {n} · {label}</span>
-      {state === 'current' && <span className="ta-step__now">In progress</span>}
-    </span>
   );
 }
 
