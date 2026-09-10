@@ -590,19 +590,25 @@
 .ta-lcf__row.is-attn .ta-lcf__bar { background: linear-gradient(90deg, #f2ab4b, #d9800c); }
 .ta-lcf__row:hover .ta-lcf__bar { filter: brightness(1.07); }
 .ta-lcf__pct { position: relative; z-index: 1; }
-/* a mirror-reflection glint runs left → right, only across the filled bar */
-.ta-lcf__bar::after {
+
+/* ---- mirror-reflection glint that runs across a filled bar on hover ---- */
+.ta-lcf__bar, .ta-kpi__bar-fill, .ta-progress__bar { position: relative; overflow: hidden; }
+.ta-lcf__bar::after, .ta-kpi__bar-fill::after, .ta-progress__bar::after {
   content: ''; position: absolute; inset: 0; pointer-events: none;
   background: linear-gradient(100deg, transparent 30%, rgba(255, 255, 255, 0.55) 50%, transparent 70%);
   transform: translateX(-120%);
 }
-.ta-lcf__row:hover .ta-lcf__bar::after { animation: ta-lcf-sweep 3s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
-@keyframes ta-lcf-sweep {
+.ta-lcf__row:hover .ta-lcf__bar::after,
+.ta-kpi:hover .ta-kpi__bar-fill::after,
+.ta-progress-row:hover .ta-progress__bar::after {
+  animation: ta-glint 3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+@keyframes ta-glint {
   0% { transform: translateX(-120%); }
   42%, 100% { transform: translateX(120%); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .ta-lcf__row:hover .ta-lcf__bar::after { animation: none; }
+  .ta-lcf__bar::after, .ta-kpi__bar-fill::after, .ta-progress__bar::after { animation: none !important; }
 }
 .ta-lcf__pct { font-size: 10.5px; font-weight: 700; color: #fff; opacity: 0.92; }
 

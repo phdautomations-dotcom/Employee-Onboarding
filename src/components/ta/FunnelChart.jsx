@@ -22,6 +22,18 @@ export default function FunnelChart({ stages, labelMode = 'pct', onSegmentClick 
   return (
     <div className="ta-chartbox" onMouseLeave={() => setHover(null)}>
       <svg className="ta-funnel" viewBox={`0 0 ${vbW} ${vbH}`} role="img" aria-label="Pipeline funnel">
+        <defs>
+          <linearGradient id="taFunnelGlint" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stopColor="#ffffff" stopOpacity="0" />
+            <stop offset="0.5" stopColor="#ffffff" stopOpacity="0.6" />
+            <stop offset="1" stopColor="#ffffff" stopOpacity="0" />
+            <animateTransform
+              attributeName="gradientTransform" type="translate"
+              values="-1.2 0; 1.2 0; 1.2 0" keyTimes="0; 0.45; 1"
+              dur="3s" repeatCount="indefinite"
+            />
+          </linearGradient>
+        </defs>
         {stages.map((s, i) => {
           const y = i * bandH;
           const wTop = widthFor(s.value);
@@ -43,6 +55,7 @@ export default function FunnelChart({ stages, labelMode = 'pct', onSegmentClick 
               onClick={clickable ? () => onSegmentClick(i) : undefined}
             >
               <polygon points={points} fill={RAMP[i] || RAMP[RAMP.length - 1]} />
+              {active && <polygon points={points} fill="url(#taFunnelGlint)" style={{ pointerEvents: 'none' }} />}
               <line x1={cx + wTop / 2} y1={y + bandH / 2} x2={206} y2={y + bandH / 2} stroke="var(--ta-line)" strokeWidth="1" />
               <text className="ta-funnel__pct" x={210} y={y + bandH / 2} dominantBaseline="central">
                 {labelMode === 'count' ? s.value : `${pct(s)}%`}
