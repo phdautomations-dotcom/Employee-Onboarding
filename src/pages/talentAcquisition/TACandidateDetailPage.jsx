@@ -187,8 +187,11 @@ export default function TACandidateDetailPage() {
                   <span className="ta-info__value"><Tag tone={badge.tone}>{badge.label}</Tag></span>
                 </div>
                 <div className="ta-info">
-                  <Info label="Candidate ID" value={app.candidateId} />
-                  <Info label="Applied for" value={app.jobTitle} />
+                  <Info label="Current role" value={pr.currentJobTitle ? `${pr.currentJobTitle}${pr.currentCompany ? ` @ ${pr.currentCompany}` : ''}` : '—'} />
+                  <Info label="Total experience" value={pr.totalExperience ? `${pr.totalExperience} years` : '—'} />
+                  <Info label="Notice period" value={pr.noticePeriod} />
+                  <Info label="Expected CTC" value={formatCurrencyINR(pr.expectedCTC)} />
+                  <Info label="Location" value={p.currentLocation ? `${p.currentLocation}${p.preferredLocation && p.preferredLocation !== p.currentLocation ? ` → ${p.preferredLocation}` : ''}` : '—'} />
                   <Info label="Application type" value={app.isGeneral ? 'General application' : 'Specific vacancy'} />
                   <Info label="Source" value={app.source} />
                   <Info label="Submitted" value={formatDate(app.submittedAt)} />
