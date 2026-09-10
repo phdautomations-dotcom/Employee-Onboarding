@@ -271,6 +271,59 @@
 
 /* inline row of workflow action buttons inside a step card */
 .ta-btnrow { display: flex; flex-wrap: wrap; gap: 8px; }
+
+/* step wizard — one step per page */
+.ta-wizard__tabs {
+  display: flex; gap: 8px; flex-wrap: wrap;
+  padding-bottom: 14px; margin-bottom: 16px;
+  border-bottom: 1px solid var(--ta-line);
+}
+.ta-wizard__tab {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 6px 12px 6px 7px; border-radius: 999px;
+  border: 1px solid var(--ta-line); background: var(--ta-surface);
+  font: inherit; font-size: 12.5px; font-weight: 600; color: var(--ta-text-soft);
+  cursor: pointer; transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+.ta-wizard__tab:hover { border-color: var(--ta-blue); color: var(--ta-text); }
+.ta-wizard__tab.is-active { background: var(--tag-blue-bg); border-color: var(--ta-blue); color: var(--ta-blue); }
+.ta-wizard__tablabel { white-space: nowrap; }
+.ta-wizard__panelhead {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  margin-bottom: 14px;
+}
+.ta-wizard__nav {
+  display: flex; justify-content: space-between;
+  margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--ta-line);
+}
+
+/* candidate profile — clickable tiles that swap the panel below */
+.ta-ptabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 18px; }
+.ta-ptab {
+  display: flex; align-items: center; gap: 8px;
+  padding: 11px 12px; border-radius: 10px;
+  border: 1px solid var(--ta-line); background: var(--ta-surface);
+  font: inherit; font-size: 12.5px; font-weight: 650; color: var(--ta-text-soft);
+  cursor: pointer; text-align: left; line-height: 1.2;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+.ta-ptab svg { color: var(--ta-text-mute); flex-shrink: 0; }
+.ta-ptab:hover { border-color: var(--ta-blue); color: var(--ta-text); }
+.ta-ptab.is-active { background: var(--tag-blue-bg); border-color: var(--ta-blue); color: var(--ta-blue); }
+.ta-ptab.is-active svg { color: var(--ta-blue); }
+@media (max-width: 1180px) { .ta-ptabs { grid-template-columns: repeat(2, 1fr); } }
+
+/* activity feed — show a few, expand for the rest */
+.ta-actmore {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  width: 100%; margin-top: 12px; padding: 8px;
+  border: 1px solid var(--ta-line); border-radius: 9px;
+  background: var(--ta-surface); cursor: pointer;
+  font: inherit; font-size: 12.5px; font-weight: 600; color: var(--ta-blue);
+}
+.ta-actmore:hover { background: var(--ta-bg); }
+.ta-actmore svg { transition: transform 0.15s; }
+.ta-actmore.is-open svg { transform: rotate(180deg); }
 .ta-card__body { padding: 16px; flex: 1; }
 .ta-bento > .ta-card > .ta-card__body { display: flex; flex-direction: column; justify-content: center; }
 .ta-link {

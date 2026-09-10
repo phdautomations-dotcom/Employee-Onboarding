@@ -76,6 +76,9 @@ export default function TACandidateDetailPage() {
   const [modal, setModal] = useState(null); // 'return' | 'reject' | 'schedule' | 'offer'
   const [resultFor, setResultFor] = useState(null);
   const [rejectDoc, setRejectDoc] = useState(null);
+  const [step, setStep] = useState(null); // wizard page; null = follow the live stage
+  const [showAllAct, setShowAllAct] = useState(false);
+  const [tab, setTab] = useState('overview'); // profile tile: overview | contact | experience | skills
 
   useEffect(() => {
     if (app && app.status === APP_STATUS.SUBMITTED) startReview(app.id);
@@ -116,6 +119,17 @@ export default function TACandidateDetailPage() {
   const s2 = rejected ? (cur >= 2 ? 'done' : 'upcoming') : stepState(2);
   const s3 = stepState(3);
   const s4 = stepState(4);
+
+  const STEP_LABELS = ['Application Review', 'Interview Scheduling', 'Document Verification', 'Offer'];
+  const stepStates = [s1, s2, s3, s4];
+  // only show steps the application has actually reached (up to and including the current one)
+  const maxStep = stepStates.reduce((acc, s, i) => (s === 'upcoming' ? acc : i + 1), 1);
+  const liveStep = (() => {
+    const i = stepStates.indexOf('current');
+    return i >= 0 ? i + 1 : maxStep;
+  })();
+  const activeStep = Math.min(step ?? liveStep, maxStep);
+  const goStep = (n) => setStep(Math.min(maxStep, Math.max(1, n)));
 
   return (
     <>
@@ -161,218 +175,276 @@ export default function TACandidateDetailPage() {
 
       <div className="ta-detail-grid">
         <div className="ta-stack">
-          <Card title="Overview">
-            <div className="ta-info">
-              <Info label="Full name" value={name} />
-              <Info label="Applied for" value={app.jobTitle} />
-              <Info label="Application type" value={app.isGeneral ? 'General application' : 'Specific vacancy'} />
-              <Info label="Source" value={app.source} />
-              <Info label="Submitted" value={formatDate(app.submittedAt)} />
-              <Info label="Assigned to" value={app.assignedTo} />
+          <Card>
+            <div className="ta-ptabs">
+              {[
+                ['overview', 'Overview', 'LayoutDashboard'],
+                ['contact', 'Contact', 'Mail'],
+                ['experience', 'Experience', 'Briefcase'],
+                ['skills', 'Skills & education', 'GraduationCap'],
+              ].map(([k, label, icon]) => (
+                <button
+                  key={k}
+                  type="button"
+                  className={`ta-ptab${tab === k ? ' is-active' : ''}`}
+                  onClick={() => setTab(k)}
+                >
+                  <Icon name={icon} size={15} /> {label}
+                </button>
+              ))}
             </div>
-          </Card>
 
-          {/* Step 1 — Application review */}
-          <Card title={<StepTitle n={1} label="Application Review" state={s1} />}>
-            {IN_REVIEW.includes(app.status) ? (
+            {tab === 'overview' && (
+              <div className="ta-info">
+                <Info label="Full name" value={name} />
+                <Info label="Applied for" value={app.jobTitle} />
+                <Info label="Application type" value={app.isGeneral ? 'General application' : 'Specific vacancy'} />
+                <Info label="Source" value={app.source} />
+                <Info label="Submitted" value={formatDate(app.submittedAt)} />
+                <Info label="Assigned to" value={app.assignedTo} />
+              </div>
+            )}
+
+            {tab === 'contact' && (
+              <div className="ta-info">
+                <Info label="Email" value={p.email} />
+                <Info label="Mobile" value={p.mobile} />
+                <Info label="Current location" value={p.currentLocation} />
+                <Info label="Preferred location" value={p.preferredLocation} />
+              </div>
+            )}
+
+            {tab === 'experience' && (
+              <div className="ta-info">
+                <Info label="Current title" value={pr.currentJobTitle} />
+                <Info label="Current company" value={pr.currentCompany} />
+                <Info label="Total experience" value={pr.totalExperience ? `${pr.totalExperience} years` : '—'} />
+                <Info label="Relevant experience" value={pr.relevantExperience ? `${pr.relevantExperience} years` : '—'} />
+                <Info label="Notice period" value={pr.noticePeriod} />
+                <Info label="Expected CTC" value={formatCurrencyINR(pr.expectedCTC)} />
+              </div>
+            )}
+
+            {tab === 'skills' && (
               <>
-                <p className="ta-cell-sub" style={{ marginBottom: 12 }}>
-                  Check the profile against the role, then take the candidate forward to interviews or send the application back.
-                </p>
-                <div className="ta-btnrow">
-                  <Button icon="CheckCircle2" onClick={() => act(() => approveApplication(app.id), 'Application approved — moved to interview planning.')}>Approve</Button>
-                  <Button variant="ghost" icon="RotateCcw" onClick={() => setModal('return')}>Return</Button>
-                  <Button variant="ghost" icon="XCircle" onClick={() => setModal('reject')}>Reject</Button>
+                <div className="ta-skills" style={{ marginBottom: 16 }}>
+                  {(pr.skills || []).length ? pr.skills.map((s) => <span key={s} className="ta-skill">{s}</span>) : <span className="ta-cell-mute">No skills listed</span>}
                 </div>
+                {(app.education || []).map((e, i) => (
+                  <div key={e.id || i} className="ta-info__item" style={{ marginBottom: 8 }}>
+                    <span className="ta-info__label">{e.qualification || `Education ${i + 1}`}</span>
+                    <span className="ta-info__value">{[e.university, e.specialization, e.year].filter(Boolean).join(' · ') || '—'}</span>
+                  </div>
+                ))}
               </>
-            ) : app.status === APP_STATUS.RETURNED ? (
-              <p className="ta-cell-sub">Returned to the candidate: {app.returnReason || 'awaiting an updated application.'}</p>
-            ) : rejected ? (
-              <p className="ta-cell-sub">Application was not taken forward{app.rejectReason ? `: ${app.rejectReason}` : '.'}</p>
-            ) : (
-              <p className="ta-cell-sub">Approved — the candidate moved forward to interviews.</p>
             )}
           </Card>
 
-          {/* Step 2 — Interview */}
-          <Card
-            title={<StepTitle n={2} label="Interview Scheduling" state={s2} />}
-            action={IN_INTERVIEW.includes(app.status) ? (
-              <Button variant="ghost" icon="CalendarPlus" onClick={() => setModal('schedule')}>Schedule round</Button>
-            ) : null}
-          >
-            {s2 === 'upcoming' ? (
-              <p className="ta-cell-mute">Opens once the application is approved.</p>
-            ) : interviews.length === 0 ? (
-              <p className="ta-cell-sub">No round scheduled yet — use <b>Schedule round</b> to set up the first interview.</p>
-            ) : (
-              <div className="ta-stack">
-                {interviews.map((iv) => {
-                  const m = ROUND_STATUS_META[iv.status];
-                  return (
-                    <div className="ta-round" key={iv.id}>
-                      <div className="ta-round__head">
-                        <span className="ta-cell-strong">Round {iv.round} · {iv.type}</span>
-                        <Tag tone={m.tone === 'info' ? 'blue' : m.tone === 'success' ? 'green' : m.tone === 'error' ? 'red' : m.tone === 'warning' ? 'amber' : 'grey'}>{m.label}</Tag>
-                      </div>
-                      <div className="ta-cell-sub">{formatDate(iv.date)} at {iv.time} · {iv.mode} · {iv.interviewer}</div>
-                      {iv.comments && iv.status !== ROUND_STATUS.SCHEDULED && (
-                        <div className="ta-cell-sub ta-remark" style={{ marginTop: 4 }}>
-                          Remarks: {iv.comments}
-                          <span className={`ta-remark__tag ta-remark__tag--${iv.shareComments ? 'shared' : 'internal'}`}>
-                            {iv.shareComments ? 'Shared with candidate' : 'Internal only'}
-                          </span>
-                        </div>
-                      )}
-                      {iv.status === ROUND_STATUS.SCHEDULED && (
-                        <div style={{ marginTop: 8 }}>
-                          <Button variant="ghost" icon="ClipboardCheck" onClick={() => setResultFor(iv)}>Record result</Button>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-                {app.status === APP_STATUS.INTERVIEW_PASSED && (
-                  <div style={{ marginTop: 4 }}>
-                    <Button icon="ArrowRight" onClick={() => act(() => advanceToDocuments(app.id), 'Moved to document verification.')}>Proceed to documents</Button>
-                  </div>
+          {/* Workflow — one step per page */}
+          <Card title="Recruitment workflow" action={<span className="ta-cell-sub">Step {activeStep} of {maxStep}</span>}>
+            <div className="ta-wizard__tabs">
+              {STEP_LABELS.slice(0, maxStep).map((label, i) => {
+                const n = i + 1;
+                const st = stepStates[i];
+                return (
+                  <button
+                    key={n}
+                    type="button"
+                    className={`ta-wizard__tab${n === activeStep ? ' is-active' : ''}`}
+                    onClick={() => goStep(n)}
+                  >
+                    <span className={`ta-step__num ta-step__num--${st}`}>
+                      {st === 'done' ? <Icon name="Check" size={12} /> : n}
+                    </span>
+                    <span className="ta-wizard__tablabel">{label}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="ta-wizard__panel">
+              <div className="ta-wizard__panelhead">
+                <StepTitle n={activeStep} label={STEP_LABELS[activeStep - 1]} state={stepStates[activeStep - 1]} />
+                {activeStep === 2 && IN_INTERVIEW.includes(app.status) && (
+                  <Button variant="ghost" icon="CalendarPlus" onClick={() => setModal('schedule')}>Schedule round</Button>
+                )}
+                {activeStep === 3 && showDocs && (
+                  <Tag tone={documents.every((d) => d.status === DOC_STATUS.VERIFIED) ? 'green' : 'amber'}>
+                    {documents.filter((d) => d.status === DOC_STATUS.VERIFIED).length}/{documents.length} verified
+                  </Tag>
+                )}
+                {activeStep === 4 && offer && (
+                  <Tag tone={{ neutral: 'grey', warning: 'amber', info: 'blue', success: 'green', error: 'red' }[OFFER_STATUS_META[offer.status].tone] || 'grey'}>{OFFER_STATUS_META[offer.status].label}</Tag>
                 )}
               </div>
-            )}
-          </Card>
 
-          {/* Step 3 — Document verification */}
-          <Card
-            title={<StepTitle n={3} label="Document Verification" state={s3} />}
-            action={showDocs ? (
-              <Tag tone={documents.every((d) => d.status === DOC_STATUS.VERIFIED) ? 'green' : 'amber'}>
-                {documents.filter((d) => d.status === DOC_STATUS.VERIFIED).length}/{documents.length} verified
-              </Tag>
-            ) : null}
-          >
-            {!showDocs ? (
-              <p className="ta-cell-mute">Opens once all interview rounds are cleared.</p>
-            ) : (
-              <div className="ta-stack">
-                {documents.map((doc) => {
-                  const m = DOC_STATUS_META[doc.status];
-                  const tone = { info: 'blue', success: 'green', error: 'red', warning: 'amber', neutral: 'grey' }[m.tone] || 'grey';
-                  const mandatory = isDocMandatory(doc.key);
-                  return (
-                    <div className="ta-docrow" key={doc.id}>
-                      <span className="ta-docrow__icon"><Icon name="FileText" size={16} /></span>
-                      <div className="grow">
-                        <div className="ta-cell-strong">{doc.label}{mandatory && <span className="cx-req" title="Mandatory"> *</span>}</div>
-                        <div className="ta-cell-sub">{doc.fileName || (doc.status === DOC_STATUS.WAIVED ? 'Not provided by candidate' : 'No file uploaded')}{doc.status === DOC_STATUS.REJECTED && doc.rejectionReason ? ` · ${doc.rejectionReason}` : ''}</div>
-                        {doc.status === DOC_STATUS.WAIVED && doc.skipReason && (
-                          <div className="ta-cell-sub" style={{ color: 'var(--tag-amber-fg)' }}>Candidate's reason: {doc.skipReason}</div>
-                        )}
-                      </div>
-                      <Tag tone={tone}>{m.label}</Tag>
-                      {canVerifyDocs && [DOC_STATUS.UPLOADED, DOC_STATUS.VERIFIED].includes(doc.status) && (
-                        <span className="ta-rowactions" style={{ opacity: 1 }}>
-                          {doc.status !== DOC_STATUS.VERIFIED && (
-                            <button className="ta-iconbtn" title="Verify" onClick={() => act(() => verifyDocument(doc.id), `${doc.label} verified.`)}><Icon name="Check" size={15} /></button>
-                          )}
-                          <button className="ta-iconbtn" title="Reject" onClick={() => setRejectDoc(doc)}><Icon name="X" size={15} /></button>
-                        </span>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </Card>
-
-          {/* Step 4 — Offer */}
-          <Card
-            title={<StepTitle n={4} label="Offer" state={s4} />}
-            action={offer ? (
-              <Tag tone={{ neutral: 'grey', warning: 'amber', info: 'blue', success: 'green', error: 'red' }[OFFER_STATUS_META[offer.status].tone] || 'grey'}>{OFFER_STATUS_META[offer.status].label}</Tag>
-            ) : null}
-          >
-            {s4 === 'upcoming' && !offer ? (
-              <p className="ta-cell-mute">Available once documents are verified.</p>
-            ) : (
-              <>
-                {offer ? (
+              {activeStep === 1 && (
+                IN_REVIEW.includes(app.status) ? (
                   <>
-                    <p className="ta-cell-sub" style={{ marginBottom: 12 }}>The offer letter is prepared and sent outside the app. These are the details on record.</p>
-                    <div className="ta-info">
-                      <Info label="Position" value={offer.jobTitle} />
-                      <Info label="Department" value={offer.department} />
-                      <Info label="Expected joining date" value={formatDate(offer.joiningDate)} />
-                      <Info label="Reporting manager" value={offer.reportingManager} />
+                    <p className="ta-cell-sub" style={{ marginBottom: 12 }}>
+                      Check the profile against the role, then take the candidate forward to interviews or send the application back.
+                    </p>
+                    <div className="ta-btnrow">
+                      <Button icon="CheckCircle2" onClick={() => act(() => approveApplication(app.id), 'Application approved — moved to interview planning.')}>Approve</Button>
+                      <Button variant="ghost" icon="RotateCcw" onClick={() => setModal('return')}>Return</Button>
+                      <Button variant="ghost" icon="XCircle" onClick={() => setModal('reject')}>Reject</Button>
                     </div>
                   </>
+                ) : app.status === APP_STATUS.RETURNED ? (
+                  <p className="ta-cell-sub">Returned to the candidate: {app.returnReason || 'awaiting an updated application.'}</p>
+                ) : rejected ? (
+                  <p className="ta-cell-sub">Application was not taken forward{app.rejectReason ? `: ${app.rejectReason}` : '.'}</p>
                 ) : (
-                  <p className="ta-cell-sub" style={{ marginBottom: 12 }}>Documents are verified. Record the offer details once the letter has been sent.</p>
-                )}
-                <div className="ta-btnrow" style={{ marginTop: offer ? 14 : 0 }}>
-                  {CAN_OFFER.includes(app.status) && (
-                    <Button icon="FileCheck" onClick={() => setModal('offer')}>{offer ? 'Update offer' : 'Record extended offer'}</Button>
-                  )}
-                  {app.status === APP_STATUS.OFFER_ISSUED && offer && (
-                    <>
-                      <Button icon="CheckCircle2" onClick={() => act(() => confirmOfferAccepted(offer.id), 'Offer acceptance confirmed — handed over to HR.')}>Confirm accepted</Button>
-                      <Button variant="ghost" icon="XCircle" onClick={() => act(() => declineOffer(offer.id), 'Marked as declined.')}>Mark declined</Button>
-                    </>
-                  )}
-                </div>
-              </>
-            )}
+                  <p className="ta-cell-sub">Approved — the candidate moved forward to interviews.</p>
+                )
+              )}
+
+              {activeStep === 2 && (
+                s2 === 'upcoming' ? (
+                  <p className="ta-cell-mute">Opens once the application is approved.</p>
+                ) : interviews.length === 0 ? (
+                  <p className="ta-cell-sub">No round scheduled yet — use <b>Schedule round</b> to set up the first interview.</p>
+                ) : (
+                  <div className="ta-stack">
+                    {interviews.map((iv) => {
+                      const m = ROUND_STATUS_META[iv.status];
+                      return (
+                        <div className="ta-round" key={iv.id}>
+                          <div className="ta-round__head">
+                            <span className="ta-cell-strong">Round {iv.round} · {iv.type}</span>
+                            <Tag tone={m.tone === 'info' ? 'blue' : m.tone === 'success' ? 'green' : m.tone === 'error' ? 'red' : m.tone === 'warning' ? 'amber' : 'grey'}>{m.label}</Tag>
+                          </div>
+                          <div className="ta-cell-sub">{formatDate(iv.date)} at {iv.time} · {iv.mode} · {iv.interviewer}</div>
+                          {iv.comments && iv.status !== ROUND_STATUS.SCHEDULED && (
+                            <div className="ta-cell-sub ta-remark" style={{ marginTop: 4 }}>
+                              Remarks: {iv.comments}
+                              <span className={`ta-remark__tag ta-remark__tag--${iv.shareComments ? 'shared' : 'internal'}`}>
+                                {iv.shareComments ? 'Shared with candidate' : 'Internal only'}
+                              </span>
+                            </div>
+                          )}
+                          {iv.status === ROUND_STATUS.SCHEDULED && (
+                            <div style={{ marginTop: 8 }}>
+                              <Button variant="ghost" icon="ClipboardCheck" onClick={() => setResultFor(iv)}>Record result</Button>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                    {app.status === APP_STATUS.INTERVIEW_PASSED && (
+                      <div style={{ marginTop: 4 }}>
+                        <Button icon="ArrowRight" onClick={() => act(() => advanceToDocuments(app.id), 'Moved to document verification.')}>Proceed to documents</Button>
+                      </div>
+                    )}
+                  </div>
+                )
+              )}
+
+              {activeStep === 3 && (
+                !showDocs ? (
+                  <p className="ta-cell-mute">Opens once all interview rounds are cleared.</p>
+                ) : (
+                  <div className="ta-stack">
+                    {documents.map((doc) => {
+                      const m = DOC_STATUS_META[doc.status];
+                      const tone = { info: 'blue', success: 'green', error: 'red', warning: 'amber', neutral: 'grey' }[m.tone] || 'grey';
+                      const mandatory = isDocMandatory(doc.key);
+                      return (
+                        <div className="ta-docrow" key={doc.id}>
+                          <span className="ta-docrow__icon"><Icon name="FileText" size={16} /></span>
+                          <div className="grow">
+                            <div className="ta-cell-strong">{doc.label}{mandatory && <span className="cx-req" title="Mandatory"> *</span>}</div>
+                            <div className="ta-cell-sub">{doc.fileName || (doc.status === DOC_STATUS.WAIVED ? 'Not provided by candidate' : 'No file uploaded')}{doc.status === DOC_STATUS.REJECTED && doc.rejectionReason ? ` · ${doc.rejectionReason}` : ''}</div>
+                            {doc.status === DOC_STATUS.WAIVED && doc.skipReason && (
+                              <div className="ta-cell-sub" style={{ color: 'var(--tag-amber-fg)' }}>Candidate's reason: {doc.skipReason}</div>
+                            )}
+                          </div>
+                          <Tag tone={tone}>{m.label}</Tag>
+                          {canVerifyDocs && [DOC_STATUS.UPLOADED, DOC_STATUS.VERIFIED].includes(doc.status) && (
+                            <span className="ta-rowactions" style={{ opacity: 1 }}>
+                              {doc.status !== DOC_STATUS.VERIFIED && (
+                                <button className="ta-iconbtn" title="Verify" onClick={() => act(() => verifyDocument(doc.id), `${doc.label} verified.`)}><Icon name="Check" size={15} /></button>
+                              )}
+                              <button className="ta-iconbtn" title="Reject" onClick={() => setRejectDoc(doc)}><Icon name="X" size={15} /></button>
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )
+              )}
+
+              {activeStep === 4 && (
+                s4 === 'upcoming' && !offer ? (
+                  <p className="ta-cell-mute">Available once documents are verified.</p>
+                ) : (
+                  <>
+                    {offer ? (
+                      <>
+                        <p className="ta-cell-sub" style={{ marginBottom: 12 }}>The offer letter is prepared and sent outside the app. These are the details on record.</p>
+                        <div className="ta-info">
+                          <Info label="Position" value={offer.jobTitle} />
+                          <Info label="Department" value={offer.department} />
+                          <Info label="Expected joining date" value={formatDate(offer.joiningDate)} />
+                          <Info label="Reporting manager" value={offer.reportingManager} />
+                        </div>
+                      </>
+                    ) : (
+                      <p className="ta-cell-sub" style={{ marginBottom: 12 }}>Documents are verified. Record the offer details once the letter has been sent.</p>
+                    )}
+                    <div className="ta-btnrow" style={{ marginTop: offer ? 14 : 0 }}>
+                      {CAN_OFFER.includes(app.status) && (
+                        <Button icon="FileCheck" onClick={() => setModal('offer')}>{offer ? 'Update offer' : 'Record extended offer'}</Button>
+                      )}
+                      {app.status === APP_STATUS.OFFER_ISSUED && offer && (
+                        <>
+                          <Button icon="CheckCircle2" onClick={() => act(() => confirmOfferAccepted(offer.id), 'Offer acceptance confirmed — handed over to HR.')}>Confirm accepted</Button>
+                          <Button variant="ghost" icon="XCircle" onClick={() => act(() => declineOffer(offer.id), 'Marked as declined.')}>Mark declined</Button>
+                        </>
+                      )}
+                    </div>
+                  </>
+                )
+              )}
+            </div>
+
+            <div className="ta-wizard__nav">
+              <Button variant="ghost" icon="ChevronLeft" disabled={activeStep === 1} onClick={() => goStep(activeStep - 1)}>Back</Button>
+              <Button variant="ghost" iconRight="ChevronRight" disabled={activeStep >= maxStep} onClick={() => goStep(activeStep + 1)}>Next</Button>
+            </div>
           </Card>
         </div>
 
         <div className="ta-stack">
-          <Card title="Contact">
-            <div className="ta-info ta-info--1">
-              <Info label="Email" value={p.email} />
-              <Info label="Mobile" value={p.mobile} />
-              <Info label="Current location" value={p.currentLocation} />
-              <Info label="Preferred location" value={p.preferredLocation} />
-            </div>
-          </Card>
-
-          <Card title="Professional experience">
-            <div className="ta-info ta-info--1">
-              <Info label="Current title" value={pr.currentJobTitle} />
-              <Info label="Current company" value={pr.currentCompany} />
-              <Info label="Total experience" value={pr.totalExperience ? `${pr.totalExperience} years` : '—'} />
-              <Info label="Relevant experience" value={pr.relevantExperience ? `${pr.relevantExperience} years` : '—'} />
-              <Info label="Notice period" value={pr.noticePeriod} />
-              <Info label="Expected CTC" value={formatCurrencyINR(pr.expectedCTC)} />
-            </div>
-          </Card>
-
-          <Card title="Skills & education">
-            <div className="ta-skills" style={{ marginBottom: 16 }}>
-              {(pr.skills || []).length ? pr.skills.map((s) => <span key={s} className="ta-skill">{s}</span>) : <span className="ta-cell-mute">No skills listed</span>}
-            </div>
-            {(app.education || []).map((e, i) => (
-              <div key={e.id || i} className="ta-info__item" style={{ marginBottom: 8 }}>
-                <span className="ta-info__label">{e.qualification || `Education ${i + 1}`}</span>
-                <span className="ta-info__value">{[e.university, e.specialization, e.year].filter(Boolean).join(' · ') || '—'}</span>
-              </div>
-            ))}
-          </Card>
-
           <Card title="Activity">
             {activities.length === 0 ? (
               <p className="ta-cell-mute">No activity yet.</p>
             ) : (
-              <ol className="ta-timeline">
-                {activities.slice(0, 12).map((a) => (
-                  <li key={a.id}>
-                    <span className="ta-timeline__dot" />
-                    <div>
-                      <div className="ta-cell-strong">{a.title}</div>
-                      <div className="ta-cell-sub">{a.description}</div>
-                      <div className="ta-cell-sub">{formatDate(a.at)} · {a.actor}</div>
-                    </div>
-                  </li>
-                ))}
-              </ol>
+              <>
+                <ol className="ta-timeline">
+                  {(showAllAct ? activities : activities.slice(0, 4)).map((a) => (
+                    <li key={a.id}>
+                      <span className="ta-timeline__dot" />
+                      <div>
+                        <div className="ta-cell-strong">{a.title}</div>
+                        <div className="ta-cell-sub">{a.description}</div>
+                        <div className="ta-cell-sub">{formatDate(a.at)} · {a.actor}</div>
+                      </div>
+                    </li>
+                  ))}
+                </ol>
+                {activities.length > 4 && (
+                  <button
+                    type="button"
+                    className={`ta-actmore${showAllAct ? ' is-open' : ''}`}
+                    onClick={() => setShowAllAct((v) => !v)}
+                  >
+                    {showAllAct ? 'Show less' : `Show all ${activities.length}`}
+                    <Icon name="ChevronDown" size={14} />
+                  </button>
+                )}
+              </>
             )}
           </Card>
         </div>
