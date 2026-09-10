@@ -36,7 +36,7 @@ export default function Toolbar({ search, filters = [], chips = [], onClearAll, 
         )}
       </div>
 
-      {chips.length > 0 && (
+      {(chips.length > 0 || onClearAll) && (
         <div className="ta-chips">
           {chips.map((c) => (
             <span className="ta-chip" key={c.key}>
@@ -44,7 +44,11 @@ export default function Toolbar({ search, filters = [], chips = [], onClearAll, 
               <button type="button" onClick={c.onRemove} aria-label={`Remove ${c.label}`}><Icon name="X" size={11} /></button>
             </span>
           ))}
-          {onClearAll && <button type="button" className="ta-chip__clear" onClick={onClearAll}>Clear all</button>}
+          {onClearAll && (
+            <button type="button" className="ta-chip__clear" onClick={onClearAll}>
+              <Icon name="X" size={12} /> Clear filters
+            </button>
+          )}
         </div>
       )}
     </>

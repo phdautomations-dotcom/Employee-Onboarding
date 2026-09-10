@@ -122,14 +122,10 @@ export default function TACandidatesPage() {
     view.setFilter('experience', key === 'all' ? 'all' : (r) => EXPERIENCE[key].match(r.experience));
   };
 
-  const chips = [
-    stage !== 'all' && { key: 'stage', label: STAGE_GROUPS[stage].label, onRemove: () => setStage('all') },
-    experience !== 'all' && { key: 'exp', label: EXPERIENCE[experience].label, onRemove: () => setExperience('all') },
-    activeJob !== 'all' && { key: 'job', label: activeJob, onRemove: () => view.setFilter('job', 'all') },
-    activeSource !== 'all' && { key: 'src', label: activeSource, onRemove: () => view.setFilter('source', 'all') },
-    activeNotice !== 'all' && { key: 'notice', label: activeNotice, onRemove: () => view.setFilter('noticePeriod', 'all') },
-    view.query && { key: 'q', label: `“${view.query}”`, onRemove: () => view.setQuery('') },
-  ].filter(Boolean);
+  // The dropdowns / search box already show what's active — no chip row,
+  // just a "Clear filters" affordance.
+  const hasFilters = stage !== 'all' || experience !== 'all' || activeJob !== 'all'
+    || activeSource !== 'all' || activeNotice !== 'all' || !!view.query;
 
   const clearAll = () => {
     view.setQuery('');
@@ -165,8 +161,7 @@ export default function TACandidatesPage() {
           { label: 'Source', value: activeSource, onChange: (v) => view.setFilter('source', v), options: SOURCES.map((s) => ({ value: s, label: s })) },
           { label: 'Notice Period', value: activeNotice, onChange: (v) => view.setFilter('noticePeriod', v), options: NOTICE_PERIODS.map((n) => ({ value: n, label: n })) },
         ]}
-        chips={chips}
-        onClearAll={chips.length > 1 ? clearAll : undefined}
+        onClearAll={hasFilters ? clearAll : undefined}
         pager={{ page: view.page, pageSize: view.pageSize, total: view.total, onPage: view.setPage }}
       />
 

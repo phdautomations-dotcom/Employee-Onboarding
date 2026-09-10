@@ -111,13 +111,9 @@ export default function HRCandidatesPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [spKey]);
 
-  const DOCS_LABEL = { verified: 'All verified', rejected: 'Has rejection', pending: 'Docs pending' };
-  const chips = [
-    stage !== 'all' && { key: 'stage', label: HR_FUNNEL_STAGES.find((s) => s.key === stage)?.label, onRemove: () => setStage('all') },
-    activeDept !== 'all' && { key: 'dept', label: activeDept, onRemove: () => view.setFilter('department', 'all') },
-    activeDocs !== 'all' && { key: 'docs', label: DOCS_LABEL[activeDocs], onRemove: () => view.setFilter('docsState', 'all') },
-    joined !== 'all' && { key: 'join', label: joined === 'set' ? 'Joining date set' : 'No joining date', onRemove: () => setJoined('all') },
-  ].filter(Boolean);
+  // The filter dropdowns already show their active value, so no separate
+  // chip row — just a "Clear filters" affordance when something is set.
+  const hasFilters = stage !== 'all' || activeDept !== 'all' || activeDocs !== 'all' || joined !== 'all';
 
   const apps = data.applications || [];
   const kpis = [
@@ -162,8 +158,7 @@ export default function HRCandidatesPage() {
             ],
           },
         ]}
-        chips={chips}
-        onClearAll={chips.length > 1 ? clearAll : undefined}
+        onClearAll={hasFilters ? clearAll : undefined}
         pager={{ page: view.page, pageSize: view.pageSize, total: view.total, onPage: view.setPage }}
       />
 
