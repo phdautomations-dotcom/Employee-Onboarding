@@ -6,7 +6,6 @@ import Card from '../../components/ta/Card.jsx';
 import Button from '../../components/ta/Button.jsx';
 import Tag from '../../components/ta/Tag.jsx';
 import EmptyState from '../../components/ta/EmptyState.jsx';
-import Avatar from '../../components/ta/Avatar.jsx';
 import ReasonModal from '../../components/workflow/ReasonModal.jsx';
 import ScheduleInterviewModal from '../../components/workflow/ScheduleInterviewModal.jsx';
 import InterviewResultModal from '../../components/workflow/InterviewResultModal.jsx';
@@ -135,23 +134,10 @@ export default function TACandidateDetailPage() {
     <>
       <TAHeader
         title={name}
-        subtitle={`${pr.currentJobTitle || 'Candidate'}${pr.currentCompany ? ` @ ${pr.currentCompany}` : ''} · ${pr.totalExperience || '—'} yrs · ${p.currentLocation || '—'}`}
+        subtitle={`${app.candidateId} · applied for ${app.jobTitle}`}
         backTo="/ta/candidates"
         backLabel="Candidates"
       />
-
-      <div className="ta-profile-head">
-        <Avatar name={name} />
-        <div className="grow">
-          <div className="ta-profile-head__tags">
-            <Tag tone={badge.tone}>{badge.label}</Tag>
-            <span className="ta-cell-sub">{app.candidateId} · applied for {app.jobTitle}</span>
-          </div>
-        </div>
-        <div className="ta-profile-head__actions">
-          <a className="ta-btn ta-btn--ghost" href={`mailto:${p.email}`}><Icon name="Mail" size={15} /> Contact</a>
-        </div>
-      </div>
 
       {!rejected && (
         <div className="ta-progress-row">
@@ -195,23 +181,34 @@ export default function TACandidateDetailPage() {
             </div>
 
             {tab === 'overview' && (
-              <div className="ta-info">
-                <Info label="Full name" value={name} />
-                <Info label="Applied for" value={app.jobTitle} />
-                <Info label="Application type" value={app.isGeneral ? 'General application' : 'Specific vacancy'} />
-                <Info label="Source" value={app.source} />
-                <Info label="Submitted" value={formatDate(app.submittedAt)} />
-                <Info label="Assigned to" value={app.assignedTo} />
-              </div>
+              <>
+                <div className="ta-info__item" style={{ marginBottom: 14 }}>
+                  <span className="ta-info__label">Current stage</span>
+                  <span className="ta-info__value"><Tag tone={badge.tone}>{badge.label}</Tag></span>
+                </div>
+                <div className="ta-info">
+                  <Info label="Candidate ID" value={app.candidateId} />
+                  <Info label="Applied for" value={app.jobTitle} />
+                  <Info label="Application type" value={app.isGeneral ? 'General application' : 'Specific vacancy'} />
+                  <Info label="Source" value={app.source} />
+                  <Info label="Submitted" value={formatDate(app.submittedAt)} />
+                  <Info label="Assigned to" value={app.assignedTo} />
+                </div>
+              </>
             )}
 
             {tab === 'contact' && (
-              <div className="ta-info">
-                <Info label="Email" value={p.email} />
-                <Info label="Mobile" value={p.mobile} />
-                <Info label="Current location" value={p.currentLocation} />
-                <Info label="Preferred location" value={p.preferredLocation} />
-              </div>
+              <>
+                <div className="ta-info">
+                  <Info label="Email" value={p.email} />
+                  <Info label="Mobile" value={p.mobile} />
+                  <Info label="Current location" value={p.currentLocation} />
+                  <Info label="Preferred location" value={p.preferredLocation} />
+                </div>
+                <a className="ta-btn ta-btn--ghost" href={`mailto:${p.email}`} style={{ marginTop: 16 }}>
+                  <Icon name="Mail" size={15} /> Mail to
+                </a>
+              </>
             )}
 
             {tab === 'experience' && (
