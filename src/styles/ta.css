@@ -327,8 +327,28 @@
 .ta-ptab.is-active svg { color: var(--ta-blue); }
 @media (max-width: 1180px) { .ta-ptabs { grid-template-columns: repeat(2, 1fr); } }
 
+/* activity sidebar — never taller than the workflow column; scroll inside */
+.ta-actside { overflow: hidden; }
+.ta-actside > .ta-card { max-height: 100%; overflow: hidden; }
+.ta-actside > .ta-card > .ta-card__body { display: flex; flex-direction: column; min-height: 0; }
+.ta-timeline--scroll {
+  flex: 1; min-height: 0; overflow-y: auto; padding-right: 6px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--ta-line) transparent;
+}
+.ta-timeline--scroll::-webkit-scrollbar { width: 5px; }
+.ta-timeline--scroll::-webkit-scrollbar-track { background: transparent; }
+.ta-timeline--scroll::-webkit-scrollbar-thumb { background: var(--ta-line); border-radius: 999px; }
+.ta-timeline--scroll:hover::-webkit-scrollbar-thumb { background: var(--ta-text-mute); }
+@media (max-width: 1160px) {
+  .ta-actside { max-height: none !important; overflow: visible; }
+  .ta-actside > .ta-card { max-height: none; }
+  .ta-timeline--scroll { overflow-y: visible; }
+}
+
 /* activity feed — show a few, expand for the rest */
 .ta-actmore {
+  flex-shrink: 0;
   display: flex; align-items: center; justify-content: center; gap: 6px;
   width: 100%; margin-top: 12px; padding: 8px;
   border: 1px solid var(--ta-line); border-radius: 9px;

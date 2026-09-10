@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Icon from '../../components/common/Icon.jsx';
 import TAHeader from '../../components/ta/TAHeader.jsx';
@@ -78,6 +78,21 @@ export default function TACandidateDetailPage() {
   const [step, setStep] = useState(null); // wizard page; null = follow the live stage
   const [showAllAct, setShowAllAct] = useState(false);
   const [tab, setTab] = useState('overview'); // profile tile: overview | contact | experience | skills
+
+  // Keep the Activity card no taller than the workflow column beside it — it
+  // scrolls internally instead of running past the left card's bottom edge.
+  const leftColRef = useRef(null);
+  const [sideMax, setSideMax] = useState(null);
+  useLayoutEffect(() => {
+    const el = leftColRef.current;
+    if (!el || typeof ResizeObserver === 'undefined') return undefined;
+    const sync = () => setSideMax(window.innerWidth > 1160 ? el.offsetHeight : null);
+    sync();
+    const ro = new ResizeObserver(sync);
+    ro.observe(el);
+    window.addEventListener('resize', sync);
+    return () => { ro.disconnect(); window.removeEventListener('resize', sync); };
+  }, []);
 
   useEffect(() => {
     if (app && app.status === APP_STATUS.SUBMITTED) startReview(app.id);
@@ -160,7 +175,7 @@ export default function TACandidateDetailPage() {
       )}
 
       <div className="ta-detail-grid">
-        <div className="ta-stack">
+        <div className="ta-stack" ref={leftColRef}>
           <Card>
             <div className="ta-ptabs">
               {[
@@ -420,13 +435,16 @@ export default function TACandidateDetailPage() {
           </Card>
         </div>
 
-        <div className="ta-stack">
+        <div
+          className="ta-stack ta-actside"
+          style={sideMax ? { maxHeight: `${sideMax}px` } : undefined}
+        >
           <Card title="Activity">
             {activities.length === 0 ? (
               <p className="ta-cell-mute">No activity yet.</p>
             ) : (
               <>
-                <ol className="ta-timeline">
+                <ol className="ta-timeline ta-timeline--scroll">
                   {(showAllAct ? activities : activities.slice(0, 4)).map((a) => (
                     <li key={a.id}>
                       <span className="ta-timeline__dot" />
