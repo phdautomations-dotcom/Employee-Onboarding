@@ -297,6 +297,20 @@
   margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--ta-line);
 }
 
+/* candidate overview — compact two-column fact list */
+.ta-snapshot__stage { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.ta-snapshot__list {
+  margin: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 32px;
+}
+.ta-snapshot__list > div {
+  display: flex; gap: 10px; align-items: baseline;
+  padding: 7px 0; border-bottom: 1px solid var(--ta-line-soft);
+  font-size: 12.5px; line-height: 1.35;
+}
+.ta-snapshot__list dt { flex: 0 0 108px; color: var(--ta-text-mute); }
+.ta-snapshot__list dd { margin: 0; flex: 1; min-width: 0; font-weight: 600; word-break: break-word; }
+@media (max-width: 960px) { .ta-snapshot__list { grid-template-columns: 1fr; gap: 0; } }
+
 /* candidate profile — clickable tiles that swap the panel below */
 .ta-ptabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 18px; }
 .ta-ptab {

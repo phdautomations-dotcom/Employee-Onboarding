@@ -181,23 +181,27 @@ export default function TACandidateDetailPage() {
             </div>
 
             {tab === 'overview' && (
-              <>
-                <div className="ta-info__item" style={{ marginBottom: 14 }}>
+              <div className="ta-snapshot">
+                <div className="ta-snapshot__stage">
                   <span className="ta-info__label">Current stage</span>
-                  <span className="ta-info__value"><Tag tone={badge.tone}>{badge.label}</Tag></span>
+                  <Tag tone={badge.tone}>{badge.label}</Tag>
                 </div>
-                <div className="ta-info">
-                  <Info label="Current role" value={pr.currentJobTitle ? `${pr.currentJobTitle}${pr.currentCompany ? ` @ ${pr.currentCompany}` : ''}` : '—'} />
-                  <Info label="Total experience" value={pr.totalExperience ? `${pr.totalExperience} years` : '—'} />
-                  <Info label="Notice period" value={pr.noticePeriod} />
-                  <Info label="Expected CTC" value={formatCurrencyINR(pr.expectedCTC)} />
-                  <Info label="Location" value={p.currentLocation ? `${p.currentLocation}${p.preferredLocation && p.preferredLocation !== p.currentLocation ? ` → ${p.preferredLocation}` : ''}` : '—'} />
-                  <Info label="Application type" value={app.isGeneral ? 'General application' : 'Specific vacancy'} />
-                  <Info label="Source" value={app.source} />
-                  <Info label="Submitted" value={formatDate(app.submittedAt)} />
-                  <Info label="Assigned to" value={app.assignedTo} />
-                </div>
-              </>
+                <dl className="ta-snapshot__list">
+                  {[
+                    ['Current role', pr.currentJobTitle ? `${pr.currentJobTitle}${pr.currentCompany ? ` @ ${pr.currentCompany}` : ''}` : null],
+                    ['Experience', pr.totalExperience ? `${pr.totalExperience} yrs` : null],
+                    ['Notice period', pr.noticePeriod || null],
+                    ['Expected CTC', pr.expectedCTC ? formatCurrencyINR(pr.expectedCTC) : null],
+                    ['Location', p.currentLocation ? `${p.currentLocation}${p.preferredLocation && p.preferredLocation !== p.currentLocation ? ` → ${p.preferredLocation}` : ''}` : null],
+                    ['Application', app.isGeneral ? 'General' : 'Specific vacancy'],
+                    ['Source', app.source || null],
+                    ['Submitted', formatDate(app.submittedAt)],
+                    ['Assigned to', app.assignedTo || null],
+                  ].filter(([, v]) => v).map(([k, v]) => (
+                    <div key={k}><dt>{k}</dt><dd>{v}</dd></div>
+                  ))}
+                </dl>
+              </div>
             )}
 
             {tab === 'contact' && (
