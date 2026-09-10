@@ -233,16 +233,28 @@
 
 /* ---------- Buttons ---------- */
 .ta-btn {
+  position: relative; overflow: hidden;
   display: inline-flex; align-items: center; justify-content: center; gap: 7px;
   padding: 8px 14px; border-radius: 10px; border: 1px solid transparent;
-  font-size: 12.5px; font-weight: 600; cursor: pointer; white-space: nowrap;
-  transition: background 0.15s, border-color 0.15s, box-shadow 0.15s, transform 0.08s;
+  font-size: 12.5px; font-weight: 650; cursor: pointer; white-space: nowrap;
+  transition: background-position 0.5s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.15s, border-color 0.15s, transform 0.08s;
 }
 .ta-btn:active { transform: translateY(1px); }
-.ta-btn--primary { background: var(--ta-blue); color: #fff; }
-.ta-btn--primary:hover { background: var(--ta-blue-ink); box-shadow: 0 6px 16px -6px rgba(59, 110, 245, 0.5); }
-.ta-btn--ghost { background: var(--ta-surface); color: var(--ta-text); border-color: var(--ta-line); }
-.ta-btn--ghost:hover { border-color: #dfe1e7; background: var(--ta-bg); }
+/* a gradient that slides across the button on hover / click */
+.ta-btn--primary {
+  color: #fff;
+  background-image: linear-gradient(115deg, var(--ta-blue) 0%, #6b9bff 26%, var(--ta-blue) 52%, var(--ta-blue-ink) 100%);
+  background-size: 260% 100%; background-position: 100% 0;
+}
+.ta-btn--primary:hover { background-position: 40% 0; box-shadow: 0 8px 18px -7px rgba(59, 110, 245, 0.6); }
+.ta-btn--primary:active { background-position: 0 0; }
+.ta-btn--ghost {
+  color: var(--ta-text); border-color: var(--ta-line);
+  background-image: linear-gradient(115deg, var(--ta-surface) 0%, var(--ta-blue-wash) 30%, var(--ta-surface) 55%, var(--ta-surface) 100%);
+  background-size: 260% 100%; background-position: 100% 0;
+}
+.ta-btn--ghost:hover { border-color: #dbe4fb; background-position: 45% 0; }
+.ta-btn--ghost:active { background-position: 0 0; }
 
 /* ---------- Cards ---------- */
 .ta-card {
@@ -401,23 +413,25 @@
 /* ---------- KPI row ---------- */
 .ta-kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 16px; }
 .ta-kpi {
-  background: var(--ta-surface); border: 1px solid var(--ta-line);
-  border-radius: var(--ta-radius); box-shadow: var(--ta-shadow), inset 3px 0 0 var(--k-fg, var(--ta-blue));
+  background: linear-gradient(180deg, color-mix(in srgb, var(--k-fg, var(--ta-blue)) 4%, #fff), var(--ta-surface) 55%);
+  border: 1px solid var(--ta-line);
+  border-radius: var(--ta-radius); box-shadow: var(--ta-shadow), inset 4px 0 0 var(--k-fg, var(--ta-blue));
   padding: 15px 16px 14px; display: flex; flex-direction: column;
   transition: box-shadow 0.18s, transform 0.18s, border-color 0.18s;
 }
-.ta-kpi:hover { box-shadow: var(--ta-shadow-hover), inset 3px 0 0 var(--k-fg, var(--ta-blue)); transform: translateY(-1px); }
+.ta-kpi:hover { box-shadow: var(--ta-shadow-hover), inset 4px 0 0 var(--k-fg, var(--ta-blue)); transform: translateY(-2px); }
 .ta-kpi--link { text-align: left; font: inherit; cursor: pointer; }
 .ta-kpi--link:hover { border-color: color-mix(in srgb, var(--k-fg) 40%, var(--ta-line)); }
 .ta-kpi--link:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--ta-blue-wash); }
 .ta-kpi__head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
 .ta-kpi__label { font-size: 13px; font-weight: 700; color: #0c0e13; letter-spacing: -0.01em; }
 .ta-kpi__icon {
-  width: 28px; height: 28px; border-radius: 8px; flex-shrink: 0;
+  width: 32px; height: 32px; border-radius: 9px; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
-  background: color-mix(in srgb, var(--k-fg) 13%, #fff); color: var(--k-fg, var(--ta-blue));
+  background: var(--k-fg, var(--ta-blue)); color: #fff;
+  box-shadow: 0 4px 10px -3px color-mix(in srgb, var(--k-fg) 55%, transparent);
 }
-.ta-kpi__value { font-size: 28px; font-weight: 750; line-height: 1; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.ta-kpi__value { font-size: 28px; font-weight: 800; color: #0c0e13; line-height: 1; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
 .ta-kpi__bar { display: flex; align-items: center; gap: 10px; margin-top: 13px; }
 .ta-kpi__bar-track {
   flex: 1; height: 8px; border-radius: 999px; overflow: hidden;
