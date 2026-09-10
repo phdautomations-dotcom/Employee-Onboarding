@@ -6,8 +6,9 @@ import { useState } from 'react';
    `labelMode`: 'pct' (share of the first stage, default) or 'count' (raw number). */
 const RAMP = ['#4b7bf7', '#8b7ff0', '#f6a04a', '#46c98a', '#a5ddc2', '#c7e8d6'];
 
-export default function FunnelChart({ stages, labelMode = 'pct' }) {
+export default function FunnelChart({ stages, labelMode = 'pct', onSegmentClick }) {
   const [hover, setHover] = useState(null);
+  const clickable = typeof onSegmentClick === 'function';
   const first = stages[0]?.value || 1;
   const pct = (s) => Math.round((s.value / first) * 100);
   const max = Math.max(1, ...stages.map((s) => s.value));
@@ -37,8 +38,9 @@ export default function FunnelChart({ stages, labelMode = 'pct' }) {
             <g
               key={s.label}
               className="ta-funnel__band"
-              style={{ transform: active ? 'translateY(-3px)' : 'none', opacity: dim ? 0.4 : 1 }}
+              style={{ transform: active ? 'translateY(-3px)' : 'none', opacity: dim ? 0.4 : 1, cursor: clickable ? 'pointer' : 'default' }}
               onMouseEnter={() => setHover(i)}
+              onClick={clickable ? () => onSegmentClick(i) : undefined}
             >
               <polygon points={points} fill={RAMP[i] || RAMP[RAMP.length - 1]} />
               <line x1={cx + wTop / 2} y1={y + bandH / 2} x2={206} y2={y + bandH / 2} stroke="var(--ta-line)" strokeWidth="1" />

@@ -297,7 +297,7 @@ export default function HRDashboard() {
         {notJoined.length === 0 ? (
           <p className="ta-cell-mute">No one is currently in onboarding.</p>
         ) : (
-          <DonutChart slices={deptSlices} caption="joining" onSliceClick={() => navigate('/hr/candidates?stage=onboarding')} />
+          <DonutChart slices={deptSlices} caption="joining" onSliceClick={(label) => navigate(`/hr/candidates?dept=${encodeURIComponent(label)}`)} />
         )}
       </Card>
       </div>

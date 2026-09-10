@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import Icon from '../../components/common/Icon.jsx';
 import TAHeader from '../../components/ta/TAHeader.jsx';
@@ -61,15 +61,18 @@ export default function HRCandidatesPage() {
   // click shows here. The "Onboarding Stage" column still shows where each
   // candidate currently is (which may be further along).
   const stageParam = HR_FUNNEL_STAGES.some((s) => s.key === sp.get('stage')) ? sp.get('stage') : 'all';
+  const deptParam = sp.get('dept') || null; // set when arriving from the "Onboarding by Department" donut
   const [stage, setStageKey] = useState(stageParam);
+
+  const initialFilters = {};
+  if (stageParam !== 'all') initialFilters.hrRank = (r) => r.hrRank >= HR_FUNNEL_STAGES.find((s) => s.key === stageParam).rank;
+  if (deptParam) initialFilters.department = deptParam;
 
   const view = useCollectionView(rows, {
     searchFields: ['name', 'candidateId'],
     pageSize: 30,
     initialSort: { key: 'name', dir: 'asc' },
-    initialFilters: stageParam !== 'all'
-      ? { hrRank: (r) => r.hrRank >= HR_FUNNEL_STAGES.find((s) => s.key === stageParam).rank }
-      : {},
+    initialFilters: Object.keys(initialFilters).length ? initialFilters : {},
   });
 
   const deptOptions = useMemo(
@@ -97,6 +100,16 @@ export default function HRCandidatesPage() {
     view.setFilter('department', 'all');
     view.setFilter('docsState', 'all');
   };
+
+  // Re-apply filters when already on the page and the dashboard link changes the URL params.
+  const spKey = `${sp.get('stage') || ''}|${sp.get('dept') || ''}`;
+  const firstSync = useRef(true);
+  useEffect(() => {
+    if (firstSync.current) { firstSync.current = false; return; }
+    setStage(stageParam);
+    view.setFilter('department', deptParam || 'all');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [spKey]);
 
   const DOCS_LABEL = { verified: 'All verified', rejected: 'Has rejection', pending: 'Docs pending' };
   const chips = [

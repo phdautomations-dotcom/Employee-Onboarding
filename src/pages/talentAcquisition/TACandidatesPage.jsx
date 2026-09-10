@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import Icon from '../../components/common/Icon.jsx';
 import TAHeader from '../../components/ta/TAHeader.jsx';
@@ -87,6 +87,7 @@ export default function TACandidatesPage() {
   const stageParam = STAGE_GROUPS[sp.get('stage')] ? sp.get('stage') : 'all';
   const jobParam = sp.get('job') || null;
   const noticeParam = sp.get('notice') || null; // set when arriving from the dashboard's notice-period chart
+  const sourceParam = SOURCES.includes(sp.get('source')) ? sp.get('source') : null; // dashboard source donut
   const [stage, setStageKey] = useState(stageParam);
   const [experience, setExpKey] = useState('all');
 
@@ -94,6 +95,7 @@ export default function TACandidatesPage() {
   if (stageParam !== 'all') initialFilters.status = (r) => STAGE_GROUPS[stageParam].match(r.status);
   if (jobParam) initialFilters.job = jobParam;
   if (noticeParam) initialFilters.noticePeriod = noticeParam;
+  if (sourceParam) initialFilters.source = sourceParam;
 
   const view = useCollectionView(rows, {
     searchFields: ['name', 'email', 'candidateId', 'job'],
@@ -137,6 +139,19 @@ export default function TACandidatesPage() {
     view.setFilter('source', 'all');
     view.setFilter('noticePeriod', 'all');
   };
+
+  // Re-apply filters when the page is already open and the URL params change
+  // (e.g. clicking a second dashboard tile). The first run is handled by initialFilters.
+  const spKey = `${sp.get('stage') || ''}|${sp.get('job') || ''}|${sp.get('notice') || ''}|${sp.get('source') || ''}`;
+  const firstSync = useRef(true);
+  useEffect(() => {
+    if (firstSync.current) { firstSync.current = false; return; }
+    setStage(stageParam);
+    view.setFilter('job', jobParam || 'all');
+    view.setFilter('noticePeriod', noticeParam || 'all');
+    view.setFilter('source', sourceParam || 'all');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [spKey]);
 
   return (
     <>

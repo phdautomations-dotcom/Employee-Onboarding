@@ -36,11 +36,11 @@ const UPDATE_ICON = {
 /* The five pipeline stages shown in the funnel + list, with the index in
    PIPELINE_STAGES a candidate must have reached to be counted. */
 const STAGES = [
-  { label: 'Applied', icon: 'FileText', tone: 'blue', reach: 0, color: '#4b7bf7' },
-  { label: 'Screening', icon: 'Eye', tone: 'violet', reach: 1, color: '#8b7ff0' },
-  { label: 'Interview', icon: 'CalendarDays', tone: 'amber', reach: 2, color: '#f6a04a' },
-  { label: 'Offer', icon: 'FileCheck', tone: 'green', reach: 4, color: '#46c98a' },
-  { label: 'Hired', icon: 'UserRoundCheck', tone: 'green', reach: 5, color: '#a5ddc2' },
+  { label: 'Applied', icon: 'FileText', tone: 'blue', reach: 0, color: '#4b7bf7', key: 'applied' },
+  { label: 'Screening', icon: 'Eye', tone: 'violet', reach: 1, color: '#8b7ff0', key: 'screening' },
+  { label: 'Interview', icon: 'CalendarDays', tone: 'amber', reach: 2, color: '#f6a04a', key: 'interview' },
+  { label: 'Offer', icon: 'FileCheck', tone: 'green', reach: 4, color: '#46c98a', key: 'offer' },
+  { label: 'Hired', icon: 'UserRoundCheck', tone: 'green', reach: 5, color: '#a5ddc2', key: 'hired' },
 ];
 
 const SOURCE_COLOR = {
@@ -137,12 +137,14 @@ export default function TADashboard() {
       meter: { value: interviewsDone, max: Math.max(1, interviewsDone + scheduledInterviews) },
       trend: trendPercent(countInWindow(interviews, 'date', 0), countInWindow(interviews, 'date', 1)),
       note: `${interviewsDone} completed so far`,
+      onClick: () => navigate('/ta/candidates?stage=interview'),
     },
     {
       icon: 'FileCheck', label: 'Offers Extended', accent: 'green', value: extendedOffers.length,
       meter: { value: offersAccepted, max: Math.max(1, extendedOffers.length) },
       trend: trendPercent(countInWindow(extendedOffers, 'createdAt', 0), countInWindow(extendedOffers, 'createdAt', 1)),
       note: `${offersAccepted} accepted`,
+      onClick: () => navigate('/ta/candidates?stage=offer'),
     },
   ];
 
@@ -219,7 +221,7 @@ export default function TADashboard() {
                 <button
                   key={s.label}
                   className={`ta-pipe__row${s.label === busiest.label ? ' ta-pipe__row--active' : ''}`}
-                  onClick={() => navigate('/ta/candidates')}
+                  onClick={() => navigate(`/ta/candidates?stage=${s.key}`)}
                 >
                   <span
                     className="ta-pipe__icon"
@@ -232,7 +234,10 @@ export default function TADashboard() {
                 </button>
               ))}
             </div>
-            <FunnelChart stages={stageRows} />
+            <FunnelChart
+              stages={stageRows}
+              onSegmentClick={(i) => navigate(`/ta/candidates?stage=${stageRows[i].key}`)}
+            />
           </div>
         </Card>
 
@@ -241,7 +246,11 @@ export default function TADashboard() {
             <p className="ta-cell-mute">No applications in this period.</p>
           ) : (
             <>
-              <DonutChart slices={sourceSlices} caption="Total" />
+              <DonutChart
+                slices={sourceSlices}
+                caption="Total"
+                onSliceClick={(label) => navigate(`/ta/candidates?source=${encodeURIComponent(label)}`)}
+              />
               {(() => {
                 const total = sourceSlices.reduce((s, x) => s + x.value, 0) || 1;
                 const top = [...sourceSlices].sort((a, b) => b.value - a.value)[0];
