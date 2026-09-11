@@ -1,28 +1,32 @@
 {
   "app": "recruitment-onboarding-frontend",
-  "generatedAt": "2026-09-11T05:06:04.765Z",
+  "generatedAt": "2026-09-11T05:10:10.511Z",
   "stats": {
-    "files": 111,
-    "edges": 380,
+    "files": 114,
+    "edges": 386,
     "layers": {
       "entry": 2,
-      "component": 51,
+      "component": 52,
       "navigation": 11,
       "route": 2,
       "constant": 2,
       "context": 2,
       "data": 2,
       "hook": 3,
-      "style": 2,
+      "style": 3,
       "layout": 3,
       "page": 27,
-      "util": 4
+      "util": 5
     }
   },
   "routes": [
     {
-      "path": "/login",
+      "path": "/",
       "component": "LoginPage"
+    },
+    {
+      "path": "/login",
+      "component": "Navigate"
     },
     {
       "path": "/candidate",
@@ -55,10 +59,6 @@
     {
       "path": "/candidate/profile",
       "component": "CandidateProfilePage"
-    },
-    {
-      "path": "/",
-      "component": "Navigate"
     },
     {
       "path": "/jobs",
@@ -172,7 +172,7 @@
   "hubs": [
     {
       "id": "src/components/common/Icon.jsx",
-      "importers": 58
+      "importers": 60
     },
     {
       "id": "src/context/AppContext.jsx",
@@ -188,7 +188,7 @@
     },
     {
       "id": "src/components/common/Button.jsx",
-      "importers": 14
+      "importers": 13
     },
     {
       "id": "src/components/ta/Button.jsx",
@@ -411,7 +411,6 @@
         "src/components/workflow/OfferDrawer.jsx",
         "src/components/workflow/ReasonModal.jsx",
         "src/components/workflow/ScheduleInterviewModal.jsx",
-        "src/pages/LoginPage.jsx",
         "src/pages/shared/DocumentsReview.jsx",
         "src/pages/shared/SettingsPage.jsx",
         "src/pages/talentAcquisition/TAInterviewsPage.jsx",
@@ -594,11 +593,13 @@
         "src/components/ta/EmptyState.jsx",
         "src/components/ta/Field.jsx",
         "src/components/ta/KpiCard.jsx",
+        "src/components/ta/LifecycleFunnel.jsx",
         "src/components/ta/Pager.jsx",
         "src/components/ta/StatBar.jsx",
         "src/components/ta/Tag.jsx",
         "src/components/ta/Toolbar.jsx",
         "src/components/workflow/RecruitmentTimeline.jsx",
+        "src/components/workflow/StepTitle.jsx",
         "src/layouts/HRLayout.jsx",
         "src/layouts/TALayout.jsx",
         "src/pages/LoginPage.jsx",
@@ -856,7 +857,7 @@
       "name": "DemoFlow.jsx",
       "dir": "src/components/demo",
       "layer": "component",
-      "loc": 462,
+      "loc": 466,
       "summary": "",
       "exports": [
         "default (DemoFlow)"
@@ -925,7 +926,7 @@
       "name": "HRSidebar.jsx",
       "dir": "src/components/navigation",
       "layer": "navigation",
-      "loc": 66,
+      "loc": 54,
       "summary": "",
       "exports": [
         "default (HRSidebar)"
@@ -991,7 +992,7 @@
       "name": "ProfileMenu.jsx",
       "dir": "src/components/navigation",
       "layer": "navigation",
-      "loc": 86,
+      "loc": 90,
       "summary": "",
       "exports": [
         "default (ProfileMenu)"
@@ -1149,9 +1150,7 @@
         "src/utils/format.js"
       ],
       "importedBy": [
-        "src/pages/hr/HRCandidateDetailPage.jsx",
-        "src/pages/hr/HROffersPage.jsx",
-        "src/pages/talentAcquisition/TACandidateDetailPage.jsx"
+        "src/pages/hr/HROffersPage.jsx"
       ]
     },
     {
@@ -1306,7 +1305,7 @@
       "name": "FunnelChart.jsx",
       "dir": "src/components/ta",
       "layer": "component",
-      "loc": 61,
+      "loc": 70,
       "summary": "",
       "exports": [
         "default (FunnelChart)"
@@ -1343,13 +1342,15 @@
       "name": "LifecycleFunnel.jsx",
       "dir": "src/components/ta",
       "layer": "component",
-      "loc": 48,
-      "summary": "Employee Lifecycle Funnel — a real tapering funnel, top to bottom. Each segment is a centred trapezoid whose top edge matches the stage above and bottom edge the stage below, so the silhouette narrows as employees progress. `count` is the h",
+      "loc": 49,
+      "summary": "",
       "exports": [
         "default (LifecycleFunnel)"
       ],
       "externals": [],
-      "imports": [],
+      "imports": [
+        "src/components/common/Icon.jsx"
+      ],
       "importedBy": [
         "src/pages/hr/HRDashboard.jsx"
       ]
@@ -1454,7 +1455,7 @@
       "name": "Toolbar.jsx",
       "dir": "src/components/ta",
       "layer": "component",
-      "loc": 53,
+      "loc": 57,
       "summary": "",
       "exports": [
         "default (Toolbar)"
@@ -1655,6 +1656,25 @@
         "src/utils/format.js"
       ],
       "importedBy": [
+        "src/pages/talentAcquisition/TACandidateDetailPage.jsx"
+      ]
+    },
+    {
+      "id": "src/components/workflow/StepTitle.jsx",
+      "name": "StepTitle.jsx",
+      "dir": "src/components/workflow",
+      "layer": "component",
+      "loc": 16,
+      "summary": "",
+      "exports": [
+        "default (StepTitle)"
+      ],
+      "externals": [],
+      "imports": [
+        "src/components/common/Icon.jsx"
+      ],
+      "importedBy": [
+        "src/pages/hr/HRCandidateDetailPage.jsx",
         "src/pages/talentAcquisition/TACandidateDetailPage.jsx"
       ]
     },
@@ -1946,7 +1966,7 @@
       "name": "index.css",
       "dir": "src",
       "layer": "style",
-      "loc": 847,
+      "loc": 856,
       "summary": "",
       "exports": [],
       "externals": [],
@@ -2028,7 +2048,7 @@
       "name": "main.jsx",
       "dir": "src",
       "layer": "entry",
-      "loc": 31,
+      "loc": 32,
       "summary": "",
       "exports": [],
       "externals": [
@@ -2041,7 +2061,8 @@
         "src/context/AppContext.jsx",
         "src/context/ToastContext.jsx",
         "src/index.css",
-        "src/styles/ta.css"
+        "src/styles/ta.css",
+        "src/styles/home.css"
       ],
       "importedBy": []
     },
@@ -2050,7 +2071,7 @@
       "name": "LoginPage.jsx",
       "dir": "src/pages",
       "layer": "page",
-      "loc": 72,
+      "loc": 181,
       "summary": "",
       "exports": [
         "default (LoginPage)"
@@ -2061,7 +2082,6 @@
       ],
       "imports": [
         "src/components/common/Icon.jsx",
-        "src/components/common/Button.jsx",
         "src/context/AppContext.jsx",
         "src/constants/roles.js"
       ],
@@ -2268,7 +2288,7 @@
       "name": "HRCandidateDetailPage.jsx",
       "dir": "src/pages/hr",
       "layer": "page",
-      "loc": 276,
+      "loc": 428,
       "summary": "",
       "exports": [
         "default (HRCandidateDetailPage)"
@@ -2284,13 +2304,14 @@
         "src/components/ta/Button.jsx",
         "src/components/ta/Tag.jsx",
         "src/components/ta/EmptyState.jsx",
-        "src/components/ta/Avatar.jsx",
         "src/components/workflow/ReasonModal.jsx",
         "src/components/workflow/AssignRoleModal.jsx",
+        "src/components/workflow/StepTitle.jsx",
         "src/context/AppContext.jsx",
         "src/context/ToastContext.jsx",
         "src/constants/statuses.js",
-        "src/utils/format.js"
+        "src/utils/format.js",
+        "src/utils/activity.js"
       ],
       "importedBy": [
         "src/routes/AppRoutes.jsx"
@@ -2301,7 +2322,7 @@
       "name": "HRCandidatesPage.jsx",
       "dir": "src/pages/hr",
       "layer": "page",
-      "loc": 201,
+      "loc": 209,
       "summary": "",
       "exports": [
         "default (HRCandidatesPage)"
@@ -2331,7 +2352,7 @@
       "name": "HRDashboard.jsx",
       "dir": "src/pages/hr",
       "layer": "page",
-      "loc": 310,
+      "loc": 307,
       "summary": "",
       "exports": [
         "default (HRDashboard)"
@@ -2421,7 +2442,7 @@
       "name": "ActivityFeed.jsx",
       "dir": "src/pages/shared",
       "layer": "page",
-      "loc": 193,
+      "loc": 195,
       "summary": "",
       "exports": [
         "default (ActivityFeed)"
@@ -2438,7 +2459,8 @@
         "src/components/ta/EmptyState.jsx",
         "src/components/common/Icon.jsx",
         "src/context/AppContext.jsx",
-        "src/constants/statuses.js"
+        "src/constants/statuses.js",
+        "src/utils/activity.js"
       ],
       "importedBy": [
         "src/pages/hr/HRActivityPage.jsx",
@@ -2541,7 +2563,7 @@
       "name": "TACandidateDetailPage.jsx",
       "dir": "src/pages/talentAcquisition",
       "layer": "page",
-      "loc": 349,
+      "loc": 499,
       "summary": "",
       "exports": [
         "default (TACandidateDetailPage)"
@@ -2557,7 +2579,6 @@
         "src/components/ta/Button.jsx",
         "src/components/ta/Tag.jsx",
         "src/components/ta/EmptyState.jsx",
-        "src/components/ta/Avatar.jsx",
         "src/components/workflow/ReasonModal.jsx",
         "src/components/workflow/ScheduleInterviewModal.jsx",
         "src/components/workflow/InterviewResultModal.jsx",
@@ -2566,7 +2587,9 @@
         "src/context/ToastContext.jsx",
         "src/data/jobs.js",
         "src/constants/statuses.js",
-        "src/utils/format.js"
+        "src/utils/format.js",
+        "src/utils/activity.js",
+        "src/components/workflow/StepTitle.jsx"
       ],
       "importedBy": [
         "src/routes/AppRoutes.jsx"
@@ -2577,7 +2600,7 @@
       "name": "TACandidatesPage.jsx",
       "dir": "src/pages/talentAcquisition",
       "layer": "page",
-      "loc": 195,
+      "loc": 205,
       "summary": "",
       "exports": [
         "default (TACandidatesPage)"
@@ -2606,7 +2629,7 @@
       "name": "TADashboard.jsx",
       "dir": "src/pages/talentAcquisition",
       "layer": "page",
-      "loc": 288,
+      "loc": 300,
       "summary": "",
       "exports": [
         "default (TADashboard)"
@@ -2626,7 +2649,8 @@
         "src/constants/roles.js",
         "src/constants/statuses.js",
         "src/utils/metrics.js",
-        "src/utils/format.js"
+        "src/utils/format.js",
+        "src/utils/activity.js"
       ],
       "importedBy": [
         "src/routes/AppRoutes.jsx"
@@ -2820,17 +2844,51 @@
       ]
     },
     {
-      "id": "src/styles/ta.css",
-      "name": "ta.css",
+      "id": "src/styles/home.css",
+      "name": "home.css",
       "dir": "src/styles",
       "layer": "style",
-      "loc": 1525,
+      "loc": 371,
       "summary": "",
       "exports": [],
       "externals": [],
       "imports": [],
       "importedBy": [
         "src/main.jsx"
+      ]
+    },
+    {
+      "id": "src/styles/ta.css",
+      "name": "ta.css",
+      "dir": "src/styles",
+      "layer": "style",
+      "loc": 1802,
+      "summary": "",
+      "exports": [],
+      "externals": [],
+      "imports": [],
+      "importedBy": [
+        "src/main.jsx"
+      ]
+    },
+    {
+      "id": "src/utils/activity.js",
+      "name": "activity.js",
+      "dir": "src/utils",
+      "layer": "util",
+      "loc": 109,
+      "summary": "The document phase generates one activity per file (uploaded / verified / rejected / re-uploaded). This folds a contiguous block of those per-file events into ONE timeline line — \"5 of 5 verified · 2 returned for re-submission\" — so the Act",
+      "exports": [
+        "collapseDocActivity",
+        "mergeConsecutive"
+      ],
+      "externals": [],
+      "imports": [],
+      "importedBy": [
+        "src/pages/hr/HRCandidateDetailPage.jsx",
+        "src/pages/shared/ActivityFeed.jsx",
+        "src/pages/talentAcquisition/TACandidateDetailPage.jsx",
+        "src/pages/talentAcquisition/TADashboard.jsx"
       ]
     },
     {
@@ -3280,6 +3338,10 @@
       "target": "src/components/common/Icon.jsx"
     },
     {
+      "source": "src/components/ta/LifecycleFunnel.jsx",
+      "target": "src/components/common/Icon.jsx"
+    },
+    {
       "source": "src/components/ta/Pager.jsx",
       "target": "src/components/common/Icon.jsx"
     },
@@ -3436,6 +3498,10 @@
       "target": "src/utils/format.js"
     },
     {
+      "source": "src/components/workflow/StepTitle.jsx",
+      "target": "src/components/common/Icon.jsx"
+    },
+    {
       "source": "src/context/AppContext.jsx",
       "target": "src/hooks/useLocalStorage.js"
     },
@@ -3532,12 +3598,12 @@
       "target": "src/styles/ta.css"
     },
     {
-      "source": "src/pages/LoginPage.jsx",
-      "target": "src/components/common/Icon.jsx"
+      "source": "src/main.jsx",
+      "target": "src/styles/home.css"
     },
     {
       "source": "src/pages/LoginPage.jsx",
-      "target": "src/components/common/Button.jsx"
+      "target": "src/components/common/Icon.jsx"
     },
     {
       "source": "src/pages/LoginPage.jsx",
@@ -3741,15 +3807,15 @@
     },
     {
       "source": "src/pages/hr/HRCandidateDetailPage.jsx",
-      "target": "src/components/ta/Avatar.jsx"
-    },
-    {
-      "source": "src/pages/hr/HRCandidateDetailPage.jsx",
       "target": "src/components/workflow/ReasonModal.jsx"
     },
     {
       "source": "src/pages/hr/HRCandidateDetailPage.jsx",
       "target": "src/components/workflow/AssignRoleModal.jsx"
+    },
+    {
+      "source": "src/pages/hr/HRCandidateDetailPage.jsx",
+      "target": "src/components/workflow/StepTitle.jsx"
     },
     {
       "source": "src/pages/hr/HRCandidateDetailPage.jsx",
@@ -3766,6 +3832,10 @@
     {
       "source": "src/pages/hr/HRCandidateDetailPage.jsx",
       "target": "src/utils/format.js"
+    },
+    {
+      "source": "src/pages/hr/HRCandidateDetailPage.jsx",
+      "target": "src/utils/activity.js"
     },
     {
       "source": "src/pages/hr/HRCandidatesPage.jsx",
@@ -3964,6 +4034,10 @@
       "target": "src/constants/statuses.js"
     },
     {
+      "source": "src/pages/shared/ActivityFeed.jsx",
+      "target": "src/utils/activity.js"
+    },
+    {
       "source": "src/pages/shared/DocumentsReview.jsx",
       "target": "src/components/common/Table.jsx"
     },
@@ -4061,10 +4135,6 @@
     },
     {
       "source": "src/pages/talentAcquisition/TACandidateDetailPage.jsx",
-      "target": "src/components/ta/Avatar.jsx"
-    },
-    {
-      "source": "src/pages/talentAcquisition/TACandidateDetailPage.jsx",
       "target": "src/components/workflow/ReasonModal.jsx"
     },
     {
@@ -4098,6 +4168,14 @@
     {
       "source": "src/pages/talentAcquisition/TACandidateDetailPage.jsx",
       "target": "src/utils/format.js"
+    },
+    {
+      "source": "src/pages/talentAcquisition/TACandidateDetailPage.jsx",
+      "target": "src/utils/activity.js"
+    },
+    {
+      "source": "src/pages/talentAcquisition/TACandidateDetailPage.jsx",
+      "target": "src/components/workflow/StepTitle.jsx"
     },
     {
       "source": "src/pages/talentAcquisition/TACandidatesPage.jsx",
@@ -4178,6 +4256,10 @@
     {
       "source": "src/pages/talentAcquisition/TADashboard.jsx",
       "target": "src/utils/format.js"
+    },
+    {
+      "source": "src/pages/talentAcquisition/TADashboard.jsx",
+      "target": "src/utils/activity.js"
     },
     {
       "source": "src/pages/talentAcquisition/TADocumentsPage.jsx",
