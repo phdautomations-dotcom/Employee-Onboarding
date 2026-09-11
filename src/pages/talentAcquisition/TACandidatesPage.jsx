@@ -5,9 +5,13 @@ import TAHeader from '../../components/ta/TAHeader.jsx';
 import DataGrid from '../../components/ta/DataGrid.jsx';
 import Toolbar from '../../components/ta/Toolbar.jsx';
 import Tag from '../../components/ta/Tag.jsx';
+import AssignTAModal from '../../components/workflow/AssignTAModal.jsx';
+import { ConfirmDialog } from '../../components/common/Modal.jsx';
 import { useApp } from '../../context/AppContext.jsx';
+import { useToast } from '../../context/ToastContext.jsx';
 import { useCollectionView } from '../../hooks/useCollectionView.js';
 import { APP_STATUS, DOC_STATUS, stageBadgeForStatus } from '../../constants/statuses.js';
+import { TA_TEAM } from '../../constants/taTeam.js';
 import { formatDate } from '../../utils/format.js';
 
 /* Friendly stage buckets for the filter dropdown. */
@@ -44,6 +48,7 @@ const COLUMNS = [
   { key: 'job', label: 'Job Applied', sortable: true },
   { key: 'experience', label: 'Experience', sortable: true },
   { key: 'status', label: 'Current Stage', sortable: true },
+  { key: 'assignedTo', label: 'Assigned To', sortable: true },
   { key: 'noticePeriod', label: 'Notice Period', sortable: true },
   { key: 'submittedAt', label: 'Applied On', sortable: true },
   { key: 'docs', label: 'Documents' },
@@ -52,8 +57,11 @@ const COLUMNS = [
 
 export default function TACandidatesPage() {
   const navigate = useNavigate();
-  const { data, getJob, documentsFor } = useApp();
+  const { data, getJob, documentsFor, isTAHead, taIdentity, assignApplicationToTA } = useApp();
+  const toast = useToast();
   const [sp] = useSearchParams();
+  const [assignFor, setAssignFor] = useState(null); // { id, name, assignedTo } | null
+  const [pendingAssign, setPendingAssign] = useState(null); // { id, name, taName } | null
   const apps = data.applications || [];
 
   const rows = useMemo(
@@ -72,6 +80,7 @@ export default function TACandidatesPage() {
           department: job?.department || 'General',
           experience: Number(a.professional.totalExperience) || 0,
           source: a.source || 'Direct',
+          assignedTo: a.assignedTo || null,
           noticePeriod: a.professional?.noticePeriod || 'Not specified',
           submittedAt: a.submittedAt,
           status: a.status,
@@ -88,6 +97,8 @@ export default function TACandidatesPage() {
   const jobParam = sp.get('job') || null;
   const noticeParam = sp.get('notice') || null; // set when arriving from the dashboard's notice-period chart
   const sourceParam = SOURCES.includes(sp.get('source')) ? sp.get('source') : null; // dashboard source donut
+  const assignedRaw = sp.get('assignedTo');
+  const assignedParam = assignedRaw === 'unassigned' || TA_TEAM.includes(assignedRaw) ? assignedRaw : null;
   const [stage, setStageKey] = useState(stageParam);
   const [experience, setExpKey] = useState('all');
 
@@ -96,6 +107,14 @@ export default function TACandidatesPage() {
   if (jobParam) initialFilters.job = jobParam;
   if (noticeParam) initialFilters.noticePeriod = noticeParam;
   if (sourceParam) initialFilters.source = sourceParam;
+  if (assignedParam) {
+    initialFilters.assignedTo = assignedParam === 'unassigned' ? (r) => !r.assignedTo : (r) => r.assignedTo === assignedParam;
+  } else if (!isTAHead) {
+    // Regular TAs land on their own queue by default — they can still pick a
+    // different name from the dropdown, but the Head is the only one who
+    // sees "Unassigned" and can hand a lead to someone else.
+    initialFilters.assignedTo = (r) => r.assignedTo === taIdentity;
+  }
 
   const view = useCollectionView(rows, {
     searchFields: ['name', 'email', 'candidateId', 'job'],
@@ -113,6 +132,14 @@ export default function TACandidatesPage() {
   const activeSource = typeof view.filters.source === 'string' ? view.filters.source : 'all';
   const activeNotice = typeof view.filters.noticePeriod === 'string' ? view.filters.noticePeriod : 'all';
 
+  // Only the Head can see the Unassigned queue or browse everyone's candidates —
+  // a regular TA's dropdown is scoped to picking a specific TA (defaults to themself).
+  const defaultAssignee = isTAHead ? 'all' : taIdentity;
+  const assigneeOptions = isTAHead
+    ? [{ value: 'all', label: 'All' }, { value: 'unassigned', label: 'Unassigned' }, ...TA_TEAM.map((t) => ({ value: t, label: t }))]
+    : TA_TEAM.map((t) => ({ value: t, label: t }));
+  const [assignee, setAssigneeKey] = useState(assignedParam || defaultAssignee);
+
   const setStage = (key) => {
     setStageKey(key);
     view.setFilter('status', key === 'all' ? 'all' : (r) => STAGE_GROUPS[key].match(r.status));
@@ -121,11 +148,15 @@ export default function TACandidatesPage() {
     setExpKey(key);
     view.setFilter('experience', key === 'all' ? 'all' : (r) => EXPERIENCE[key].match(r.experience));
   };
+  const setAssignee = (key) => {
+    setAssigneeKey(key);
+    view.setFilter('assignedTo', key === 'all' ? 'all' : key === 'unassigned' ? (r) => !r.assignedTo : (r) => r.assignedTo === key);
+  };
 
   // The dropdowns / search box already show what's active — no chip row,
   // just a "Clear filters" affordance.
   const hasFilters = stage !== 'all' || experience !== 'all' || activeJob !== 'all'
-    || activeSource !== 'all' || activeNotice !== 'all' || !!view.query;
+    || activeSource !== 'all' || activeNotice !== 'all' || assignee !== defaultAssignee || !!view.query;
 
   const clearAll = () => {
     view.setQuery('');
@@ -134,11 +165,12 @@ export default function TACandidatesPage() {
     view.setFilter('job', 'all');
     view.setFilter('source', 'all');
     view.setFilter('noticePeriod', 'all');
+    setAssignee(defaultAssignee);
   };
 
   // Re-apply filters when the page is already open and the URL params change
   // (e.g. clicking a second dashboard tile). The first run is handled by initialFilters.
-  const spKey = `${sp.get('stage') || ''}|${sp.get('job') || ''}|${sp.get('notice') || ''}|${sp.get('source') || ''}`;
+  const spKey = `${sp.get('stage') || ''}|${sp.get('job') || ''}|${sp.get('notice') || ''}|${sp.get('source') || ''}|${sp.get('assignedTo') || ''}`;
   const firstSync = useRef(true);
   useEffect(() => {
     if (firstSync.current) { firstSync.current = false; return; }
@@ -146,8 +178,21 @@ export default function TACandidatesPage() {
     view.setFilter('job', jobParam || 'all');
     view.setFilter('noticePeriod', noticeParam || 'all');
     view.setFilter('source', sourceParam || 'all');
+    setAssignee(assignedParam || defaultAssignee);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [spKey]);
+
+  // Re-apply the "Assigned To" default when the acting TA identity changes
+  // (ProfileMenu → Acting as) while this page stays mounted — otherwise a
+  // non-head TA who was viewing "All"/"Unassigned" as the Head keeps seeing
+  // it after switching to a regular TA identity.
+  const identityKey = `${taIdentity}|${isTAHead}`;
+  const firstIdentitySync = useRef(true);
+  useEffect(() => {
+    if (firstIdentitySync.current) { firstIdentitySync.current = false; return; }
+    setAssignee(assignedParam || defaultAssignee);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [identityKey]);
 
   return (
     <>
@@ -160,6 +205,7 @@ export default function TACandidatesPage() {
           { label: 'Experience', value: experience, onChange: setExperience, options: Object.entries(EXPERIENCE).map(([value, g]) => ({ value, label: g.label })) },
           { label: 'Source', value: activeSource, onChange: (v) => view.setFilter('source', v), options: SOURCES.map((s) => ({ value: s, label: s })) },
           { label: 'Notice Period', value: activeNotice, onChange: (v) => view.setFilter('noticePeriod', v), options: NOTICE_PERIODS.map((n) => ({ value: n, label: n })) },
+          ...(isTAHead ? [{ label: 'Assigned To', value: assignee, onChange: setAssignee, options: assigneeOptions }] : []),
         ]}
         onClearAll={hasFilters ? clearAll : undefined}
         pager={{ page: view.page, pageSize: view.pageSize, total: view.total, onPage: view.setPage }}
@@ -186,18 +232,38 @@ export default function TACandidatesPage() {
               </td>
               <td className="ta-cell-mute">{experienceLabel(r.experience)}</td>
               <td><Tag tone={badge.tone}>{badge.label}</Tag></td>
+              <td>{r.assignedTo ? <span className="ta-cell-mute">{r.assignedTo}</span> : <Tag tone="grey">Unassigned</Tag>}</td>
               <td className="ta-cell-mute">{r.noticePeriod}</td>
               <td className="ta-cell-mute">{formatDate(r.submittedAt)}</td>
               <td>{r.docs.text === '—' ? <span className="ta-cell-mute">—</span> : <Tag tone={r.docs.tone}>{r.docs.text}</Tag>}</td>
               <td>
                 <span className="ta-rowactions" onClick={(e) => e.stopPropagation()}>
                   <a className="ta-iconbtn" href={`mailto:${r.email}`} aria-label={`Email ${r.name}`}><Icon name="Mail" size={15} /></a>
+                  {isTAHead && (
+                    <button className="ta-iconbtn" onClick={() => setAssignFor(r)} aria-label={`Assign ${r.name} to a TA`}><Icon name="UserRoundCog" size={15} /></button>
+                  )}
                   <button className="ta-iconbtn" onClick={() => navigate(`/ta/candidates/${r.candidateId}`)} aria-label="Open candidate"><Icon name="ChevronRight" size={17} /></button>
                 </span>
               </td>
             </tr>
           );
         }}
+      />
+
+      <AssignTAModal
+        open={!!assignFor}
+        name={assignFor?.name}
+        initialTA={assignFor?.assignedTo || ''}
+        onClose={() => setAssignFor(null)}
+        onAssign={(taName) => { setPendingAssign({ id: assignFor.id, name: assignFor.name, taName }); setAssignFor(null); }}
+      />
+      <ConfirmDialog
+        open={!!pendingAssign}
+        onClose={() => setPendingAssign(null)}
+        title={`Assign ${pendingAssign?.name || ''} to ${pendingAssign?.taName || 'this TA'}?`}
+        message="This TA becomes the owner of this candidate going forward."
+        confirmLabel="Assign"
+        onConfirm={() => { assignApplicationToTA(pendingAssign.id, pendingAssign.taName); toast.success(`Assigned to ${pendingAssign.taName}.`); setPendingAssign(null); }}
       />
     </>
   );

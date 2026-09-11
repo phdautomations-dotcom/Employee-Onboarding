@@ -6,6 +6,7 @@ import Card from '../../components/ta/Card.jsx';
 import Tag from '../../components/ta/Tag.jsx';
 import EmptyState from '../../components/ta/EmptyState.jsx';
 import { Field, Input } from '../../components/common/Field.jsx';
+import { ConfirmDialog } from '../../components/common/Modal.jsx';
 import { useApp } from '../../context/AppContext.jsx';
 import { useToast } from '../../context/ToastContext.jsx';
 import { initialsOf, formatDate } from '../../utils/format.js';
@@ -24,7 +25,7 @@ import {
 } from '../../constants/statuses.js';
 
 const DOC_STAGES = [
-  APP_STATUS.DOC_VERIFICATION, APP_STATUS.DOCS_VERIFIED, APP_STATUS.OFFER_DRAFT,
+  APP_STATUS.DOC_VERIFICATION, APP_STATUS.HR_DOC_REVIEW, APP_STATUS.HR_DOC_REJECTED, APP_STATUS.DOCS_VERIFIED, APP_STATUS.OFFER_DRAFT,
   APP_STATUS.OFFER_ISSUED, APP_STATUS.OFFER_ACCEPTED, APP_STATUS.ONBOARDING_PENDING,
   APP_STATUS.HR_VERIFICATION, APP_STATUS.HR_VERIFICATION_REJECTED, APP_STATUS.JOINING_PENDING, APP_STATUS.EMPLOYEE,
 ];
@@ -33,9 +34,11 @@ const toneMap = { info: 'blue', success: 'green', error: 'red', warning: 'amber'
 /* The candidate's own journey — used to size the progress donut. */
 const CANDIDATE_STEPS = ['Applied', 'In review', 'Interview', 'Documents', 'Offer', 'Joining'];
 /* PIPELINE_STAGES index (0 application, 1 ta_review, 2 interview, 3 documents,
-   4 offer, 5 onboarding_verification, 6 onboarding) mapped to a CANDIDATE_STEPS
-   index — onboarding_verification counts as "Joining" from the candidate's view. */
-const PIPELINE_TO_CANDIDATE = [1, 1, 2, 3, 4, 5, 5];
+   4 hr_doc_review, 5 offer, 6 onboarding_verification, 7 onboarding) mapped to
+   a CANDIDATE_STEPS index — the internal TA/HR document-review split stays
+   "Documents" from the candidate's view, and onboarding_verification counts
+   as "Joining". */
+const PIPELINE_TO_CANDIDATE = [1, 1, 2, 3, 3, 4, 5, 5];
 
 /* Which on-page card an activity entry belongs to. */
 const SECTION_BY_TYPE = {
@@ -74,6 +77,8 @@ function nextStep(status, pendingDocs) {
     case APP_STATUS.INTERVIEW_PASSED:
       return { icon: 'CheckCircle2', text: "You've cleared the interviews. Document verification is next." };
     case APP_STATUS.DOC_VERIFICATION:
+    case APP_STATUS.HR_DOC_REVIEW:
+    case APP_STATUS.HR_DOC_REJECTED:
       return { icon: 'Upload', text: pendingDocs > 0 ? `Please upload your remaining ${pendingDocs} document${pendingDocs > 1 ? 's' : ''} below.` : 'Your documents are under verification.' };
     case APP_STATUS.DOCS_VERIFIED:
     case APP_STATUS.OFFER_DRAFT:
@@ -176,6 +181,7 @@ export default function MyApplicationPage() {
   } = useApp();
   const [reasonFor, setReasonFor] = useState(null); // document id the candidate is explaining
   const [reasonText, setReasonText] = useState('');
+  const [confirmResubmit, setConfirmResubmit] = useState(false);
 
   const app = data.myApplicationId ? getApplication(data.myApplicationId) : null;
 
@@ -274,7 +280,7 @@ export default function MyApplicationPage() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <Icon name="RotateCcw" size={15} /> <strong>Action needed:</strong> {app.returnReason}
           </div>
-          <Button icon="RotateCcw" onClick={() => { resubmitApplication(app.id); toast.success('Application resubmitted for review.'); }}>
+          <Button icon="RotateCcw" onClick={() => setConfirmResubmit(true)}>
             Update &amp; resubmit
           </Button>
         </div>
@@ -378,6 +384,9 @@ export default function MyApplicationPage() {
                             )}
                             {reasonFor === doc.id && (
                               <div className="cx-docreason">
+                                <div className="ta-cell-sub" style={{ color: 'var(--tag-amber-fg)', marginBottom: 4 }}>
+                                  <Icon name="AlertTriangle" size={13} /> This reason is reviewed by the recruiter and could be grounds for rejecting your application — only use this if you genuinely can't provide the document.
+                                </div>
                                 <textarea
                                   className="cx-docreason__input"
                                   rows={2}
@@ -484,6 +493,15 @@ export default function MyApplicationPage() {
             </Card>
           )}
       </div>
+
+      <ConfirmDialog
+        open={confirmResubmit}
+        onClose={() => setConfirmResubmit(false)}
+        title="Resubmit your application?"
+        message="This sends your application back to Talent Acquisition for another review."
+        confirmLabel="Resubmit"
+        onConfirm={() => { resubmitApplication(app.id); toast.success('Application resubmitted for review.'); setConfirmResubmit(false); }}
+      />
     </div>
   );
 }

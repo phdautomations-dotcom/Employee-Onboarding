@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import TAHeader from '../../components/ta/TAHeader.jsx';
 import Card from '../../components/ta/Card.jsx';
@@ -22,6 +22,22 @@ export default function HRDashboard() {
   const [handoverOpen, setHandoverOpen] = useState(false);  // collapsed by default
   const [handoverAll, setHandoverAll] = useState(false);    // show every row past the preview
 
+  // KPI row: fixed-width tiles, scrolls sideways instead of shrinking when there are more than fit.
+  const kpiRowRef = useRef(null);
+  const [kpiScroll, setKpiScroll] = useState({ left: false, right: false });
+  const checkKpiScroll = () => {
+    const el = kpiRowRef.current;
+    if (!el) return;
+    setKpiScroll({ left: el.scrollLeft > 4, right: el.scrollLeft + el.clientWidth < el.scrollWidth - 4 });
+  };
+  const scrollKpis = (dir) => {
+    const el = kpiRowRef.current;
+    if (!el) return;
+    const tile = el.firstElementChild;
+    const step = tile ? tile.getBoundingClientRect().width + 14 : el.clientWidth / 4;
+    el.scrollBy({ left: dir * step, behavior: 'smooth' });
+  };
+
   // ----- DATA -----
   const apps = data.applications || [];
   const employees = data.employees || [];
@@ -29,6 +45,8 @@ export default function HRDashboard() {
 
   // ----- CALCULATIONS -----
   const pendingVerification = apps.filter((a) => a.status === APP_STATUS.HR_VERIFICATION);
+  // Pre-offer gate: TA has verified every document, HR needs to sign off before TA can extend an offer.
+  const pendingDocReview = apps.filter((a) => a.status === APP_STATUS.HR_DOC_REVIEW);
   // TA has done its part: candidate accepted, HR has not started onboarding yet.
   const handovers = apps.filter((a) => a.status === APP_STATUS.ONBOARDING_PENDING);
 
@@ -38,7 +56,7 @@ export default function HRDashboard() {
     return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
   }).length;
   // HR owns candidates from "offer accepted" onward.
-  const accepted = apps.filter((a) => hrStageRank(a.status) >= 2);
+  const accepted = apps.filter((a) => hrStageRank(a.status) >= 3);
   const total = accepted.length || 1;
 
   // ===== Upcoming Joiners — everyone who accepted with a joining date, not
@@ -54,6 +72,11 @@ export default function HRDashboard() {
 
   // ===== KPI tiles = HR's live workload (what needs doing), not the funnel. =====
   const kpis = [
+    {
+      icon: 'FileSearch', label: 'Awaiting Document Review', accent: 'grey', value: pendingDocReview.length,
+      meter: { value: pendingDocReview.length, max: Math.max(1, pendingDocReview.length) }, note: 'pre-offer documents to review',
+      onClick: () => navigate('/hr/candidates?stage=doc_review'),
+    },
     {
       icon: 'ClipboardCheck', label: 'In Onboarding', accent: 'violet', value: notJoined.length,
       meter: { value: notJoined.length, max: total }, note: `${handovers.length} just handed over`,
@@ -76,6 +99,9 @@ export default function HRDashboard() {
     },
   ];
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { checkKpiScroll(); }, [kpis.length]);
+
   // ===== Employee Lifecycle Funnel — the post-recruitment journey only. `count`
   // is how many have reached that phase (cumulative, so it only falls); `action`
   // is the live HR queue at that phase. The phase with the largest queue is
@@ -95,13 +121,13 @@ export default function HRDashboard() {
     },
     {
       label: 'Pre-Joining', icon: 'Files', tone: 'violet', to: '/hr/candidates?stage=verification',
-      count: accepted.filter((a) => rankOf(a) >= 3).length,
+      count: accepted.filter((a) => rankOf(a) >= 4).length,
       action: pendingVerification.length + docsReturned,
       note: pendingVerification.length ? `${pendingVerification.length} to review` : '',
     },
     {
       label: 'Joining', icon: 'CalendarCheck', tone: 'amber', to: '/hr/candidates?stage=joining',
-      count: accepted.filter((a) => rankOf(a) >= 4).length,
+      count: accepted.filter((a) => rankOf(a) >= 5).length,
       action: joiningThisWeek,
       note: joiningThisWeek ? `${joiningThisWeek} joining this week` : `${joiningPending} scheduled`,
     },
@@ -143,8 +169,20 @@ export default function HRDashboard() {
     <>
       <TAHeader title="Dashboard" subtitle={`Welcome back, ${user.name}`} />
 
-      <div className="ta-kpi-row">
-        {kpis.map((k) => <KpiCard key={k.label} {...k} />)}
+      <div className="ta-kpi-wrap">
+        {kpiScroll.left && (
+          <button type="button" className="ta-kpi-nav ta-kpi-nav--left" aria-label="Scroll left" onClick={() => scrollKpis(-1)}>
+            <Icon name="ChevronLeft" size={16} />
+          </button>
+        )}
+        <div className="ta-kpi-row" ref={kpiRowRef} onScroll={checkKpiScroll}>
+          {kpis.map((k) => <KpiCard key={k.label} {...k} />)}
+        </div>
+        {kpiScroll.right && (
+          <button type="button" className="ta-kpi-nav ta-kpi-nav--right" aria-label="Scroll right" onClick={() => scrollKpis(1)}>
+            <Icon name="ChevronRight" size={16} />
+          </button>
+        )}
       </div>
 
       {handovers.length > 0 && (
@@ -197,22 +235,21 @@ export default function HRDashboard() {
 
       <div className="ta-bento">
         <Card
-          title="Documents Awaiting Verification"
-          action={<button className="ta-link" onClick={() => navigate('/hr/candidates?stage=verification')}>View all</button>}
+          title="Documents Awaiting Review"
+          action={<button className="ta-link" onClick={() => navigate('/hr/candidates?stage=doc_review')}>View all</button>}
           bodyStyle={{ justifyContent: 'flex-start' }}
         >
-          {pendingVerification.length === 0 ? (
-            <p className="ta-cell-mute">No documents waiting on verification — you're all caught up.</p>
+          {pendingDocReview.length === 0 ? (
+            <p className="ta-cell-mute">No pre-offer documents waiting on your review — you're all caught up.</p>
           ) : (
             <>
               <p className="ta-cell-sub" style={{ marginBottom: 12 }}>
-                {pendingVerification.length} candidate{pendingVerification.length === 1 ? '' : 's'} submitted joining documents and are waiting on your review.
+                {pendingDocReview.length} candidate{pendingDocReview.length === 1 ? '' : 's'} had every document verified by TA and are waiting on your sign-off before an offer can go out.
               </p>
               <div className="ta-pipe">
-                {pendingVerification.map((a) => {
+                {pendingDocReview.map((a) => {
                   const name = `${a.personal.firstName} ${a.personal.lastName}`;
-                  const department = offerFor(a.id)?.department || 'General';
-                  const submittedActivity = activitiesFor(a.id).find((act) => act.title === 'Onboarding Forms Submitted');
+                  const clearedActivity = activitiesFor(a.id).find((act) => act.title === 'All Documents Verified');
                   return (
                     <button
                       key={a.id}
@@ -222,9 +259,9 @@ export default function HRDashboard() {
                       <span className="ta-pipe__label">
                         {name}
                         <br />
-                        <span className="ta-cell-sub">{a.jobTitle} · {department}</span>
+                        <span className="ta-cell-sub">{a.jobTitle}</span>
                       </span>
-                      {submittedActivity && <Tag tone="amber">Submitted {timeAgo(submittedActivity.at)}</Tag>}
+                      {clearedActivity && <Tag tone="amber">Cleared {timeAgo(clearedActivity.at)}</Tag>}
                       <Icon name="ChevronRight" size={16} />
                     </button>
                   );

@@ -13,6 +13,8 @@ export const APP_STATUS = {
   INTERVIEW_PASSED: 'INTERVIEW_PASSED',
   INTERVIEW_FAILED: 'INTERVIEW_FAILED',
   DOC_VERIFICATION: 'DOC_VERIFICATION',
+  HR_DOC_REVIEW: 'HR_DOC_REVIEW',
+  HR_DOC_REJECTED: 'HR_DOC_REJECTED',
   DOCS_VERIFIED: 'DOCS_VERIFIED',
   OFFER_DRAFT: 'OFFER_DRAFT',
   OFFER_ISSUED: 'OFFER_ISSUED',
@@ -35,6 +37,8 @@ export const STATUS_META = {
   [APP_STATUS.INTERVIEW_PASSED]: { label: 'Interviews Passed', tone: 'success', icon: 'CheckCircle2' },
   [APP_STATUS.INTERVIEW_FAILED]: { label: 'Interview Failed', tone: 'error', icon: 'XCircle' },
   [APP_STATUS.DOC_VERIFICATION]: { label: 'Document Verification', tone: 'warning', icon: 'Files' },
+  [APP_STATUS.HR_DOC_REVIEW]: { label: 'HR Document Review', tone: 'warning', icon: 'Eye' },
+  [APP_STATUS.HR_DOC_REJECTED]: { label: 'Documents Returned by HR', tone: 'error', icon: 'RotateCcw' },
   [APP_STATUS.DOCS_VERIFIED]: { label: 'Documents Verified', tone: 'success', icon: 'CheckCircle2' },
   [APP_STATUS.OFFER_DRAFT]: { label: 'Offer Draft', tone: 'neutral', icon: 'FileCheck' },
   [APP_STATUS.OFFER_ISSUED]: { label: 'Offer Issued', tone: 'info', icon: 'FileCheck' },
@@ -63,7 +67,12 @@ export const PIPELINE_STAGES = [
   {
     key: 'documents',
     label: 'Document Verification',
-    statuses: [APP_STATUS.DOC_VERIFICATION, APP_STATUS.DOCS_VERIFIED],
+    statuses: [APP_STATUS.DOC_VERIFICATION],
+  },
+  {
+    key: 'hr_doc_review',
+    label: 'HR Document Review',
+    statuses: [APP_STATUS.HR_DOC_REVIEW, APP_STATUS.HR_DOC_REJECTED, APP_STATUS.DOCS_VERIFIED],
   },
   {
     key: 'offer',
@@ -87,6 +96,8 @@ const STAGE_ORDER = [
   APP_STATUS.INTERVIEW_FAILED,
   APP_STATUS.INTERVIEW_PASSED,
   APP_STATUS.DOC_VERIFICATION,
+  APP_STATUS.HR_DOC_REVIEW,
+  APP_STATUS.HR_DOC_REJECTED,
   APP_STATUS.DOCS_VERIFIED,
   APP_STATUS.OFFER_DRAFT,
   APP_STATUS.OFFER_ISSUED,
@@ -114,6 +125,7 @@ const STAGE_BADGE_BY_KEY = {
   ta_review: { label: 'Screening', tone: 'violet' },
   interview: { label: 'Interview', tone: 'amber' },
   documents: { label: 'Documents', tone: 'teal' },
+  hr_doc_review: { label: 'Doc Review', tone: 'violet' },
   offer: { label: 'Offer', tone: 'green' },
   onboarding_verification: { label: 'Onboarding', tone: 'violet' },
   onboarding: { label: 'Hired', tone: 'green' },
@@ -136,22 +148,25 @@ export function stageBadgeForStatus(status) {
    "offer accepted" onward. `rank` is cumulative — a stage filter matches
    everyone who reached it or further. Labels match the HR dashboard funnel. */
 export const HR_FUNNEL_STAGES = [
-  { key: 'onboarding', label: 'Offer Accepted', icon: 'FileCheck', tone: 'violet', rank: 2 },
-  { key: 'verification', label: 'Joining Documents', icon: 'Files', tone: 'blue', rank: 3 },
-  { key: 'joining', label: 'Documents Verified', icon: 'CheckCircle2', tone: 'amber', rank: 4 },
-  { key: 'onboarded', label: 'Onboarded', icon: 'UserRoundCheck', tone: 'green', rank: 5 },
+  { key: 'doc_review', label: 'Document Review', icon: 'FileSearch', tone: 'grey', rank: 0 },
+  { key: 'onboarding', label: 'Offer Accepted', icon: 'FileCheck', tone: 'violet', rank: 3 },
+  { key: 'verification', label: 'Joining Documents', icon: 'Files', tone: 'blue', rank: 4 },
+  { key: 'joining', label: 'Documents Verified', icon: 'CheckCircle2', tone: 'amber', rank: 5 },
+  { key: 'onboarded', label: 'Onboarded', icon: 'UserRoundCheck', tone: 'green', rank: 6 },
 ];
 
 const HR_STAGE_RANK = {
-  [APP_STATUS.DOCS_VERIFIED]: 0,
-  [APP_STATUS.OFFER_DRAFT]: 0,
-  [APP_STATUS.OFFER_ISSUED]: 1,
-  [APP_STATUS.OFFER_ACCEPTED]: 2,
-  [APP_STATUS.ONBOARDING_PENDING]: 2,
-  [APP_STATUS.HR_VERIFICATION]: 3,
-  [APP_STATUS.HR_VERIFICATION_REJECTED]: 3,
-  [APP_STATUS.JOINING_PENDING]: 4,
-  [APP_STATUS.EMPLOYEE]: 5,
+  [APP_STATUS.HR_DOC_REVIEW]: 0,
+  [APP_STATUS.HR_DOC_REJECTED]: 0,
+  [APP_STATUS.DOCS_VERIFIED]: 1,
+  [APP_STATUS.OFFER_DRAFT]: 1,
+  [APP_STATUS.OFFER_ISSUED]: 2,
+  [APP_STATUS.OFFER_ACCEPTED]: 3,
+  [APP_STATUS.ONBOARDING_PENDING]: 3,
+  [APP_STATUS.HR_VERIFICATION]: 4,
+  [APP_STATUS.HR_VERIFICATION_REJECTED]: 4,
+  [APP_STATUS.JOINING_PENDING]: 5,
+  [APP_STATUS.EMPLOYEE]: 6,
 };
 
 /* -1 for anything not on the HR side yet (still with TA, rejected, etc.) so it
@@ -164,6 +179,7 @@ export function hrStageRank(status) {
    as the dashboard's "HR Onboarding Progress" funnel. For the HR tables. */
 export function hrStageBadge(status) {
   if (status === APP_STATUS.HR_VERIFICATION_REJECTED) return { label: 'Documents returned', tone: 'red' };
+  if (status === APP_STATUS.HR_DOC_REJECTED) return { label: 'Documents returned', tone: 'red' };
   const rank = hrStageRank(status);
   const stage = HR_FUNNEL_STAGES.find((s) => s.rank === rank);
   return stage ? { label: stage.label, tone: stage.tone } : { label: 'Awaiting offer', tone: 'grey' };
@@ -180,8 +196,8 @@ export const ROUND_STATUS = {
 export const ROUND_STATUS_META = {
   SCHEDULED: { label: 'Scheduled', tone: 'info', icon: 'CalendarDays' },
   COMPLETED: { label: 'Completed', tone: 'neutral', icon: 'CircleDot' },
-  PASS: { label: 'Passed', tone: 'success', icon: 'CheckCircle2' },
-  FAIL: { label: 'Failed', tone: 'error', icon: 'XCircle' },
+  PASS: { label: 'Selected', tone: 'success', icon: 'CheckCircle2' },
+  FAIL: { label: 'Not Selected', tone: 'error', icon: 'XCircle' },
   HOLD: { label: 'On Hold', tone: 'warning', icon: 'Clock3' },
 };
 
@@ -229,5 +245,16 @@ export const isDocMandatory = (key) => MANDATORY_DOC_KEYS.includes(key);
 
 export const DOC_CATEGORIES = ['Identity', 'Education', 'Employment', 'Address'];
 
-export const INTERVIEW_TYPES = ['HR Interview', 'Technical Interview', 'Managerial Interview', 'Final Interview', 'Other'];
+export const INTERVIEW_TYPES = [
+  'Screening Call',
+  'HR Interview',
+  'Technical Interview',
+  'Coding Round',
+  'System Design',
+  'Managerial Interview',
+  'Culture Fit',
+  'Final Interview',
+  'HR Final',
+  'Other',
+];
 export const INTERVIEW_MODES = ['Online', 'In-Person', 'Phone'];

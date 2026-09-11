@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Icon from '../../components/common/Icon.jsx';
 import TAHeader from '../../components/ta/TAHeader.jsx';
@@ -7,7 +7,6 @@ import KpiCard from '../../components/ta/KpiCard.jsx';
 import DonutChart from '../../components/ta/DonutChart.jsx';
 import FunnelChart from '../../components/ta/FunnelChart.jsx';
 import { useApp } from '../../context/AppContext.jsx';
-import { DEMO_USERS, ROLES } from '../../constants/roles.js';
 import {
   APP_STATUS,
   ROUND_STATUS,
@@ -72,10 +71,26 @@ const SOON_THRESHOLD_DAYS = 15;
 
 export default function TADashboard() {
   const navigate = useNavigate();
-  const { data, jobs } = useApp();
-  const user = DEMO_USERS[ROLES.TA];
+  const { data, jobs, taIdentity, isTAHead } = useApp();
   const [period, setPeriod] = useState('all');
   const [updatesOpen, setUpdatesOpen] = useState(false);
+
+  // KPI row: fixed-width tiles, scrolls sideways instead of shrinking when
+  // there are more than fit — the arrows only show up when there's somewhere to go.
+  const kpiRowRef = useRef(null);
+  const [kpiScroll, setKpiScroll] = useState({ left: false, right: false });
+  const checkKpiScroll = () => {
+    const el = kpiRowRef.current;
+    if (!el) return;
+    setKpiScroll({ left: el.scrollLeft > 4, right: el.scrollLeft + el.clientWidth < el.scrollWidth - 4 });
+  };
+  const scrollKpis = (dir) => {
+    const el = kpiRowRef.current;
+    if (!el) return;
+    const tile = el.firstElementChild;
+    const step = tile ? tile.getBoundingClientRect().width + 14 : el.clientWidth / 4;
+    el.scrollBy({ left: dir * step, behavior: 'smooth' });
+  };
 
   // ----- DATA -----
   const apps = data.applications || [];
@@ -148,6 +163,19 @@ export default function TADashboard() {
     },
   ];
 
+  // Self-sourced leads waiting to be handed to a TA — only the Head triages these.
+  if (isTAHead) {
+    const unassignedCount = apps.filter((a) => !a.assignedTo).length;
+    kpis.push({
+      icon: 'UserRoundX', label: 'Unassigned', accent: 'red', value: unassignedCount,
+      note: `${unassignedCount} self-sourced application${unassignedCount === 1 ? '' : 's'} need a TA`,
+      onClick: () => navigate('/ta/candidates?assignedTo=unassigned'),
+    });
+  }
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { checkKpiScroll(); }, [kpis.length]);
+
   const stageRows = STAGES.map((s) => ({
     ...s,
     value: activeApps.filter((a) => stageIndexForStatus(a.status) >= s.reach).length,
@@ -178,10 +206,22 @@ export default function TADashboard() {
 
   return (
     <>
-      <TAHeader title="Dashboard" subtitle={`Welcome back, ${user.name}`} />
+      <TAHeader title="Dashboard" subtitle={`Welcome back, ${taIdentity}`} />
 
-      <div className="ta-kpi-row">
-        {kpis.map((k) => <KpiCard key={k.label} {...k} />)}
+      <div className="ta-kpi-wrap">
+        {kpiScroll.left && (
+          <button type="button" className="ta-kpi-nav ta-kpi-nav--left" aria-label="Scroll left" onClick={() => scrollKpis(-1)}>
+            <Icon name="ChevronLeft" size={16} />
+          </button>
+        )}
+        <div className="ta-kpi-row" ref={kpiRowRef} onScroll={checkKpiScroll}>
+          {kpis.map((k) => <KpiCard key={k.label} {...k} />)}
+        </div>
+        {kpiScroll.right && (
+          <button type="button" className="ta-kpi-nav ta-kpi-nav--right" aria-label="Scroll right" onClick={() => scrollKpis(1)}>
+            <Icon name="ChevronRight" size={16} />
+          </button>
+        )}
       </div>
 
       {candidateUpdates.length > 0 && (

@@ -3,9 +3,8 @@ import { Modal } from '../common/Modal.jsx';
 import Button from '../common/Button.jsx';
 import { Field, Input, Select, Textarea } from '../common/Field.jsx';
 import { INTERVIEW_TYPES, INTERVIEW_MODES } from '../../constants/statuses.js';
+import { TA_TEAM as INTERVIEWERS } from '../../constants/taTeam.js';
 import { todayISO } from '../../utils/format.js';
-
-const INTERVIEWERS = ['Himanshu Singh', 'Karthik Rao', 'Sneha Kapoor', 'Nikhil Verma', 'Latha Suresh', 'Ramesh Pillai'];
 
 export default function ScheduleInterviewModal({ open, onClose, roundNumber, onSchedule }) {
   const [f, setF] = useState({

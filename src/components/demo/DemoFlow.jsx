@@ -9,7 +9,8 @@ import { APP_STATUS, DOC_STATUS } from '../../constants/statuses.js';
 const ORD = {
   [APP_STATUS.SUBMITTED]: 1, [APP_STATUS.RETURNED]: 1, [APP_STATUS.TA_REVIEW]: 2,
   [APP_STATUS.INTERVIEW_PLANNING]: 3, [APP_STATUS.INTERVIEW_IN_PROGRESS]: 4, [APP_STATUS.INTERVIEW_PASSED]: 5,
-  [APP_STATUS.DOC_VERIFICATION]: 6, [APP_STATUS.DOCS_VERIFIED]: 8, [APP_STATUS.OFFER_DRAFT]: 8,
+  [APP_STATUS.DOC_VERIFICATION]: 6, [APP_STATUS.HR_DOC_REVIEW]: 7, [APP_STATUS.HR_DOC_REJECTED]: 7,
+  [APP_STATUS.DOCS_VERIFIED]: 8, [APP_STATUS.OFFER_DRAFT]: 8,
   [APP_STATUS.OFFER_ISSUED]: 9, [APP_STATUS.OFFER_ACCEPTED]: 10, [APP_STATUS.ONBOARDING_PENDING]: 10,
   [APP_STATUS.HR_VERIFICATION_REJECTED]: 10, [APP_STATUS.HR_VERIFICATION]: 11,
   [APP_STATUS.JOINING_PENDING]: 12, [APP_STATUS.EMPLOYEE]: 13,
@@ -25,6 +26,7 @@ const STEPS = [
   { role: ROLES.TA, who: 'Talent Acquisition', title: 'Move to documents', hint: 'Send the candidate to document verification.', to: (a) => `/ta/candidates/${a.candidateId}`, at: 6 },
   { role: ROLES.CANDIDATE, who: 'Candidate', title: 'Upload documents', hint: 'Upload each verification document.', to: () => CAND, docsDone: true, at: 8 },
   { role: ROLES.TA, who: 'Talent Acquisition', title: 'Verify the documents', hint: 'Verify each uploaded document.', to: (a) => `/ta/candidates/${a.candidateId}`, at: 8 },
+  { role: ROLES.HR, who: 'Human Resources', title: 'Review documents', hint: 'Approve the TA-verified documents to unlock the offer stage.', to: (a) => `/hr/candidates/${a.candidateId}`, at: 8 },
   { role: ROLES.TA, who: 'Talent Acquisition', title: 'Record the extended offer', hint: 'Log the offer details in the modal.', to: (a) => `/ta/candidates/${a.candidateId}`, at: 9 },
   { role: ROLES.TA, who: 'Talent Acquisition', title: 'Confirm offer accepted', hint: 'The candidate replies by email — confirm it.', to: (a) => `/ta/candidates/${a.candidateId}`, at: 10 },
   { role: ROLES.CANDIDATE, who: 'Candidate', title: 'Fill onboarding details', hint: 'Complete the onboarding form and submit it.', to: () => CAND, at: 11 },
@@ -48,6 +50,7 @@ const NARRATION = [
   'Interviews cleared — the recruiter sends Riya to document verification.',
   'Riya uploads each document. Mandatory ones carry a red star.',
   'The recruiter checks every document and marks them verified.',
+  'HR reviews the verified documents and signs off, unlocking the offer stage.',
   'The offer letter goes out by email; the recruiter records the key details here.',
   'Riya accepts by email. The recruiter confirms it, handing over to HR.',
   'Riya completes the onboarding form — 10th/12th, address, emergency contact.',
@@ -236,8 +239,12 @@ export default function DemoFlow() {
       c().startReview(applicationId);
       await hold(2);
 
-      // 3 — approve
-      await click(() => findBtn(document, 'approve'), () => c().approveApplication(applicationId));
+      // 3 — approve (opens a confirm dialog — click through it, same two-step pattern as the modals below)
+      await click(() => findBtn(document, 'approve'));
+      await sleep(450);
+      await click(() => findBtn(dialog(), 'approve'), () => c().approveApplication(applicationId));
+      await sleep(400);
+      if (c().getApplication(applicationId)?.status !== APP_STATUS.INTERVIEW_PLANNING) c().approveApplication(applicationId);
       await hold(3);
 
       // 4 — schedule interview (modal)
@@ -248,7 +255,10 @@ export default function DemoFlow() {
       await type(() => fieldByLabel(dialog(), 'meeting link'), 'https://meet.example/demo-round');
       await type(() => fieldByLabel(dialog(), 'notes'), 'Portfolio walkthrough + design exercise.');
       await click(() => findBtn(dialog(), 'schedule interview'), () => c().scheduleInterview(applicationId, BOT_INTERVIEW));
-      await sleep(500);
+      await sleep(450);
+      // that submit opens a confirm dialog — click through it too
+      await click(() => findBtn(dialog(), 'schedule'), () => c().scheduleInterview(applicationId, BOT_INTERVIEW));
+      await sleep(450);
       if (!c().interviewsFor(applicationId).length) c().scheduleInterview(applicationId, BOT_INTERVIEW);
       await hold(4);
 
@@ -260,19 +270,24 @@ export default function DemoFlow() {
       await type(() => dialog().querySelector('textarea'), 'Strong portfolio, clear thinking, good culture fit.', false);
       const share = dialog().querySelector('.ta-checkline input[type=checkbox]');
       if (share) { await pointAt(share); await pulse(); share.click(); }
-      await click(() => findBtn(dialog(), 'save result'), () => {
+      const saveResult = () => {
         const iv = c().interviewsFor(applicationId)[0];
         if (iv) c().recordInterviewResult(iv.id, { result: 'PASS', comments: 'Strong portfolio, clear thinking, good culture fit.', shareComments: true });
-      });
-      await sleep(500);
-      if (c().interviewsFor(applicationId)[0]?.result !== 'PASS') {
-        const iv = c().interviewsFor(applicationId)[0];
-        if (iv) c().recordInterviewResult(iv.id, { result: 'PASS', comments: 'Strong portfolio, clear thinking, good culture fit.', shareComments: true });
-      }
+      };
+      await click(() => findBtn(dialog(), 'save result'), saveResult);
+      await sleep(450);
+      // that submit opens a confirm dialog (same "Save result" label) — click through it too
+      await click(() => findBtn(dialog(), 'save result'), saveResult);
+      await sleep(450);
+      if (c().interviewsFor(applicationId)[0]?.result !== 'PASS') saveResult();
       await hold(5);
 
-      // 6 — move to documents
-      await click(() => findBtn(document, 'proceed to documents', 'move to documents'), () => c().advanceToDocuments(applicationId));
+      // 6 — move to documents (confirm dialog)
+      await click(() => findBtn(document, 'proceed to documents', 'move to documents'));
+      await sleep(450);
+      await click(() => findBtn(dialog(), 'proceed'), () => c().advanceToDocuments(applicationId));
+      await sleep(400);
+      if (c().getApplication(applicationId)?.status !== APP_STATUS.DOC_VERIFICATION) c().advanceToDocuments(applicationId);
       await hold(6);
 
       // 7 — candidate uploads each document
@@ -303,32 +318,55 @@ export default function DemoFlow() {
       }
       await hold(8);
 
-      // 9 — record extended offer (modal)
+      // 9 — HR reviews and approves each TA-verified document individually
+      await switchTo(ROLES.HR, `/hr/candidates/${candidateId}`, 'Switching to HR — document review…');
+      await click(() => findBtn(document, 'documents')); // switch to the Documents tab
+      await sleep(350);
+      const hrDocs = c().documentsFor(applicationId);
+      for (let i = 0; i < hrDocs.length; i++) {
+        guard();
+        const d = hrDocs[i];
+        setBotLabel(`HR reviewing ${d.label}  (${i + 1}/${hrDocs.length})`);
+        const abtn = document.querySelector('.ta-iconbtn[title="Approve this document"]');
+        if (abtn) { await pointAt(abtn, true); await pulse(); }
+        if (!c().documentsFor(applicationId).find((x) => x.id === d.id)?.hrApprovedAt) c().approveDocument(d.id);
+        await sleep(430);
+      }
+      if (c().getApplication(applicationId)?.status !== APP_STATUS.DOCS_VERIFIED) {
+        c().documentsFor(applicationId).forEach((d) => c().approveDocument(d.id));
+      }
+      await hold(9);
+
+      // 10 — record extended offer (modal)
+      await switchTo(ROLES.TA, `/ta/candidates/${candidateId}`, 'Back to the recruiter — preparing the offer…');
       await click(() => findBtn(document, 'record extended offer', 'record offer'));
       await sleep(650);
       await type(() => fieldByLabel(dialog(), 'department'), 'SAP Functional');
       await type(() => fieldByLabel(dialog(), 'joining date'), daysFromNow(21));
       await type(() => fieldByLabel(dialog(), 'reporting manager'), 'Latha Suresh');
-      await click(() => findBtn(dialog(), 'mark offer as extended'), () => c().saveOffer(applicationId, {
+      const saveOfferDirect = () => c().saveOffer(applicationId, {
         candidateName: `${NAME.first} ${NAME.last}`, jobTitle: c().getApplication(applicationId)?.jobTitle || 'Product Designer',
         department: 'SAP Functional', joiningDate: daysFromNow(21), reportingManager: 'Latha Suresh',
         location: 'Bengaluru, India', employmentType: 'Full-time', compensation: '', probationPeriod: '6 months', benefits: '',
-      }, true));
-      await sleep(500);
-      if (!c().offerFor(applicationId)) c().saveOffer(applicationId, {
-        candidateName: `${NAME.first} ${NAME.last}`, jobTitle: 'Product Designer', department: 'SAP Functional',
-        joiningDate: daysFromNow(21), reportingManager: 'Latha Suresh', location: 'Bengaluru, India',
-        employmentType: 'Full-time', compensation: '', probationPeriod: '6 months', benefits: '',
       }, true);
-      await hold(9);
-
-      // 10 — confirm accepted
-      await click(() => findBtn(document, 'confirm accepted', 'confirm offer accepted'), () => {
-        const o = c().offerFor(applicationId); if (o) c().confirmOfferAccepted(o.id);
-      });
+      await click(() => findBtn(dialog(), 'mark offer as extended'), saveOfferDirect);
+      await sleep(450);
+      // that submit opens a confirm dialog — click through it too
+      await click(() => findBtn(dialog(), 'record offer'), saveOfferDirect);
+      await sleep(450);
+      if (!c().offerFor(applicationId)) saveOfferDirect();
       await hold(10);
 
-      // 11 — onboarding form
+      // 11 — confirm accepted (confirm dialog)
+      const confirmAccepted = () => { const o = c().offerFor(applicationId); if (o) c().confirmOfferAccepted(o.id); };
+      await click(() => findBtn(document, 'confirm accepted', 'confirm offer accepted'));
+      await sleep(450);
+      await click(() => findBtn(dialog(), 'confirm accepted'), confirmAccepted);
+      await sleep(400);
+      if (c().getApplication(applicationId)?.status !== APP_STATUS.ONBOARDING_PENDING) confirmAccepted();
+      await hold(11);
+
+      // 12 — onboarding form
       await switchTo(ROLES.CANDIDATE, '/candidate/application', 'Back to the candidate — onboarding form…');
       const obBtn = await waitFor(() => findBtn(document, 'submit onboarding details'));
       const obCard = obBtn?.closest('.ta-card, .card') || document;
@@ -345,24 +383,32 @@ export default function DemoFlow() {
       await click(() => findBtn(document, 'submit onboarding details'), () => c().submitOnboardingForms(applicationId, BOT_ONBOARDING));
       await sleep(500);
       if (c().getApplication(applicationId)?.status !== APP_STATUS.HR_VERIFICATION) c().submitOnboardingForms(applicationId, BOT_ONBOARDING);
-      await hold(11);
-
-      // 12 — HR verifies onboarding
-      await switchTo(ROLES.HR, `/hr/candidates/${candidateId}`, 'Switching to the HR view…');
-      await click(() => findBtn(document, 'verify onboarding'), () => c().verifyOnboarding(applicationId));
       await hold(12);
 
-      // 13 — HR completes joining (opens the team-role modal)
+      // 13 — HR verifies onboarding (confirm dialog)
+      await switchTo(ROLES.HR, `/hr/candidates/${candidateId}`, 'Switching to the HR view…');
+      await click(() => findBtn(document, 'verify onboarding'));
+      await sleep(450);
+      await click(() => findBtn(dialog(), 'verify onboarding'), () => c().verifyOnboarding(applicationId));
+      await sleep(400);
+      if (c().getApplication(applicationId)?.status !== APP_STATUS.JOINING_PENDING) c().verifyOnboarding(applicationId);
+      await hold(13);
+
+      // 14 — HR completes joining (opens the team-role modal)
       await click(() => findBtn(document, 'complete joining', 'mark joining complete'));
       await sleep(600);
       await type(() => dialog().querySelector('input:not([type=file])'), 'SAP Functional');
-      await click(() => findBtn(dialog(), 'complete joining'), () => c().completeJoining(applicationId, 'SAP Functional'));
-      await sleep(500);
-      if (c().getApplication(applicationId)?.status !== APP_STATUS.EMPLOYEE) c().completeJoining(applicationId, 'SAP Functional');
+      const completeJoiningDirect = () => c().completeJoining(applicationId, 'SAP Functional');
+      await click(() => findBtn(dialog(), 'complete joining'), completeJoiningDirect);
+      await sleep(450);
+      // that submit opens a confirm dialog (same "Complete joining" label) — click through it too
+      await click(() => findBtn(dialog(), 'complete joining'), completeJoiningDirect);
+      await sleep(450);
+      if (c().getApplication(applicationId)?.status !== APP_STATUS.EMPLOYEE) completeJoiningDirect();
       // close any leftover dialog
       const leftover = document.querySelector('[role="dialog"] .icon-btn, [role="dialog"] [aria-label="Close"]');
       if (leftover) leftover.click();
-      await hold(13);
+      await hold(14);
       navigate(`/hr/candidates/${candidateId}`);
       setBotLabel(`${NAME.first} is now an employee 🎉`);
     } catch {

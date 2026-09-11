@@ -4,7 +4,7 @@ import { makeCandidateId, makeApplicationId, makeEmployeeId, makeOfferId, uid } 
 
 /* Bump when the seed's shape changes so stale demo data in a browser is
    rebuilt automatically (the storage key itself never changes). */
-export const SEED_VERSION = 5;
+export const SEED_VERSION = 7;
 
 function emptyAddress() {
   return { line1: '', line2: '', city: '', state: '', country: 'India', postalCode: '' };
@@ -214,7 +214,7 @@ function buildSyntheticCandidates(startSeq) {
         status: status === APP_STATUS.INTERVIEW_FAILED ? ROUND_STATUS.FAIL : done ? ROUND_STATUS.PASS : ROUND_STATUS.SCHEDULED,
         result: status === APP_STATUS.INTERVIEW_FAILED ? ROUND_STATUS.FAIL : done ? ROUND_STATUS.PASS : null,
         comments: done ? 'Solid problem solving.' : '',
-        shareComments: false,
+        shareComments: done, // remarks are always shared with the candidate once a result is recorded
       });
     }
 
@@ -730,6 +730,7 @@ export function buildSeed() {
     employees,
     activities,
     notifications,
+    emails: [], // outbox for candidate-facing emails (interview feedback, etc.) — queued only, no send wired up yet
     jobs: [],
     counters: { candidate: 320, application: 1120, employee: 260, offer: 200, job: 1035 },
     // The candidate portal follows one application; default to a mid-journey

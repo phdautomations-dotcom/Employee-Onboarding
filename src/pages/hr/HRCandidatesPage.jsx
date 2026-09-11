@@ -27,9 +27,10 @@ export default function HRCandidatesPage() {
   const rows = useMemo(
     () =>
       (data.applications || [])
-        // HR only owns candidates once the offer is accepted (the TA → HR
-        // handover). Everything up to "offer sent" stays with Talent Acquisition.
-        .filter((a) => hrStageRank(a.status) >= 2)
+        // HR sees candidates from the pre-offer document-review gate onward
+        // (HR_DOC_REVIEW/HR_DOC_REJECTED), plus everything from "offer accepted"
+        // onward (the TA → HR handover proper).
+        .filter((a) => hrStageRank(a.status) >= 0)
         .map((a) => {
           const offer = offerFor(a.id);
           const docs = documentsFor(a.id);

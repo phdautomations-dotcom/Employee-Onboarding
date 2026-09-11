@@ -104,7 +104,12 @@ for (const doc of ctx.documentsFor(appId)) {
   await run(() => ctx.verifyDocument(doc.id));
 }
 check('All documents verified', ctx.documentsFor(appId).every((d) => d.status === 'VERIFIED'));
-check('Docs verified -> DOCS_VERIFIED', ctx.getApplication(appId)?.status === 'DOCS_VERIFIED');
+check('Docs verified -> HR_DOC_REVIEW', ctx.getApplication(appId)?.status === 'HR_DOC_REVIEW');
+
+for (const doc of ctx.documentsFor(appId)) {
+  await run(() => ctx.approveDocument(doc.id));
+}
+check('HR approve -> DOCS_VERIFIED', ctx.getApplication(appId)?.status === 'DOCS_VERIFIED');
 
 await run(() => ctx.saveOffer(appId, {
   candidateName: 'Test Candidate', jobTitle: 'SAP Consultant', department: 'Enterprise Solutions', location: 'Bengaluru, India',

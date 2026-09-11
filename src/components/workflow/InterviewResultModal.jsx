@@ -5,15 +5,14 @@ import { Field, Textarea } from '../common/Field.jsx';
 import { ROUND_STATUS } from '../../constants/statuses.js';
 
 const OPTIONS = [
-  { value: ROUND_STATUS.PASS, label: 'Pass' },
-  { value: ROUND_STATUS.FAIL, label: 'Fail' },
-  { value: ROUND_STATUS.HOLD, label: 'Hold' },
+  { value: ROUND_STATUS.PASS, label: 'Selected' },
+  { value: ROUND_STATUS.FAIL, label: 'Not Selected' },
+  { value: ROUND_STATUS.HOLD, label: 'On Hold' },
 ];
 
 export default function InterviewResultModal({ open, onClose, interview, onSave }) {
   const [result, setResult] = useState(ROUND_STATUS.PASS);
   const [comments, setComments] = useState('');
-  const [share, setShare] = useState(false);
   const [error, setError] = useState('');
 
   const save = () => {
@@ -21,10 +20,10 @@ export default function InterviewResultModal({ open, onClose, interview, onSave 
       setError('Please add a short remark.');
       return;
     }
-    onSave({ result, comments: comments.trim(), shareComments: share });
+    // Remarks always go to the candidate — shareComments is always true.
+    onSave({ result, comments: comments.trim(), shareComments: true });
     setResult(ROUND_STATUS.PASS);
     setComments('');
-    setShare(false);
     setError('');
   };
 
@@ -52,14 +51,8 @@ export default function InterviewResultModal({ open, onClose, interview, onSave 
       </Field>
       <Field label="Interview remarks" required error={error}>
         <Textarea rows={5} value={comments} onChange={(e) => setComments(e.target.value)} error={error} placeholder="Strengths, concerns, recommendation…" />
+        <span className="ta-cell-sub">These remarks are shared with the candidate and queued to email them (email sending isn't wired up yet).</span>
       </Field>
-      <label className="ta-checkline">
-        <input type="checkbox" checked={share} onChange={(e) => setShare(e.target.checked)} />
-        <span>
-          <strong>Share these remarks with the candidate</strong>
-          <span className="ta-cell-sub">Off by default — remarks stay internal to the hiring team unless you turn this on.</span>
-        </span>
-      </label>
     </Modal>
   );
 }

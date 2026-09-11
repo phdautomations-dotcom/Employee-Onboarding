@@ -10,6 +10,8 @@ import ReasonModal from '../../components/workflow/ReasonModal.jsx';
 import ScheduleInterviewModal from '../../components/workflow/ScheduleInterviewModal.jsx';
 import InterviewResultModal from '../../components/workflow/InterviewResultModal.jsx';
 import OfferDrawer from '../../components/workflow/OfferDrawer.jsx';
+import AssignTAModal from '../../components/workflow/AssignTAModal.jsx';
+import { ConfirmDialog } from '../../components/common/Modal.jsx';
 import { useApp } from '../../context/AppContext.jsx';
 import { useToast } from '../../context/ToastContext.jsx';
 import { findJob } from '../../data/jobs.js';
@@ -42,7 +44,7 @@ const IN_REVIEW = [APP_STATUS.SUBMITTED, APP_STATUS.TA_REVIEW];
 const IN_INTERVIEW = [APP_STATUS.INTERVIEW_PLANNING, APP_STATUS.INTERVIEW_IN_PROGRESS, APP_STATUS.INTERVIEW_PASSED];
 const CAN_OFFER = [APP_STATUS.DOCS_VERIFIED, APP_STATUS.OFFER_DRAFT];
 const DOC_STAGES = [
-  APP_STATUS.DOC_VERIFICATION, APP_STATUS.DOCS_VERIFIED, APP_STATUS.OFFER_DRAFT,
+  APP_STATUS.DOC_VERIFICATION, APP_STATUS.HR_DOC_REVIEW, APP_STATUS.HR_DOC_REJECTED, APP_STATUS.DOCS_VERIFIED, APP_STATUS.OFFER_DRAFT,
   APP_STATUS.OFFER_ISSUED, APP_STATUS.OFFER_ACCEPTED, APP_STATUS.ONBOARDING_PENDING,
   APP_STATUS.HR_VERIFICATION, APP_STATUS.HR_VERIFICATION_REJECTED, APP_STATUS.JOINING_PENDING, APP_STATUS.EMPLOYEE,
 ];
@@ -56,12 +58,22 @@ export default function TACandidateDetailPage() {
     startReview, approveApplication, returnApplication, rejectApplication,
     scheduleInterview, recordInterviewResult, advanceToDocuments,
     verifyDocument, rejectDocument, saveOffer, confirmOfferAccepted, declineOffer,
+    isTAHead, assignApplicationToTA, acceptWaivedReason, rejectWaivedReason,
   } = useApp();
 
   const app = getApplicationByCandidate(candidateId);
   const [modal, setModal] = useState(null); // 'return' | 'reject' | 'schedule' | 'offer'
   const [resultFor, setResultFor] = useState(null);
   const [rejectDoc, setRejectDoc] = useState(null);
+  const [verifyDocFor, setVerifyDocFor] = useState(null);
+  const [acceptReasonFor, setAcceptReasonFor] = useState(null);
+  const [rejectReasonFor, setRejectReasonFor] = useState(null);
+  const [assigning, setAssigning] = useState(false);
+  const [confirming, setConfirming] = useState(null); // key of the action awaiting confirmation, or null
+  const [pendingSchedule, setPendingSchedule] = useState(null);
+  const [pendingResult, setPendingResult] = useState(null);
+  const [pendingOffer, setPendingOffer] = useState(null);
+  const [pendingAssignTA, setPendingAssignTA] = useState(null);
   const [step, setStep] = useState(null); // wizard page; null = follow the live stage
   const [showAllAct, setShowAllAct] = useState(false);
   const [tab, setTab] = useState('overview'); // profile tile: overview | contact | experience | skills
@@ -108,7 +120,7 @@ export default function TACandidateDetailPage() {
   const rejected = app.status === APP_STATUS.REJECTED;
   const progress = rejected ? 0 : Math.round(((stageIdx + 1) / PIPELINE_STAGES.length) * 100);
 
-  const canVerifyDocs = [APP_STATUS.DOC_VERIFICATION, APP_STATUS.DOCS_VERIFIED].includes(app.status);
+  const canVerifyDocs = [APP_STATUS.DOC_VERIFICATION, APP_STATUS.HR_DOC_REJECTED].includes(app.status);
   const showDocs = DOC_STAGES.includes(app.status);
 
   const act = (fn, msg) => { fn(); toast.success(msg); };
@@ -119,7 +131,17 @@ export default function TACandidateDetailPage() {
   const s1 = rejected ? 'current' : cur >= 2 ? 'done' : 'current';
   const s2 = rejected ? (cur >= 2 ? 'done' : 'upcoming') : stepState(2);
   const s3 = stepState(3);
-  const s4 = stepState(4);
+  // 'offer' shifted from PIPELINE_STAGES index 4 to 5 ('hr_doc_review' inserted before it) — but
+  // DOCS_VERIFIED itself now lives inside the 'hr_doc_review' stage (index 4), so stepState(5)
+  // alone would keep the Offer step locked exactly when it needs to become actionable. Treat
+  // DOCS_VERIFIED as already "current" for this step, same as CAN_OFFER already does for the button.
+  const s4 = app.status === APP_STATUS.DOCS_VERIFIED ? 'current' : stepState(5);
+  // Once the candidate has accepted and moved to HR, TA's part of the journey is over —
+  // no more offer actions, no further step to move on to.
+  const taHandedOver = [
+    APP_STATUS.OFFER_ACCEPTED, APP_STATUS.ONBOARDING_PENDING, APP_STATUS.HR_VERIFICATION,
+    APP_STATUS.HR_VERIFICATION_REJECTED, APP_STATUS.JOINING_PENDING, APP_STATUS.EMPLOYEE,
+  ].includes(app.status);
 
   const STEP_LABELS = ['Application Review', 'Interview Scheduling', 'Document Verification', 'Offer'];
   const stepStates = [s1, s2, s3, s4];
@@ -150,6 +172,17 @@ export default function TACandidateDetailPage() {
 
       {app.status === APP_STATUS.RETURNED && (
         <div className="ta-note ta-note--warn"><Icon name="RotateCcw" size={15} /> Returned to candidate: {app.returnReason}</div>
+      )}
+      {app.status === APP_STATUS.HR_DOC_REVIEW && (
+        <div className="ta-note ta-note--info">
+          <Icon name="Eye" size={15} />
+          All documents verified — waiting on HR's document review before the offer can be prepared.
+        </div>
+      )}
+      {app.status === APP_STATUS.HR_DOC_REJECTED && (
+        <div className="ta-note ta-note--warn">
+          <Icon name="RotateCcw" size={15} /> HR returned the documents: {app.docReviewRejectReason}
+        </div>
       )}
       {app.status === APP_STATUS.OFFER_ISSUED && (
         <div className="ta-note ta-note--info">
@@ -203,6 +236,14 @@ export default function TACandidateDetailPage() {
                     <div key={k}><dt>{k}</dt><dd>{v}</dd></div>
                   ))}
                 </dl>
+                {isTAHead && (
+                  <div className="ta-cell-sub" style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span>Assigned to: {app.assignedTo || 'Unassigned'}</span>
+                    <Button variant="ghost" icon="UserRoundCog" onClick={() => setAssigning(true)}>
+                      {app.assignedTo ? 'Reassign' : 'Assign to TA'}
+                    </Button>
+                  </div>
+                )}
               </div>
             )}
 
@@ -291,7 +332,7 @@ export default function TACandidateDetailPage() {
                       Check the profile against the role, then take the candidate forward to interviews or send the application back.
                     </p>
                     <div className="ta-btnrow">
-                      <Button icon="CheckCircle2" onClick={() => act(() => approveApplication(app.id), 'Application approved — moved to interview planning.')}>Approve</Button>
+                      <Button icon="CheckCircle2" onClick={() => setConfirming('approve')}>Approve</Button>
                       <Button variant="ghost" icon="RotateCcw" onClick={() => setModal('return')}>Return</Button>
                       <Button variant="ghost" icon="XCircle" onClick={() => setModal('reject')}>Reject</Button>
                     </div>
@@ -325,7 +366,7 @@ export default function TACandidateDetailPage() {
                             <div className="ta-cell-sub ta-remark" style={{ marginTop: 4 }}>
                               Remarks: {iv.comments}
                               <span className={`ta-remark__tag ta-remark__tag--${iv.shareComments ? 'shared' : 'internal'}`}>
-                                {iv.shareComments ? 'Shared with candidate' : 'Internal only'}
+                                {iv.shareComments ? 'Shared with candidate · email queued' : 'Internal only'}
                               </span>
                             </div>
                           )}
@@ -339,7 +380,7 @@ export default function TACandidateDetailPage() {
                     })}
                     {app.status === APP_STATUS.INTERVIEW_PASSED && (
                       <div style={{ marginTop: 4 }}>
-                        <Button icon="ArrowRight" onClick={() => act(() => advanceToDocuments(app.id), 'Moved to document verification.')}>Proceed to documents</Button>
+                        <Button icon="ArrowRight" onClick={() => setConfirming('advance')}>Proceed to documents</Button>
                       </div>
                     )}
                   </div>
@@ -362,16 +403,26 @@ export default function TACandidateDetailPage() {
                             <div className="ta-cell-strong">{doc.label}{mandatory && <span className="cx-req" title="Mandatory"> *</span>}</div>
                             <div className="ta-cell-sub">{doc.fileName || (doc.status === DOC_STATUS.WAIVED ? 'Not provided by candidate' : 'No file uploaded')}{doc.status === DOC_STATUS.REJECTED && doc.rejectionReason ? ` · ${doc.rejectionReason}` : ''}</div>
                             {doc.status === DOC_STATUS.WAIVED && doc.skipReason && (
-                              <div className="ta-cell-sub" style={{ color: 'var(--tag-amber-fg)' }}>Candidate's reason: {doc.skipReason}</div>
+                              <div className="ta-cell-sub" style={{ color: 'var(--tag-amber-fg)' }}>
+                                Candidate's reason: {doc.skipReason}
+                                {doc.reasonAccepted === true && ' · Accepted'}
+                                {doc.reasonAccepted == null && ' · Pending your review'}
+                              </div>
                             )}
                           </div>
                           <Tag tone={tone}>{m.label}</Tag>
                           {canVerifyDocs && [DOC_STATUS.UPLOADED, DOC_STATUS.VERIFIED].includes(doc.status) && (
                             <span className="ta-rowactions" style={{ opacity: 1 }}>
                               {doc.status !== DOC_STATUS.VERIFIED && (
-                                <button className="ta-iconbtn" title="Verify" onClick={() => act(() => verifyDocument(doc.id), `${doc.label} verified.`)}><Icon name="Check" size={15} /></button>
+                                <button className="ta-iconbtn" title="Verify" onClick={() => setVerifyDocFor(doc)}><Icon name="Check" size={15} /></button>
                               )}
                               <button className="ta-iconbtn" title="Reject" onClick={() => setRejectDoc(doc)}><Icon name="X" size={15} /></button>
+                            </span>
+                          )}
+                          {canVerifyDocs && doc.status === DOC_STATUS.WAIVED && doc.reasonAccepted == null && (
+                            <span className="ta-rowactions" style={{ opacity: 1 }}>
+                              <button className="ta-iconbtn" title="Accept reason" onClick={() => setAcceptReasonFor(doc)}><Icon name="Check" size={15} /></button>
+                              <button className="ta-iconbtn" title="Reject reason" onClick={() => setRejectReasonFor(doc)}><Icon name="X" size={15} /></button>
                             </span>
                           )}
                         </div>
@@ -399,17 +450,24 @@ export default function TACandidateDetailPage() {
                     ) : (
                       <p className="ta-cell-sub" style={{ marginBottom: 12 }}>Documents are verified. Record the offer details once the letter has been sent.</p>
                     )}
-                    <div className="ta-btnrow" style={{ marginTop: offer ? 14 : 0 }}>
-                      {CAN_OFFER.includes(app.status) && (
-                        <Button icon="FileCheck" onClick={() => setModal('offer')}>{offer ? 'Update offer' : 'Record extended offer'}</Button>
-                      )}
-                      {app.status === APP_STATUS.OFFER_ISSUED && offer && (
-                        <>
-                          <Button icon="CheckCircle2" onClick={() => act(() => confirmOfferAccepted(offer.id), 'Offer acceptance confirmed — handed over to HR.')}>Confirm accepted</Button>
-                          <Button variant="ghost" icon="XCircle" onClick={() => act(() => declineOffer(offer.id), 'Marked as declined.')}>Mark declined</Button>
-                        </>
-                      )}
-                    </div>
+                    {taHandedOver ? (
+                      <div className="ta-note ta-note--ok" style={{ marginTop: 14 }}>
+                        <Icon name="CheckCircle2" size={15} />
+                        <span>Offer accepted — handed over to HR. There's nothing further for TA to do on this candidate.</span>
+                      </div>
+                    ) : (
+                      <div className="ta-btnrow" style={{ marginTop: offer ? 14 : 0 }}>
+                        {CAN_OFFER.includes(app.status) && (
+                          <Button icon="FileCheck" onClick={() => setModal('offer')}>{offer ? 'Update offer' : 'Record extended offer'}</Button>
+                        )}
+                        {app.status === APP_STATUS.OFFER_ISSUED && offer && (
+                          <>
+                            <Button icon="CheckCircle2" onClick={() => setConfirming('offerAccepted')}>Confirm accepted</Button>
+                            <Button variant="ghost" icon="XCircle" onClick={() => setConfirming('offerDeclined')}>Mark declined</Button>
+                          </>
+                        )}
+                      </div>
+                    )}
                   </>
                 )
               )}
@@ -417,7 +475,9 @@ export default function TACandidateDetailPage() {
 
             <div className="ta-wizard__nav">
               <Button variant="ghost" icon="ChevronLeft" disabled={activeStep === 1} onClick={() => goStep(activeStep - 1)}>Back</Button>
-              <Button variant="ghost" iconRight="ChevronRight" disabled={activeStep >= maxStep} onClick={() => goStep(activeStep + 1)}>Next</Button>
+              {activeStep < maxStep && (
+                <Button variant="ghost" iconRight="ChevronRight" onClick={() => goStep(activeStep + 1)}>Next</Button>
+              )}
             </div>
           </Card>
         </div>
@@ -477,22 +537,113 @@ export default function TACandidateDetailPage() {
       />
       <ScheduleInterviewModal
         open={modal === 'schedule'} onClose={() => setModal(null)} roundNumber={interviews.length + 1}
-        onSchedule={(payload) => { scheduleInterview(app.id, payload); setModal(null); toast.success('Interview scheduled.'); }}
+        onSchedule={(payload) => { setModal(null); setPendingSchedule({ round: interviews.length + 1, payload }); }}
       />
       <InterviewResultModal
         open={!!resultFor} onClose={() => setResultFor(null)} interview={resultFor}
-        onSave={(res) => { recordInterviewResult(resultFor.id, res); setResultFor(null); toast.success('Interview result saved.'); }}
+        onSave={(res) => { setPendingResult({ interviewId: resultFor.id, round: resultFor.round, type: resultFor.type, res }); setResultFor(null); }}
       />
       {modal === 'offer' && (
         <OfferDrawer
           open onClose={() => setModal(null)} application={app} job={job} existingOffer={offer}
-          onSave={(payload) => {
-            saveOffer(app.id, payload, true);
-            setModal(null);
-            toast.success('Extended offer recorded — awaiting the candidate\'s response.');
-          }}
+          onSave={(payload) => { setModal(null); setPendingOffer(payload); }}
         />
       )}
+      <AssignTAModal
+        open={assigning}
+        name={name}
+        initialTA={app.assignedTo || ''}
+        onClose={() => setAssigning(false)}
+        onAssign={(taName) => { setAssigning(false); setPendingAssignTA(taName); }}
+      />
+
+      {/* Confirm steps for significant, previously instant-fire actions */}
+      <ConfirmDialog
+        open={confirming === 'approve'}
+        onClose={() => setConfirming(null)}
+        title="Approve this application?"
+        message="The candidate moves to interview planning and is notified."
+        confirmLabel="Approve"
+        onConfirm={() => { act(() => approveApplication(app.id), 'Application approved — moved to interview planning.'); setConfirming(null); }}
+      />
+      <ConfirmDialog
+        open={confirming === 'advance'}
+        onClose={() => setConfirming(null)}
+        title="Move to document verification?"
+        message="The candidate is asked to upload their verification documents."
+        confirmLabel="Proceed"
+        onConfirm={() => { act(() => advanceToDocuments(app.id), 'Moved to document verification.'); setConfirming(null); }}
+      />
+      <ConfirmDialog
+        open={confirming === 'offerAccepted'}
+        onClose={() => setConfirming(null)}
+        title="Confirm the offer was accepted?"
+        message="This hands the candidate over to HR for onboarding."
+        confirmLabel="Confirm accepted"
+        onConfirm={() => { act(() => confirmOfferAccepted(offer.id), 'Offer acceptance confirmed — handed over to HR.'); setConfirming(null); }}
+      />
+      <ConfirmDialog
+        open={confirming === 'offerDeclined'}
+        onClose={() => setConfirming(null)}
+        title="Mark this offer as declined?"
+        message="This closes out the candidate's offer."
+        confirmLabel="Mark declined"
+        tone="danger"
+        onConfirm={() => { act(() => declineOffer(offer.id), 'Marked as declined.'); setConfirming(null); }}
+      />
+      <ConfirmDialog
+        open={!!verifyDocFor}
+        onClose={() => setVerifyDocFor(null)}
+        title={`Verify ${verifyDocFor?.label || 'this document'}?`}
+        message="This marks the document as verified on record."
+        confirmLabel="Verify"
+        onConfirm={() => { act(() => verifyDocument(verifyDocFor.id), `${verifyDocFor.label} verified.`); setVerifyDocFor(null); }}
+      />
+      <ConfirmDialog
+        open={!!acceptReasonFor}
+        onClose={() => setAcceptReasonFor(null)}
+        title={`Accept the reason for ${acceptReasonFor?.label || 'this document'}?`}
+        message="This treats the document as cleared — no upload required."
+        confirmLabel="Accept reason"
+        onConfirm={() => { act(() => acceptWaivedReason(acceptReasonFor.id), `${acceptReasonFor.label}'s reason accepted.`); setAcceptReasonFor(null); }}
+      />
+      <ReasonModal
+        open={!!rejectReasonFor} onClose={() => setRejectReasonFor(null)}
+        title={`Reject reason for ${rejectReasonFor?.label || 'document'}`} label="Why isn't this reason acceptable?" confirmLabel="Reject reason" tone="danger"
+        onSubmit={(note) => { rejectWaivedReason(rejectReasonFor.id, note); setRejectReasonFor(null); toast.success('Reason rejected — candidate must upload the document.'); }}
+      />
+      <ConfirmDialog
+        open={!!pendingSchedule}
+        onClose={() => setPendingSchedule(null)}
+        title={`Schedule Round ${pendingSchedule?.round || ''}?`}
+        message="The candidate is notified of the interview date and time."
+        confirmLabel="Schedule"
+        onConfirm={() => { act(() => scheduleInterview(app.id, pendingSchedule.payload), 'Interview scheduled.'); setPendingSchedule(null); }}
+      />
+      <ConfirmDialog
+        open={!!pendingResult}
+        onClose={() => setPendingResult(null)}
+        title={`Save the result for Round ${pendingResult?.round || ''} — ${pendingResult?.type || ''}?`}
+        message="This is recorded on the candidate's interview history and emailed to them."
+        confirmLabel="Save result"
+        onConfirm={() => { act(() => recordInterviewResult(pendingResult.interviewId, pendingResult.res), 'Interview result saved.'); setPendingResult(null); }}
+      />
+      <ConfirmDialog
+        open={!!pendingOffer}
+        onClose={() => setPendingOffer(null)}
+        title="Record this offer as extended?"
+        message="The candidate is marked as having been sent this offer."
+        confirmLabel="Record offer"
+        onConfirm={() => { act(() => saveOffer(app.id, pendingOffer, true), 'Extended offer recorded — awaiting the candidate\'s response.'); setPendingOffer(null); }}
+      />
+      <ConfirmDialog
+        open={!!pendingAssignTA}
+        onClose={() => setPendingAssignTA(null)}
+        title={`Assign to ${pendingAssignTA || 'this TA'}?`}
+        message="This TA becomes the owner of this candidate going forward."
+        confirmLabel="Assign"
+        onConfirm={() => { act(() => assignApplicationToTA(app.id, pendingAssignTA), `Assigned to ${pendingAssignTA}.`); setPendingAssignTA(null); }}
+      />
     </>
   );
 }

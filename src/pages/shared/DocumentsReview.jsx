@@ -6,6 +6,7 @@ import Button from '../../components/common/Button.jsx';
 import SearchBar from '../../components/common/SearchBar.jsx';
 import FilterSelect from '../../components/common/FilterSelect.jsx';
 import ReasonModal from '../../components/workflow/ReasonModal.jsx';
+import { ConfirmDialog } from '../../components/common/Modal.jsx';
 import { useApp } from '../../context/AppContext.jsx';
 import { useToast } from '../../context/ToastContext.jsx';
 import { DOC_STATUS, DOC_STATUS_META } from '../../constants/statuses.js';
@@ -27,6 +28,7 @@ export default function DocumentsReview({ basePath }) {
   const [q, setQ] = useState('');
   const [status, setStatus] = useState('all');
   const [rejecting, setRejecting] = useState(null);
+  const [verifying, setVerifying] = useState(null);
 
   const rows = useMemo(
     () =>
@@ -87,7 +89,7 @@ export default function DocumentsReview({ basePath }) {
                   </Button>
                   {r.status === DOC_STATUS.UPLOADED && (
                     <>
-                      <Button size="sm" variant="success" icon="CheckCircle2" onClick={() => { verifyDocument(r.id); toast.success('Document verified.'); }}>
+                      <Button size="sm" variant="success" icon="CheckCircle2" onClick={() => setVerifying(r)}>
                         Verify
                       </Button>
                       <Button size="sm" variant="danger" icon="XCircle" onClick={() => setRejecting(r)}>
@@ -109,6 +111,14 @@ export default function DocumentsReview({ basePath }) {
         confirmLabel="Reject Document"
         tone="danger"
         onSubmit={(reason) => { rejectDocument(rejecting.id, reason); setRejecting(null); toast.success('Document rejected — candidate notified.'); }}
+      />
+      <ConfirmDialog
+        open={!!verifying}
+        onClose={() => setVerifying(null)}
+        title={`Verify "${verifying?.label}"?`}
+        message="This marks the document as verified on record."
+        confirmLabel="Verify"
+        onConfirm={() => { verifyDocument(verifying.id); toast.success('Document verified.'); setVerifying(null); }}
       />
     </div>
   );

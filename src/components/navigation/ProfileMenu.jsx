@@ -1,8 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Icon from '../common/Icon.jsx';
+import { ConfirmDialog } from '../common/Modal.jsx';
 import { useApp } from '../../context/AppContext.jsx';
 import { ROLES, ROLE_META, DEMO_USERS } from '../../constants/roles.js';
+import { TA_TEAM } from '../../constants/taTeam.js';
+import { initialsOf } from '../../utils/format.js';
 
 const ROLE_ORDER = [ROLES.CANDIDATE, ROLES.TA, ROLES.HR];
 const ROLE_TITLE = {
@@ -16,10 +19,14 @@ const ROLE_TITLE = {
    to restart the demo. `links` adds portal-specific rows above the switcher. */
 export default function ProfileMenu({ role, links = [] }) {
   const navigate = useNavigate();
-  const { setRole, startGuidedDemo } = useApp();
+  const { setRole, startGuidedDemo, taIdentity, setTaIdentity } = useApp();
   const [open, setOpen] = useState(false);
+  const [confirmRestart, setConfirmRestart] = useState(false);
   const ref = useRef(null);
-  const user = DEMO_USERS[role] || DEMO_USERS[ROLES.CANDIDATE];
+  const isTA = role === ROLES.TA;
+  const user = isTA
+    ? { name: taIdentity, initials: initialsOf(taIdentity) }
+    : DEMO_USERS[role] || DEMO_USERS[ROLES.CANDIDATE];
 
   useEffect(() => {
     if (!open) return undefined;
@@ -31,7 +38,9 @@ export default function ProfileMenu({ role, links = [] }) {
 
   const go = (to) => { setOpen(false); navigate(to); };
   const switchTo = (r) => { setOpen(false); setRole(r); navigate(ROLE_META[r].home); };
-  const restart = () => { setOpen(false); startGuidedDemo(); setRole(ROLES.CANDIDATE); navigate('/candidate/jobs'); };
+  const actAs = (name) => { setOpen(false); setTaIdentity(name); };
+  const restart = () => { setConfirmRestart(true); };
+  const confirmRestartNow = () => { setConfirmRestart(false); setOpen(false); startGuidedDemo(); setRole(ROLES.CANDIDATE); navigate('/candidate/jobs'); };
   const signOut = () => { setOpen(false); setRole(null); navigate('/'); };
 
   return (
@@ -68,6 +77,24 @@ export default function ProfileMenu({ role, links = [] }) {
             </button>
           ))}
 
+          {isTA && (
+            <>
+              <div className="profilemenu__sep">Acting as</div>
+              {TA_TEAM.map((name) => (
+                <button
+                  key={name}
+                  type="button"
+                  className="profilemenu__item"
+                  onClick={() => actAs(name)}
+                  role="menuitem"
+                  aria-current={name === taIdentity}
+                >
+                  <Icon name={name === taIdentity ? 'CheckCircle2' : 'User'} size={15} /> {name}
+                </button>
+              ))}
+            </>
+          )}
+
           <div className="profilemenu__sep">Switch view</div>
           {ROLE_ORDER.filter((r) => r !== role).map((r) => (
             <button key={r} type="button" className="profilemenu__item" onClick={() => switchTo(r)} role="menuitem">
@@ -84,6 +111,16 @@ export default function ProfileMenu({ role, links = [] }) {
           </button>
         </div>
       )}
+
+      <ConfirmDialog
+        open={confirmRestart}
+        onClose={() => setConfirmRestart(false)}
+        onConfirm={confirmRestartNow}
+        title="Restart the demo?"
+        message="This wipes all current data and rebuilds a fresh guided-demo seed. This can't be undone."
+        confirmLabel="Restart demo"
+        tone="danger"
+      />
     </div>
   );
 }

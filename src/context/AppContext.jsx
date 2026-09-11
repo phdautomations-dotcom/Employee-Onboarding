@@ -11,6 +11,7 @@ import {
   isDocMandatory,
 } from '../constants/statuses.js';
 import { ROLES } from '../constants/roles.js';
+import { TA_HEAD, isTAHead } from '../constants/taTeam.js';
 import {
   makeCandidateId,
   makeApplicationId,
@@ -21,12 +22,16 @@ import {
 
 const DATA_KEY = 'talentflow.data.v7'; // bumped: new onboarding-verification statuses replace OFFER_PENDING_HR
 const ROLE_KEY = 'talentflow.role.v3';
+const TA_IDENTITY_KEY = 'talentflow.taIdentity.v1';
 
 const AppContext = createContext(null);
 
 export function AppProvider({ children }) {
   const [data, setData] = useLocalStorage(DATA_KEY, () => buildSeed());
   const [role, setRole] = useLocalStorage(ROLE_KEY, null);
+  // Which TA is "acting" right now — simulated identity, not real auth. Only
+  // matters while role === 'ta'; defaults to the Head.
+  const [taIdentity, setTaIdentity] = useLocalStorage(TA_IDENTITY_KEY, TA_HEAD);
 
   // Demo data from an older seed shape is rebuilt automatically — the storage
   // key stays the same, we just re-seed when the version inside it is behind.
@@ -74,23 +79,42 @@ export function AppProvider({ children }) {
     });
   };
 
+  // No email provider is wired up yet — this just queues what would be sent,
+  // so real delivery can be plugged in later without touching call sites.
+  const queueEmail = (draft, { to, subject, body, applicationId }) => {
+    if (!draft.emails) draft.emails = [];
+    draft.emails.unshift({
+      id: uid('mail'),
+      to,
+      subject,
+      body,
+      applicationId,
+      status: 'queued',
+      at: new Date().toISOString(),
+    });
+  };
+
   // A required doc is "cleared" when it's verified, or (for non-mandatory docs)
   // when the candidate has given a reason for not providing it.
   const allRequiredDocsCleared = (draft, applicationId) => {
     const docs = draft.documents.filter((d) => d.applicationId === applicationId && d.required);
     if (docs.length === 0) return false;
     return docs.every(
-      (d) => d.status === DOC_STATUS.VERIFIED || (d.status === DOC_STATUS.WAIVED && !isDocMandatory(d.key))
+      (d) => d.status === DOC_STATUS.VERIFIED || (d.status === DOC_STATUS.WAIVED && !isDocMandatory(d.key) && d.reasonAccepted)
     );
   };
 
+  // TA finishing verification no longer unlocks the offer directly — it sends
+  // the batch to HR for a second, independent review (HR_DOC_REVIEW). Also
+  // re-fires when TA re-clears docs after HR sent them back (HR_DOC_REJECTED),
+  // looping it back to HR automatically.
   const maybeAdvanceDocs = (draft, applicationId) => {
     if (!allRequiredDocsCleared(draft, applicationId)) return;
     const app = draft.applications.find((a) => a.id === applicationId);
-    if (app && app.status === APP_STATUS.DOC_VERIFICATION) {
-      app.status = APP_STATUS.DOCS_VERIFIED;
-      logActivity(draft, app.id, 'documents', 'All Documents Verified', 'All mandatory documents verified. Offer preparation is now available.', 'Himanshu Singh');
-      notify(draft, ROLES.TA, 'Documents verified', `All documents cleared for ${app.personal.firstName} ${app.personal.lastName}. Prepare offer.`);
+    if (app && (app.status === APP_STATUS.DOC_VERIFICATION || app.status === APP_STATUS.HR_DOC_REJECTED)) {
+      app.status = APP_STATUS.HR_DOC_REVIEW;
+      logActivity(draft, app.id, 'documents', 'All Documents Verified', 'All mandatory documents verified. Sent to HR for document review.', 'Himanshu Singh');
+      notify(draft, ROLES.HR, 'Documents ready for review', `All documents cleared for ${app.personal.firstName} ${app.personal.lastName}. Please review and approve.`);
     }
   };
 
@@ -115,7 +139,7 @@ export function AppProvider({ children }) {
           source: form.source || 'Direct',
           status: APP_STATUS.SUBMITTED,
           submittedAt: new Date().toISOString(),
-          assignedTo: 'Himanshu Singh',
+          assignedTo: null, // self-sourced lead — sits in the TA Head's Unassigned queue until assigned
           autofilled: form.autofilled || [],
           returnReason: null,
           rejectReason: null,
@@ -243,6 +267,27 @@ export function AppProvider({ children }) {
     [mutate]
   );
 
+  // TA Head hands a self-sourced (unassigned) or existing lead to a specific TA.
+  const assignApplicationToTA = useCallback(
+    (applicationId, taName) => {
+      mutate((draft) => {
+        const app = draft.applications.find((a) => a.id === applicationId);
+        if (!app || !taName) return;
+        const wasUnassigned = !app.assignedTo;
+        app.assignedTo = taName;
+        logActivity(
+          draft,
+          applicationId,
+          'assignment',
+          wasUnassigned ? 'Assigned to TA' : 'Reassigned to TA',
+          `${taName} was assigned to this candidate.`,
+          taIdentity
+        );
+      });
+    },
+    [mutate, taIdentity]
+  );
+
   /* ---------- interviews ---------- */
   const scheduleInterview = useCallback(
     (applicationId, payload) => {
@@ -283,12 +328,22 @@ export function AppProvider({ children }) {
       mutate((draft) => {
         const iv = draft.interviews.find((i) => i.id === interviewId);
         if (!iv) return;
+        if (!comments || !comments.trim()) return; // feedback is mandatory to record a result
         iv.result = result;
         iv.comments = comments;
         iv.shareComments = !!shareComments;
         iv.status = result; // PASS | FAIL | HOLD
         const app = draft.applications.find((a) => a.id === iv.applicationId);
         if (!app) return;
+
+        if (shareComments) {
+          queueEmail(draft, {
+            to: app.personal.email,
+            applicationId: app.id,
+            subject: `Interview feedback — ${iv.type} (Round ${iv.round})`,
+            body: comments,
+          });
+        }
 
         if (result === ROUND_STATUS.FAIL) {
           app.status = APP_STATUS.INTERVIEW_FAILED;
@@ -354,6 +409,7 @@ export function AppProvider({ children }) {
         doc.verifiedAt = new Date().toISOString();
         doc.rejectionReason = null;
         doc.skipReason = null;
+        doc.hrApprovedAt = null; // re-verified — any earlier HR approval is stale
         logActivity(draft, doc.applicationId, 'documents', 'Document Verified', `${doc.label} verified.`, 'Himanshu Singh');
         maybeAdvanceDocs(draft, doc.applicationId);
       });
@@ -369,12 +425,43 @@ export function AppProvider({ children }) {
         if (!doc || isDocMandatory(doc.key)) return; // mandatory docs must be uploaded
         doc.status = DOC_STATUS.WAIVED;
         doc.skipReason = reason;
+        doc.reasonAccepted = null; // pending TA review — not auto-cleared
         doc.fileName = null;
         doc.uploadedAt = null;
         doc.verifiedAt = null;
         logActivity(draft, doc.applicationId, 'documents', 'Document Not Provided', `${doc.label} — reason: ${reason}`, 'Candidate');
         notify(draft, ROLES.TA, 'Document reason submitted', `${doc.label} not provided by the candidate — a reason was given.`);
+      });
+    },
+    [mutate]
+  );
+
+  // TA reviews the candidate's "can't provide" reason — accepting clears the
+  // document, rejecting sends it back requiring an actual upload.
+  const acceptWaivedReason = useCallback(
+    (documentId) => {
+      mutate((draft) => {
+        const doc = draft.documents.find((d) => d.id === documentId);
+        if (!doc || doc.status !== DOC_STATUS.WAIVED) return;
+        doc.reasonAccepted = true;
+        logActivity(draft, doc.applicationId, 'documents', 'Reason Accepted', `${doc.label}: reason accepted — not required.`, 'Himanshu Singh');
         maybeAdvanceDocs(draft, doc.applicationId);
+      });
+    },
+    [mutate]
+  );
+
+  const rejectWaivedReason = useCallback(
+    (documentId, note) => {
+      mutate((draft) => {
+        const doc = draft.documents.find((d) => d.id === documentId);
+        if (!doc) return;
+        doc.status = DOC_STATUS.REJECTED;
+        doc.reasonAccepted = false;
+        doc.rejectionReason = note;
+        doc.skipReason = null;
+        logActivity(draft, doc.applicationId, 'documents', 'Reason Rejected', `${doc.label}: reason not accepted — ${note}`, 'Himanshu Singh');
+        notify(draft, ROLES.CANDIDATE, 'Document required', `${doc.label}: ${note}`);
       });
     },
     [mutate]
@@ -388,8 +475,54 @@ export function AppProvider({ children }) {
         doc.status = DOC_STATUS.REJECTED;
         doc.rejectionReason = reason;
         doc.verifiedAt = null;
+        doc.hrApprovedAt = null;
         logActivity(draft, doc.applicationId, 'documents', 'Document Rejected', `${doc.label} rejected: ${reason}`, 'Himanshu Singh');
         notify(draft, ROLES.CANDIDATE, 'Document rejected', `${doc.label}: ${reason}`);
+      });
+    },
+    [mutate]
+  );
+
+  // A required doc is HR-cleared once HR has individually approved it (or, for
+  // non-mandatory docs, the candidate gave a reason for not providing it).
+  const allDocsHrApproved = (draft, applicationId) => {
+    const docs = draft.documents.filter((d) => d.applicationId === applicationId && d.required);
+    if (docs.length === 0) return false;
+    return docs.every((d) => !!d.hrApprovedAt || (d.status === DOC_STATUS.WAIVED && !isDocMandatory(d.key)));
+  };
+
+  // HR's independent, per-document sign-off on what TA already verified — the
+  // second gate before TA can extend an offer. Once every required document
+  // has been individually approved, the whole application advances.
+  const approveDocument = useCallback(
+    (documentId) => {
+      mutate((draft) => {
+        const doc = draft.documents.find((d) => d.id === documentId);
+        if (!doc) return;
+        doc.hrApprovedAt = new Date().toISOString();
+        logActivity(draft, doc.applicationId, 'documents', 'Document Approved by HR', `${doc.label} approved by HR.`, 'Anisha Rawat');
+
+        const app = draft.applications.find((a) => a.id === doc.applicationId);
+        if (app && app.status === APP_STATUS.HR_DOC_REVIEW && allDocsHrApproved(draft, doc.applicationId)) {
+          app.status = APP_STATUS.DOCS_VERIFIED;
+          app.docReviewRejectReason = null;
+          logActivity(draft, app.id, 'documents', 'Documents Approved by HR', 'All documents approved by HR. Offer preparation can proceed.', 'Anisha Rawat');
+          notify(draft, ROLES.TA, 'Documents approved by HR', `${app.personal.firstName} ${app.personal.lastName}'s documents are approved. Offer preparation is now available.`);
+        }
+      });
+    },
+    [mutate]
+  );
+
+  const rejectDocuments = useCallback(
+    (applicationId, reason) => {
+      mutate((draft) => {
+        const app = draft.applications.find((a) => a.id === applicationId);
+        if (!app) return;
+        app.status = APP_STATUS.HR_DOC_REJECTED;
+        app.docReviewRejectReason = reason;
+        logActivity(draft, applicationId, 'documents', 'Documents Returned by HR', reason, 'Anisha Rawat');
+        notify(draft, ROLES.TA, 'Documents returned by HR', `${app.personal.firstName} ${app.personal.lastName}: ${reason}`);
       });
     },
     [mutate]
@@ -654,6 +787,7 @@ export function AppProvider({ children }) {
       getApplicationByCandidate: (candidateId) => apps.find((a) => a.candidateId === candidateId) || null,
       interviewsFor: (appId) =>
         (state.interviews || []).filter((i) => i.applicationId === appId).sort((a, b) => a.round - b.round),
+      emailsFor: (appId) => (state.emails || []).filter((m) => m.applicationId === appId),
       documentsFor: (appId) => (state.documents || []).filter((d) => d.applicationId === appId),
       offerFor: (appId) => (state.offers || []).find((o) => o.applicationId === appId) || null,
       offerById: (offerId) => (state.offers || []).find((o) => o.id === offerId) || null,
@@ -667,6 +801,9 @@ export function AppProvider({ children }) {
     () => ({
       role,
       setRole,
+      taIdentity,
+      setTaIdentity,
+      isTAHead: isTAHead(taIdentity),
       data: state,
       ...selectors,
       submitApplication,
@@ -676,6 +813,7 @@ export function AppProvider({ children }) {
       approveApplication,
       returnApplication,
       rejectApplication,
+      assignApplicationToTA,
       scheduleInterview,
       recordInterviewResult,
       advanceToDocuments,
@@ -683,6 +821,10 @@ export function AppProvider({ children }) {
       verifyDocument,
       rejectDocument,
       waiveDocument,
+      acceptWaivedReason,
+      rejectWaivedReason,
+      approveDocument,
+      rejectDocuments,
       saveOffer,
       acceptOffer,
       confirmOfferAccepted,
@@ -700,6 +842,8 @@ export function AppProvider({ children }) {
     [
       role,
       setRole,
+      taIdentity,
+      setTaIdentity,
       state,
       selectors,
       createJob,
@@ -710,6 +854,7 @@ export function AppProvider({ children }) {
       approveApplication,
       returnApplication,
       rejectApplication,
+      assignApplicationToTA,
       scheduleInterview,
       recordInterviewResult,
       advanceToDocuments,
@@ -717,6 +862,10 @@ export function AppProvider({ children }) {
       verifyDocument,
       rejectDocument,
       waiveDocument,
+      acceptWaivedReason,
+      rejectWaivedReason,
+      approveDocument,
+      rejectDocuments,
       saveOffer,
       acceptOffer,
       confirmOfferAccepted,

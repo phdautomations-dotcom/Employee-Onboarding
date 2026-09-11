@@ -451,7 +451,39 @@
 .ta-link:hover { color: var(--ta-blue-ink); }
 
 /* ---------- KPI row ---------- */
-.ta-kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 16px; }
+/* Sized as if exactly 4 tiles fit the row. With 4 or fewer, they exactly fill
+   it. With more, the row scrolls sideways via the arrow buttons instead of
+   shrinking every tile to squeeze them all in — no visible scrollbar, no
+   drag-to-scroll, just the two little nav buttons. */
+/* overflow-x: auto forces overflow-y to auto too (CSS quirk), which would
+   clip the hover lift (translateY(-3px) + shadow) at the top — pad the row
+   and pull the wrap up by the same amount so nothing visibly shifts. */
+.ta-kpi-wrap { position: relative; margin: -8px -2px 8px; }
+.ta-kpi-row {
+  display: flex;
+  gap: 14px;
+  padding: 8px 2px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+}
+.ta-kpi-row::-webkit-scrollbar { display: none; }
+.ta-kpi-row > * { flex: 0 0 calc((100% - 42px) / 4); scroll-snap-align: start; }
+.ta-kpi-nav {
+  position: absolute; top: 50%; z-index: 2;
+  width: 26px; height: 26px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--ta-surface); color: var(--ta-text-mute);
+  border: 1px solid var(--ta-line); box-shadow: var(--ta-shadow);
+  cursor: pointer;
+  transition: transform 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+  transform: translateY(-50%);
+}
+.ta-kpi-nav:hover { color: var(--ta-blue); border-color: var(--ta-blue); box-shadow: var(--ta-shadow-hover); transform: translateY(-50%) scale(1.08); }
+.ta-kpi-nav:active { transform: translateY(-50%) scale(0.95); }
+.ta-kpi-nav--left { left: -12px; }
+.ta-kpi-nav--right { right: -12px; }
 .ta-kpi {
   --k: var(--k-fg, var(--ta-blue));
   position: relative; overflow: hidden;
@@ -1744,7 +1776,7 @@
 .ta-menubtn { display: none; }
 
 @media (max-width: 1160px) {
-  .ta-kpi-row { grid-template-columns: repeat(2, 1fr); }
+  .ta-kpi-row > * { flex-basis: calc((100% - 14px) / 2); }
   .ta-bento { grid-template-columns: 1fr; }
   .ta-pipe-wrap { grid-template-columns: 1fr; }
   .ta-donut-wrap { grid-template-columns: 1fr; justify-items: center; }
@@ -1788,7 +1820,8 @@
 }
 
 @media (max-width: 540px) {
-  .ta-kpi-row { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .ta-kpi-row { gap: 10px; }
+  .ta-kpi-row > * { flex-basis: calc((100% - 10px) / 2); }
   .ta-kpi { padding: 12px; }
   .ta-kpi__value { font-size: 24px; }
   .ta-kpi__spark { display: none; }

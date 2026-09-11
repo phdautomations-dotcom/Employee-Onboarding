@@ -8,6 +8,7 @@ import Tag from '../../components/ta/Tag.jsx';
 import EmptyState from '../../components/ta/EmptyState.jsx';
 import ReasonModal from '../../components/workflow/ReasonModal.jsx';
 import AssignRoleModal from '../../components/workflow/AssignRoleModal.jsx';
+import { ConfirmDialog } from '../../components/common/Modal.jsx';
 import StepTitle from '../../components/workflow/StepTitle.jsx';
 import { useApp } from '../../context/AppContext.jsx';
 import { useToast } from '../../context/ToastContext.jsx';
@@ -53,13 +54,19 @@ export default function HRCandidateDetailPage() {
   const {
     getApplicationByCandidate, documentsFor, offerFor, employeeFor, activitiesFor,
     verifyDocument, rejectDocument, verifyOnboarding, rejectOnboarding, completeJoining, assignEmployeeRole,
+    approveDocument, rejectDocuments,
   } = useApp();
 
   const app = getApplicationByCandidate(candidateId);
   const [rejectingOnboarding, setRejectingOnboarding] = useState(false);
+  const [confirmingVerify, setConfirmingVerify] = useState(false);
   const [rejectDoc, setRejectDoc] = useState(null);
+  const [verifyDocFor, setVerifyDocFor] = useState(null);
+  const [approveDocFor, setApproveDocFor] = useState(null);
   const [joining, setJoining] = useState(false);
   const [editingRole, setEditingRole] = useState(false);
+  const [pendingJoin, setPendingJoin] = useState(null); // { teamRole } | null
+  const [pendingRole, setPendingRole] = useState(null); // { teamRole } | null
   const [tab, setTab] = useState('overview');
   const [step, setStep] = useState(null);
   const [showAllAct, setShowAllAct] = useState(false);
@@ -98,15 +105,17 @@ export default function HRCandidateDetailPage() {
   const progress = Math.round(((stageIdx + 1) / PIPELINE_STAGES.length) * 100);
 
   const act = (fn, msg) => { fn(); toast.success(msg); };
-  const markJoined = (teamRole) => {
-    const employeeId = completeJoining(app.id, teamRole);
-    toast.success(`Joining completed — employee ID ${employeeId}${teamRole ? ` · ${teamRole}` : ''}.`);
-    setJoining(false);
+  const markJoined = (teamRole) => { setJoining(false); setPendingJoin({ teamRole }); };
+  const confirmJoin = () => {
+    const employeeId = completeJoining(app.id, pendingJoin.teamRole);
+    toast.success(`Joining completed — employee ID ${employeeId}${pendingJoin.teamRole ? ` · ${pendingJoin.teamRole}` : ''}.`);
+    setPendingJoin(null);
   };
-  const saveRole = (teamRole) => {
-    assignEmployeeRole(employee.id, teamRole);
-    toast.success(teamRole ? `Team role set to ${teamRole}.` : 'Team role cleared.');
-    setEditingRole(false);
+  const saveRole = (teamRole) => { setEditingRole(false); setPendingRole({ teamRole }); };
+  const confirmRole = () => {
+    assignEmployeeRole(employee.id, pendingRole.teamRole);
+    toast.success(pendingRole.teamRole ? `Team role set to ${pendingRole.teamRole}.` : 'Team role cleared.');
+    setPendingRole(null);
   };
 
   // ---- workflow steps ----
@@ -143,6 +152,14 @@ export default function HRCandidateDetailPage() {
     offer && ['offer', 'Offer', 'FileCheck'],
   ].filter(Boolean);
 
+  // The onboarding→joining→employee wizard below only makes sense once an
+  // offer has been accepted — the pre-offer document-review gate has no place
+  // in HR_RANK and would otherwise render nonsense (defaults to step 1).
+  const IN_ONBOARDING_PHASE = [
+    APP_STATUS.OFFER_ACCEPTED, APP_STATUS.ONBOARDING_PENDING, APP_STATUS.HR_VERIFICATION,
+    APP_STATUS.HR_VERIFICATION_REJECTED, APP_STATUS.JOINING_PENDING, APP_STATUS.EMPLOYEE,
+  ].includes(app.status);
+
   return (
     <>
       <TAHeader
@@ -159,6 +176,14 @@ export default function HRCandidateDetailPage() {
 
       {app.status === APP_STATUS.HR_VERIFICATION_REJECTED && app.onboardingRejectReason && (
         <div className="ta-note ta-note--warn"><Icon name="RotateCcw" size={15} /> Returned to candidate: {app.onboardingRejectReason}</div>
+      )}
+      {app.status === APP_STATUS.HR_DOC_REVIEW && (
+        <div className="ta-note ta-note--info">
+          <Icon name="Eye" size={15} /> TA has verified every document — review and approve to unlock the offer stage.
+        </div>
+      )}
+      {app.status === APP_STATUS.HR_DOC_REJECTED && app.docReviewRejectReason && (
+        <div className="ta-note ta-note--warn"><Icon name="RotateCcw" size={15} /> Returned to TA: {app.docReviewRejectReason}</div>
       )}
 
       <div className="ta-detail-grid">
@@ -219,6 +244,11 @@ export default function HRCandidateDetailPage() {
                     {documents.filter((d) => d.status === DOC_STATUS.VERIFIED).length}/{documents.length} verified
                   </Tag>
                 </div>
+                {app.status === APP_STATUS.HR_DOC_REVIEW && (
+                  <p className="ta-cell-sub" style={{ marginBottom: 4 }}>
+                    Approve or reject each document below. Once every document is approved, the offer stage unlocks for TA automatically.
+                  </p>
+                )}
                 {documents.map((doc) => {
                   const m = DOC_STATUS_META[doc.status];
                   return (
@@ -231,9 +261,19 @@ export default function HRCandidateDetailPage() {
                       <Tag tone={TONE[m.tone] || 'grey'}>{m.label}</Tag>
                       {doc.status === DOC_STATUS.UPLOADED && (
                         <span className="ta-rowactions" style={{ opacity: 1 }}>
-                          <button className="ta-iconbtn" title="Verify" onClick={() => act(() => verifyDocument(doc.id), `${doc.label} verified.`)}><Icon name="Check" size={15} /></button>
+                          <button className="ta-iconbtn" title="Verify" onClick={() => setVerifyDocFor(doc)}><Icon name="Check" size={15} /></button>
                           <button className="ta-iconbtn" title="Reject" onClick={() => setRejectDoc(doc)}><Icon name="X" size={15} /></button>
                         </span>
+                      )}
+                      {app.status === APP_STATUS.HR_DOC_REVIEW && doc.status === DOC_STATUS.VERIFIED && (
+                        doc.hrApprovedAt ? (
+                          <Tag tone="green">Approved</Tag>
+                        ) : (
+                          <span className="ta-rowactions" style={{ opacity: 1 }}>
+                            <button className="ta-iconbtn" title="Approve this document" onClick={() => setApproveDocFor(doc)}><Icon name="Check" size={15} /></button>
+                            <button className="ta-iconbtn" title="Reject this document" onClick={() => setRejectDoc(doc)}><Icon name="X" size={15} /></button>
+                          </span>
+                        )
                       )}
                     </div>
                   );
@@ -259,6 +299,7 @@ export default function HRCandidateDetailPage() {
           </Card>
 
           {/* Workflow — one step per page */}
+          {IN_ONBOARDING_PHASE && (
           <Card title="Onboarding workflow" action={<span className="ta-cell-sub">Step {activeStep} of {maxStep}</span>}>
             <div className="ta-wizard__tabs">
               {STEP_LABELS.slice(0, maxStep).map((label, i) => {
@@ -303,7 +344,7 @@ export default function HRCandidateDetailPage() {
                     {onboardingRows}
                     {app.status === APP_STATUS.HR_VERIFICATION && (
                       <div className="ta-btnrow" style={{ marginTop: 14 }}>
-                        <Button icon="CheckCircle2" onClick={() => act(() => verifyOnboarding(app.id), 'Onboarding verified — joining is now pending.')}>Verify onboarding</Button>
+                        <Button icon="CheckCircle2" onClick={() => setConfirmingVerify(true)}>Verify onboarding</Button>
                         <Button variant="ghost" icon="RotateCcw" onClick={() => setRejectingOnboarding(true)}>Return to candidate</Button>
                       </div>
                     )}
@@ -356,6 +397,7 @@ export default function HRCandidateDetailPage() {
               <Button variant="ghost" iconRight="ChevronRight" disabled={activeStep >= maxStep} onClick={() => goStep(activeStep + 1)}>Next</Button>
             </div>
           </Card>
+          )}
         </div>
 
         <div
@@ -403,7 +445,39 @@ export default function HRCandidateDetailPage() {
       <ReasonModal
         open={!!rejectDoc} onClose={() => setRejectDoc(null)}
         title={`Reject ${rejectDoc?.label || 'document'}`} label="What is wrong with it?" confirmLabel="Reject document" tone="danger"
-        onSubmit={(reason) => { rejectDocument(rejectDoc.id, reason); setRejectDoc(null); toast.success('Document rejected — candidate notified.'); }}
+        onSubmit={(reason) => {
+          rejectDocument(rejectDoc.id, reason);
+          // Rejecting a single document during HR's review also sends the whole
+          // batch back to TA — one flagged document is enough to break the gate.
+          const isHrReview = app.status === APP_STATUS.HR_DOC_REVIEW;
+          if (isHrReview) rejectDocuments(app.id, reason);
+          setRejectDoc(null);
+          toast.success(isHrReview ? 'Document rejected — returned to TA.' : 'Document rejected — candidate notified.');
+        }}
+      />
+      <ConfirmDialog
+        open={!!approveDocFor}
+        onClose={() => setApproveDocFor(null)}
+        title={`Approve ${approveDocFor?.label || 'this document'}?`}
+        message="Once every document is approved, the offer stage unlocks for TA automatically."
+        confirmLabel="Approve"
+        onConfirm={() => { act(() => approveDocument(approveDocFor.id), `${approveDocFor.label} approved.`); setApproveDocFor(null); }}
+      />
+      <ConfirmDialog
+        open={confirmingVerify}
+        onClose={() => setConfirmingVerify(false)}
+        title="Verify onboarding details?"
+        message="Joining moves to pending once verified."
+        confirmLabel="Verify onboarding"
+        onConfirm={() => { act(() => verifyOnboarding(app.id), 'Onboarding verified — joining is now pending.'); setConfirmingVerify(false); }}
+      />
+      <ConfirmDialog
+        open={!!verifyDocFor}
+        onClose={() => setVerifyDocFor(null)}
+        title={`Verify ${verifyDocFor?.label || 'this document'}?`}
+        message="This marks the document as verified on record."
+        confirmLabel="Verify"
+        onConfirm={() => { act(() => verifyDocument(verifyDocFor.id), `${verifyDocFor.label} verified.`); setVerifyDocFor(null); }}
       />
       <AssignRoleModal
         open={joining}
@@ -421,6 +495,22 @@ export default function HRCandidateDetailPage() {
         title={`Team role — ${name}`}
         onClose={() => setEditingRole(false)}
         onSave={saveRole}
+      />
+      <ConfirmDialog
+        open={!!pendingJoin}
+        onClose={() => setPendingJoin(null)}
+        title="Complete joining?"
+        message="This creates the employee record — it can't be undone from here."
+        confirmLabel="Complete joining"
+        onConfirm={confirmJoin}
+      />
+      <ConfirmDialog
+        open={!!pendingRole}
+        onClose={() => setPendingRole(null)}
+        title={pendingRole?.teamRole ? `Set team role to "${pendingRole.teamRole}"?` : 'Clear the team role?'}
+        message="This updates the employee's record."
+        confirmLabel="Save"
+        onConfirm={confirmRole}
       />
     </>
   );
