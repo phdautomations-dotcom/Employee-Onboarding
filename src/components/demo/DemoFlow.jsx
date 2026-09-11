@@ -55,8 +55,8 @@ const NARRATION = [
   'HR marks the joining complete. An employee record is created — Riya is now an employee.',
 ];
 
-const NAME = { first: 'Riya', last: 'Kapoor' };
-const EMAIL = 'riya.kapoor@example.com';
+const NAME = { first: 'Miyu', last: 'Kapoor' };
+const EMAIL = 'miyu.kapoor@example.com';
 const PHONE = '+91 98200 41000';
 const BOT_APPLICATION = {
   jobId: 'JOB-1028', source: 'Direct', autofilled: [],

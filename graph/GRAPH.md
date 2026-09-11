@@ -1,6 +1,6 @@
 # Project graph — recruitment-onboarding-frontend
 
-_Generated 2026-09-09 by `scripts/graphify.mjs`. 111 files, 380 import edges._
+_Generated 2026-09-11 by `scripts/graphify.mjs`. 111 files, 380 import edges._
 
 **Read this file instead of scanning `src/`.** Regenerate after code changes with `npm run graph`.
 

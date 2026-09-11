@@ -105,7 +105,7 @@ function baseApplication({
    interview / document / offer chains; these fill out the pipeline so
    the dashboard and lists look like a real, busy recruitment desk.
    ------------------------------------------------------------------ */
-const FIRST_NAMES = ['Aarav', 'Isha', 'Rohan', 'Priyanka', 'Aditya', 'Sneha', 'Kabir', 'Ananya', 'Devansh', 'Riya', 'Arnav', 'Tara', 'Yash', 'Nisha', 'Ved', 'Kavya', 'Ishaan', 'Meghna', 'Rehan', 'Pooja', 'Aryan', 'Diya', 'Kunal', 'Sara', 'Nikhil', 'Aisha', 'Varun', 'Simran', 'Dhruv', 'Lakshmi'];
+const FIRST_NAMES = ['Aarav', 'Isha', 'Rohan', 'Priyanka', 'Aditya', 'Sneha', 'Kabir', 'Ananya', 'Devansh', 'Miyu', 'Arnav', 'Tara', 'Yash', 'Nisha', 'Ved', 'Kavya', 'Ishaan', 'Meghna', 'Rehan', 'Pooja', 'Aryan', 'Diya', 'Kunal', 'Sara', 'Nikhil', 'Aisha', 'Varun', 'Simran', 'Dhruv', 'Lakshmi'];
 const LAST_NAMES = ['Sharma', 'Verma', 'Nair', 'Reddy', 'Iyer', 'Menon', 'Bose', 'Kapoor', 'Chauhan', 'Pillai', 'Ghosh', 'Rao', 'Malhotra', 'Joshi', 'Sethi', 'Bhat', 'Kulkarni', 'Das', 'Shah', 'Mistry'];
 const COMPANIES = ['BrightApps', 'DataForge', 'NimbusTech', 'CloudNine', 'PixelWorks', 'CoreLogic', 'Finmark', 'Zentrix', 'Apex Digital', 'Northwind'];
 const SKILL_POOL = ['React', 'TypeScript', 'Node.js', 'Python', 'SQL', 'AWS', 'Docker', 'Figma', 'SAP', 'Kubernetes', 'Testing', 'Analytics'];
