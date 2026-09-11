@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import Icon from '../../components/common/Icon.jsx';
 import TAHeader from '../../components/ta/TAHeader.jsx';
@@ -87,6 +87,7 @@ export default function TACandidatesPage() {
   const stageParam = STAGE_GROUPS[sp.get('stage')] ? sp.get('stage') : 'all';
   const jobParam = sp.get('job') || null;
   const noticeParam = sp.get('notice') || null; // set when arriving from the dashboard's notice-period chart
+  const sourceParam = SOURCES.includes(sp.get('source')) ? sp.get('source') : null; // dashboard source donut
   const [stage, setStageKey] = useState(stageParam);
   const [experience, setExpKey] = useState('all');
 
@@ -94,6 +95,7 @@ export default function TACandidatesPage() {
   if (stageParam !== 'all') initialFilters.status = (r) => STAGE_GROUPS[stageParam].match(r.status);
   if (jobParam) initialFilters.job = jobParam;
   if (noticeParam) initialFilters.noticePeriod = noticeParam;
+  if (sourceParam) initialFilters.source = sourceParam;
 
   const view = useCollectionView(rows, {
     searchFields: ['name', 'email', 'candidateId', 'job'],
@@ -120,14 +122,10 @@ export default function TACandidatesPage() {
     view.setFilter('experience', key === 'all' ? 'all' : (r) => EXPERIENCE[key].match(r.experience));
   };
 
-  const chips = [
-    stage !== 'all' && { key: 'stage', label: STAGE_GROUPS[stage].label, onRemove: () => setStage('all') },
-    experience !== 'all' && { key: 'exp', label: EXPERIENCE[experience].label, onRemove: () => setExperience('all') },
-    activeJob !== 'all' && { key: 'job', label: activeJob, onRemove: () => view.setFilter('job', 'all') },
-    activeSource !== 'all' && { key: 'src', label: activeSource, onRemove: () => view.setFilter('source', 'all') },
-    activeNotice !== 'all' && { key: 'notice', label: activeNotice, onRemove: () => view.setFilter('noticePeriod', 'all') },
-    view.query && { key: 'q', label: `“${view.query}”`, onRemove: () => view.setQuery('') },
-  ].filter(Boolean);
+  // The dropdowns / search box already show what's active — no chip row,
+  // just a "Clear filters" affordance.
+  const hasFilters = stage !== 'all' || experience !== 'all' || activeJob !== 'all'
+    || activeSource !== 'all' || activeNotice !== 'all' || !!view.query;
 
   const clearAll = () => {
     view.setQuery('');
@@ -137,6 +135,19 @@ export default function TACandidatesPage() {
     view.setFilter('source', 'all');
     view.setFilter('noticePeriod', 'all');
   };
+
+  // Re-apply filters when the page is already open and the URL params change
+  // (e.g. clicking a second dashboard tile). The first run is handled by initialFilters.
+  const spKey = `${sp.get('stage') || ''}|${sp.get('job') || ''}|${sp.get('notice') || ''}|${sp.get('source') || ''}`;
+  const firstSync = useRef(true);
+  useEffect(() => {
+    if (firstSync.current) { firstSync.current = false; return; }
+    setStage(stageParam);
+    view.setFilter('job', jobParam || 'all');
+    view.setFilter('noticePeriod', noticeParam || 'all');
+    view.setFilter('source', sourceParam || 'all');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [spKey]);
 
   return (
     <>
@@ -150,8 +161,7 @@ export default function TACandidatesPage() {
           { label: 'Source', value: activeSource, onChange: (v) => view.setFilter('source', v), options: SOURCES.map((s) => ({ value: s, label: s })) },
           { label: 'Notice Period', value: activeNotice, onChange: (v) => view.setFilter('noticePeriod', v), options: NOTICE_PERIODS.map((n) => ({ value: n, label: n })) },
         ]}
-        chips={chips}
-        onClearAll={chips.length > 1 ? clearAll : undefined}
+        onClearAll={hasFilters ? clearAll : undefined}
         pager={{ page: view.page, pageSize: view.pageSize, total: view.total, onPage: view.setPage }}
       />
 

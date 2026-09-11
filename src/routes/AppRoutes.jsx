@@ -42,7 +42,8 @@ import ProfilePage from '../pages/shared/ProfilePage.jsx';
 export default function AppRoutes() {
   return (
     <Routes>
-      <Route path="/login" element={<LoginPage />} />
+      <Route path="/" element={<LoginPage />} />
+      <Route path="/login" element={<Navigate to="/" replace />} />
 
       {/* Candidate / public */}
       <Route element={<CandidateLayout />}>
@@ -56,7 +57,6 @@ export default function AppRoutes() {
         <Route path="/candidate/profile" element={<CandidateProfilePage />} />
 
         {/* legacy redirects */}
-        <Route path="/" element={<Navigate to="/candidate" replace />} />
         <Route path="/jobs" element={<Navigate to="/candidate/jobs" replace />} />
         <Route path="/jobs/:jobId" element={<LegacyJobRedirect />} />
         <Route path="/apply" element={<Navigate to="/candidate/apply" replace />} />

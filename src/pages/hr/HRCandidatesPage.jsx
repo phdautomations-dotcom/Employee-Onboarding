@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import Icon from '../../components/common/Icon.jsx';
 import TAHeader from '../../components/ta/TAHeader.jsx';
@@ -61,15 +61,18 @@ export default function HRCandidatesPage() {
   // click shows here. The "Onboarding Stage" column still shows where each
   // candidate currently is (which may be further along).
   const stageParam = HR_FUNNEL_STAGES.some((s) => s.key === sp.get('stage')) ? sp.get('stage') : 'all';
+  const deptParam = sp.get('dept') || null; // set when arriving from the "Onboarding by Department" donut
   const [stage, setStageKey] = useState(stageParam);
+
+  const initialFilters = {};
+  if (stageParam !== 'all') initialFilters.hrRank = (r) => r.hrRank >= HR_FUNNEL_STAGES.find((s) => s.key === stageParam).rank;
+  if (deptParam) initialFilters.department = deptParam;
 
   const view = useCollectionView(rows, {
     searchFields: ['name', 'candidateId'],
     pageSize: 30,
     initialSort: { key: 'name', dir: 'asc' },
-    initialFilters: stageParam !== 'all'
-      ? { hrRank: (r) => r.hrRank >= HR_FUNNEL_STAGES.find((s) => s.key === stageParam).rank }
-      : {},
+    initialFilters: Object.keys(initialFilters).length ? initialFilters : {},
   });
 
   const deptOptions = useMemo(
@@ -98,13 +101,19 @@ export default function HRCandidatesPage() {
     view.setFilter('docsState', 'all');
   };
 
-  const DOCS_LABEL = { verified: 'All verified', rejected: 'Has rejection', pending: 'Docs pending' };
-  const chips = [
-    stage !== 'all' && { key: 'stage', label: HR_FUNNEL_STAGES.find((s) => s.key === stage)?.label, onRemove: () => setStage('all') },
-    activeDept !== 'all' && { key: 'dept', label: activeDept, onRemove: () => view.setFilter('department', 'all') },
-    activeDocs !== 'all' && { key: 'docs', label: DOCS_LABEL[activeDocs], onRemove: () => view.setFilter('docsState', 'all') },
-    joined !== 'all' && { key: 'join', label: joined === 'set' ? 'Joining date set' : 'No joining date', onRemove: () => setJoined('all') },
-  ].filter(Boolean);
+  // Re-apply filters when already on the page and the dashboard link changes the URL params.
+  const spKey = `${sp.get('stage') || ''}|${sp.get('dept') || ''}`;
+  const firstSync = useRef(true);
+  useEffect(() => {
+    if (firstSync.current) { firstSync.current = false; return; }
+    setStage(stageParam);
+    view.setFilter('department', deptParam || 'all');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [spKey]);
+
+  // The filter dropdowns already show their active value, so no separate
+  // chip row — just a "Clear filters" affordance when something is set.
+  const hasFilters = stage !== 'all' || activeDept !== 'all' || activeDocs !== 'all' || joined !== 'all';
 
   const apps = data.applications || [];
   const kpis = [
@@ -149,8 +158,7 @@ export default function HRCandidatesPage() {
             ],
           },
         ]}
-        chips={chips}
-        onClearAll={chips.length > 1 ? clearAll : undefined}
+        onClearAll={hasFilters ? clearAll : undefined}
         pager={{ page: view.page, pageSize: view.pageSize, total: view.total, onPage: view.setPage }}
       />
 

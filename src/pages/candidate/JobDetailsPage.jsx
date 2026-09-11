@@ -31,10 +31,8 @@ export default function JobDetailsPage() {
     );
   }
 
-  const meta = [
+  const facts = [
     { label: 'Department', value: job.department },
-    { label: 'Location', value: job.location },
-    { label: 'Employment', value: `${job.employmentType} · ${job.workMode}` },
     { label: 'Experience', value: job.experience },
     { label: 'Apply by', value: formatDate(job.deadline) },
   ];
@@ -45,10 +43,20 @@ export default function JobDetailsPage() {
         <Icon name="ArrowLeft" size={14} /> All jobs
       </button>
 
-      <div className="cx-page__head">
-        <span className="ta-cell-sub">{job.department} · {job.id}</span>
-        <h1 className="cx-page__title" style={{ marginTop: 2 }}>{job.title}</h1>
-        <p className="cx-page__sub">{job.location} · {job.employmentType} · {job.workMode}</p>
+      <div className="cx-jobhead">
+        <div className="cx-jobhead__main">
+          <span className="ta-cell-sub">{job.department} · {job.id}</span>
+          <h1 className="cx-page__title" style={{ marginTop: 2 }}>{job.title}</h1>
+          <p className="cx-page__sub" style={{ marginTop: 4 }}>{job.location} · {job.employmentType} · {job.workMode}</p>
+        </div>
+        <dl className="cx-jobhead__facts">
+          {facts.map((m) => (
+            <div key={m.label}>
+              <dt>{m.label}</dt>
+              <dd>{m.value}</dd>
+            </div>
+          ))}
+        </dl>
       </div>
 
       <div className="ta-detail-grid">
@@ -75,15 +83,7 @@ export default function JobDetailsPage() {
         </Card>
 
         <Card title="Ready to apply?">
-          <p className="ta-cell-sub" style={{ marginBottom: 14 }}>Takes about 2 minutes with your resume.</p>
-          <div className="ta-info ta-info--1" style={{ marginBottom: 16 }}>
-            {meta.map((m) => (
-              <div className="ta-info__item" key={m.label}>
-                <span className="ta-info__label">{m.label}</span>
-                <span className="ta-info__value">{m.value}</span>
-              </div>
-            ))}
-          </div>
+          <p className="ta-cell-sub" style={{ marginBottom: 16 }}>Takes about 2 minutes with your resume.</p>
           <Button iconRight="ArrowRight" onClick={() => navigate(`/candidate/apply/${job.id}`)} style={{ width: '100%' }}>
             Apply now
           </Button>

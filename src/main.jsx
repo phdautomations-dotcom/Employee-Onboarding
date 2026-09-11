@@ -6,6 +6,7 @@ import { AppProvider } from './context/AppContext.jsx';
 import { ToastProvider } from './context/ToastContext.jsx';
 import './index.css';
 import './styles/ta.css';
+import './styles/home.css';
 
 /* Dev/demo: ?as=ta|hr|candidate seeds the role before first render. */
 try {

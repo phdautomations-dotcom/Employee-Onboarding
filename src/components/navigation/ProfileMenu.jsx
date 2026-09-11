@@ -32,6 +32,7 @@ export default function ProfileMenu({ role, links = [] }) {
   const go = (to) => { setOpen(false); navigate(to); };
   const switchTo = (r) => { setOpen(false); setRole(r); navigate(ROLE_META[r].home); };
   const restart = () => { setOpen(false); startGuidedDemo(); setRole(ROLES.CANDIDATE); navigate('/candidate/jobs'); };
+  const signOut = () => { setOpen(false); setRole(null); navigate('/'); };
 
   return (
     <div className="profilemenu" ref={ref}>
@@ -77,6 +78,9 @@ export default function ProfileMenu({ role, links = [] }) {
           <div className="profilemenu__sep" />
           <button type="button" className="profilemenu__item" onClick={restart} role="menuitem">
             <Icon name="RotateCcw" size={15} /> Restart demo
+          </button>
+          <button type="button" className="profilemenu__item" onClick={signOut} role="menuitem">
+            <Icon name="LogOut" size={15} /> Sign out
           </button>
         </div>
       )}

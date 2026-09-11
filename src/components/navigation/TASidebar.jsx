@@ -46,7 +46,7 @@ export default function TASidebar({ open, collapsed, onToggleCollapse, onNavigat
 
       <div className="ta-sidebar__spacer" />
 
-      <a className="ta-help" href="mailto:support@talentflow.example" title="Visit our Help Center">
+      <a className="ta-help" href="mailto:support@ccentrik.app" title="Visit our Help Center">
         <span className="ta-help__icon"><Icon name="LifeBuoy" size={16} /></span>
         <span className="ta-help__text">
           <span className="ta-help__title">Need help?</span>
